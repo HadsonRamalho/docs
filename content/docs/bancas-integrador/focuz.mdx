@@ -1,0 +1,247 @@
+---
+title: Focuz
+---
+import {DiffBlock} from '../../../components/docs/diff-block';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Observações sobre o artigo
+### Introdução
+<Steps>
+    <Step> 
+        ```diff
+        - Nesse cenário destaca-se...
+        + Nesse cenário, destaca-se...
+        ```
+        <Callout>
+            Por ser uma expressão curta, a vírgula é facultativa, mas seu uso é altamente recomendado em textos acadêmicos para marcar a pausa e isolar a circunstância, melhorando a fluidez da leitura.
+        </Callout>
+    </Step>
+    <Step>  
+        ```diff
+        - Nesse sentido, muitos eventos locais e microrregionais dependem significativa-
+        - mente de serem divulgados por meio de cartazes,
+        + Nesse aspecto, muitos eventos locais e microrregionais dependem significativa-
+        + mente de divulgação por meio de cartazes, 
+        ``` 
+        <Callout>
+            Substituir **"serem divulgados"** pelo substantivo **"divulgação"** torna a frase mais direta e menos prolixa, característica importante na escrita científica.
+        </Callout>
+    </Step>
+    <Step>  
+        ```diff
+        - Segundo [Oliveira e Gomes 2023, p. 302],
+        + Segundo Oliveira e Gomes (2023, p. 302),
+        ```
+        <Callout>
+            Quando o nome dos autores faz parte da narrativa, apenas o ano e a página devem ficar entre parênteses. O uso de colchetes é geralmente reservado para outros casos, não para a chamada da citação em si.
+        </Callout>
+    </Step>
+    <Step>  
+        ```diff
+        - Diante disso, este artigo apresenta o desenvolvimento da plataforma web cha-
+        - mada Focuz,
+        + Diante disso (?), este artigo apresenta o desenvolvimento da plataforma web Focuz
+        ```
+        <Callout>
+            1. Diante **"disso"** o quê? O uso do termo exige um antecedente claro. Se o parágrafo anterior apresenta múltiplos conceitos, o leitor pode se perder
+            sobre o que exatamente motiva o desenvolvimento da plataforma.
+            2. **"Chamada"** é um vício de linguagem. Se Focuz é o nome da plataforma, a atribuição direta é mais elegante.
+        </Callout>
+    </Step>
+    <Step>
+        ```diff
+        - Assim, a plataforma Focuz além de facilitar o acesso à informação, também va-
+        - loriza a cultura local, incentivando a participação social e fortalecendo 
+        - o vínculo entre os membros da comunidade.
+        + Assim, a plataforma Focuz visa facilitar o acesso à informação e fomentar a
+        + valorização da cultura local, buscando incentivar a participação social e o 
+        + fortalecimento dos vínculos comunitários.
+        ```
+        <Callout type="warn">
+            1. O texto original afirma resultados (valorização, incentivo, fortalecimento) como fatos consumados. Em um artigo científico, essas afirmações só podem ser feitas na conclusão, após a análise dos dados. 
+            2. Utilize verbos de intenção (*visa, busca, propõe-se a*) para indicar que esses são os objetivos ou impactos esperados do projeto, e não verdades absolutas. 
+        </Callout>
+    </Step> 
+</Steps>
+
+### Contextualização
+<Steps>
+    <Step>
+        ```diff
+        - Diante disso, surge a necessidade de plataformas com escopo mais regional, que
+        - priorizem a divulgação e valorização de eventos culturais e comunitários locais, mui-
+        - tas vezes marginalizados por ferramentas tradicionais. Apesar da sua funcionalidade
+        - e abrangencia, tais plataformas muitas vezes não atendem plenamente as necessidades
+        - de eventos locais, comunitarios e culturais de menor escala, especialmente aqueles or-
+        - ganizados por pequenos empreendedores, artistas independentes ou comunidades pe-
+        - riféricas. Muitos desses eventos carecem de visibilidade e apoio digital, o que dificulta
+        - sua promoção, alcance e sustentabilidade [da Silva Lima e Marçal 2020].  ̃
+        ```
+        <Callout>
+            1. Nesse penúltimo parágrafo, é repetido que as plataformas não atendem eventos locais e que eles carecem de visibilidade. Isso já foi dito no parágrafo anterior.
+            2. **"muitas vezes"** também é repetido... muitas vezes.
+        </Callout>  
+    </Step>
+</Steps>
+
+### Metodologia
+<Steps>
+    <Step>
+        ```diff
+        - Deste modo, inicializamos realizando um levantamento bibliográfico por meio de
+        + A metodologia fundamentou-se, inicialmente, em um levantamento bibliográfico de
+        ```
+        <Callout>
+            1. Não é boa prática utilizar a primeira pessoa (**"inicializamos"**) em textos acadêmicos.
+            2. **"inicializamos realizando"** é gerundismo (vlw [Felipe Túlio](https://github.com/felipetulio)).
+        </Callout>
+    </Step>
+    <Step>
+        ```diff
+        - No desenvolvimento da aplicação, adotamos uma arquitetura baseada em API REST
+        + O desenvolvimento da plataforma utilizou uma arquitetura baseada em API REST
+        ...
+        - e Front-end, que é responsável por fornecer dados à parte visual da plataforma.        
+        - Logo abaixo no Quadro 1, iremos exibir as ferramentas que
+        ```
+        <Callout type="warn">
+            1. Uso da primeira pessoa em **"adotamos"** e **"iremos"**.
+            2. Ao descrever a relação Front/Back, foi dito que o Front-end **"fornece dados à parte visual"**. Na verdade, **o Back-end fornece os dados e o Front-end os consome e renderiza**.
+            3. Cuidado ao escrever **"Logo abaixo"** para referenciar anexos. É comum que os elementos sejam reposicionados na interface, e isso pode quebrar o fluxo da leitura.
+        </Callout>
+    </Step>
+    <Step> 
+        <DiffBlock type="removed">
+            | Tecnologia | Função |
+            | :--- | :--- |
+            | **Bcrypt** | Aumentar a segurança no armazenamento de dados sensíveis dos usuários. |
+        </DiffBlock>
+        <DiffBlock type="added">
+            | Tecnologia | Função |
+            | :--- | :--- |
+            | **Bcrypt** | Implementação de algoritmo de *hashing* para proteção e armazenamento seguro de senhas. |
+        </DiffBlock>
+        <Callout>
+            Pode ser interessante mencionar o hashing. Diferente da criptografia comum, o hash não é reversível, o que é um padrão de fundamental importância para a segurança de senhas.
+        </Callout>
+    </Step>
+    <Step>
+        ```diff
+        - O Modelo Lógico e o Diagrama Entidade-Relacionamento (DER) foi elaborado
+        + O Modelo Lógico e o Diagrama Entidade-Relacionamento (DER) foram elaborados
+        ...
+        - Neste sentido, também utilizamos uma base de dados do github, onde contém um JSON
+        + Adicionalmente, foi utilizada uma base de dados pública (GitHub) contendo arquivos em formato JSON
+        ...
+        - isso contribui bastante para popularizar o nosso banco de dados.
+        + contribuindo para o povoamento (ou preenchimento) automatizado do banco de dados.
+        ...
+        - executado por meio de um container Docker
+        ```
+        <Callout>
+            1. Uso da primeira pessoa.
+            2. O Docker foi citado duas vezes no item 3.4, mas não estava incluso no quadro de tecnologias do backend.
+        </Callout>
+    </Step>
+    <Step>
+        ```diff
+        - 3.5. Casos de Uso
+        ```
+        <Callout>
+            Os casos de uso foram mencionados, mas não estão presentes no texto.
+        </Callout>
+    </Step>
+    <Step>
+        ```diff
+        - Requisitos nos quais serao exibidos no Quadro 3.
+        + Os requisitos funcionais identificados estão apresentados no Quadro 3.
+        ```
+        <Callout>
+            1. O uso de "Requisitos nos quais serão exibidos no Quadro 3" é gramaticalmente incorreto, além de ser outro vício de linguagem.
+            2. O texto mantém um bom tom impessoal, mas a repetição de "Deve ser possível" em quase todos os requisitos torna a leitura monótona e cansativa.
+        </Callout>
+    </Step>
+    <Step> 
+        <DiffBlock type="removed">
+            | Identificador | Requisito | Classificação |
+            | :--- | :--- | :--- |
+            | **RNF05** | O criador do evento deve poder escolher a
+            quantidade de dias de impulsionamento. | Regra de Negócio | 
+        </DiffBlock>
+        <Callout>
+            Esse item descreve uma ação que o usuário realiza no sistema. Isso é, por definição, um Requisito Funcional (ou uma Regra de Negócio que se desdobra em funcionalidade).
+        </Callout>
+    </Step>
+    <Step>
+        ```diff
+        3.7. Regras de Negócio
+        ...
+        As regras de negócio definem as condições, restrições e políticas que orientam o funci-
+        onamento do sistema de acordo com os objetivos do domínio ao qual ele pertence. Elas
+        estabelecem como as informações devem ser tratadas e quais critérios devem ser respei-
+        - tados durante a execução das funcionalidades. logo abaixo no Quadro 5, serão exibidas
+        as regras de negócio da plataforma.
+        ```
+        <Callout>
+          **"logo abaixo"** deveria estar iniciando a frase com letra maiúscula. Além disso, repete-se a referência a anexos que podem estar em outra área do documento.
+        </Callout>
+    </Step>
+    <Step>
+        ```diff
+        3.8. Canvas Modelo de Negocio
+        ...
+        - Diagramas, casos de uso, modelo de negocio,modelagem de dados, estrutura de pastas e imagens
+        - complementares estão disponíveis em repositório online².
+        ```
+        <Callout>
+            1. Faltou espaçamento após **"modelo de negócio,"**.
+            2. Essa informação (da presença de um repositório online para a consulta dos anexos) poderia ser referenciada também no ponto **3.5. Casos de Uso**.
+        </Callout>
+    </Step>
+</Steps>
+
+### Resultados e Discussão
+<Steps>
+    <Step>
+        ### Google Drive
+        Casos de Uso
+        <Callout type="warn">
+            O caso de uso apresentado é referente apenas ao usuário comum/padrão da plataforma, não há um usuário administrador do sistema?
+        </Callout>
+        Canvas Modelo de Negócio
+        <Callout>
+            Em "Principais Recursos", poderia ser incluído o uso de computadores, internet, etc?
+        </Callout>
+        Modelagem de Dados - Modelo Conceitual
+        <Callout>
+            1. Na tabela **usuarios**, não há padrão claro de nomeação:
+                1. O campo "role" foge da norma dos demais.
+                2. **codigoRecuperacaoHash** e **criado_em**.
+            2. Na tabela **eventos**:
+                1. Os campos **is_impulsionado** e **is_evento_pago** poderiam ser reescritos.
+        </Callout>
+    </Step>
+    <Step>
+        ### Protótipos
+        ```diff
+        - Telas que estarão disponíveis na plataforma digital Figma.
+        ```
+        <Callout>
+            1. A frase "Telas que estarão disponíveis na plataforma digital Figma" é um fragmento de frase que soa incompleto e um pouco redundante, já que o início do parágrafo já citava o Figma.
+        </Callout>
+    </Step>
+</Steps>
+
+### Considerações Finais
+<Steps>
+    <Step>
+        ```diff
+        - Entre as limitações desta etapa, destacam-se a ausência de testes com usuários
+        - reais, a nao implementação de funcionalidades avançadas, como mecanismos completos
+        - de autenticação e autorização
+        ```
+        <Callout>
+            No quadro 4 e na tabela de tecnologias, os autores citaram JWT e Bcrypt, qual o motivo dessa frase na conclusão do texto?
+        </Callout>
+    </Step>
+</Steps>
