@@ -1,12 +1,22 @@
-import { RootProvider } from "fumadocs-ui/provider/next";
-import "./global.css";
-import { Inter } from "next/font/google";
-import "katex/dist/katex.css";
 import { env } from "@/lib/env";
+import { RootProvider } from "fumadocs-ui/provider/next";
+import "katex/dist/katex.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./global.css";
 
 const inter = Inter({
   subsets: ["latin"],
 });
+
+export const metadata: Metadata = {
+  title: "Mitna Rachnun - Docs",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
+};
 
 env.loadEnv();
 
