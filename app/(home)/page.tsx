@@ -87,6 +87,10 @@ export default function HomePage() {
 }
 
 const shortcuts = [
-  { prefix: "01", title: "Vincular tasks do ClickUp", href: "/docs/clickup" },
-  { prefix: "02", title: "Configurar Stripe Local", href: "/docs/stripe" },
+  { prefix: "01", title: "Página inicial", href: "/docs" },
+  {
+    prefix: "02",
+    title: "Bancas do Projeto Integrador 2026",
+    href: "/docs/bancas-integrador",
+  },
 ];
