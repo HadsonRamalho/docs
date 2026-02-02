@@ -41,7 +41,12 @@ class Env {
   loadEnv() {
     if (this.envIsLoaded) return;
 
-    const result = envSchema.safeParse(process.env);
+    const values = {
+      NEXT_PUBLIC_MODE: process.env.NEXT_PUBLIC_MODE,
+      NEXT_PUBLIC_RUST_NOTEBOOK_API: process.env.NEXT_PUBLIC_RUST_NOTEBOOK_API,
+    };
+
+    const result = envSchema.safeParse(values);
 
     if (!result.success) {
       const errorMsg = result.error.issues

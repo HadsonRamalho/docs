@@ -32,7 +32,16 @@ export function RustNotebook({
   };
 
   async function handleRun() {
-    env.loadEnv();
+    try {
+      env.loadEnv();
+    } catch (e) {
+      console.error("Erro de configuração:", e);
+      setOutput("Erro interno: Ambiente não configurado corretamente.");
+      setStatus("error");
+      setIsRunning(false);
+      return;
+    }
+
     const API_URL = env.get("NEXT_PUBLIC_RUST_NOTEBOOK_API");
     setIsRunning(true);
     setStatus("idle");
