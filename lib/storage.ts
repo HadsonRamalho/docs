@@ -1,0 +1,136 @@
+"use client";
+
+import { Block, Notebook, NotebookMeta } from "./types";
+
+const INDEX_KEY = "my-notebook-pages";
+const NOTEBOOK_PREFIX = "rust-notebook-";
+
+const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+export async function getAllNotebooks(): Promise<NotebookMeta[]> {
+  await delay(50);
+  if (typeof window === "undefined") return [];
+  const data = localStorage.getItem(INDEX_KEY);
+  return data ? JSON.parse(data) : [];
+}
+
+export async function getNotebook(id: string): Promise<Notebook | null> {
+  await delay(100);
+  if (typeof window === "undefined") return null;
+  const data = localStorage.getItem(`${NOTEBOOK_PREFIX}${id}`);
+  return data ? JSON.parse(data) : null;
+}
+
+export async function saveNotebook(
+  id: string,
+  blocks: Block[],
+  title: string,
+): Promise<void> {
+  const current = await getNotebook(id);
+  const now = Date.now();
+
+  const notebook: Notebook = {
+    id,
+    title,
+    createdAt: current?.createdAt || now,
+    updatedAt: now,
+    blocks,
+  };
+
+  localStorage.setItem(`${NOTEBOOK_PREFIX}${id}`, JSON.stringify(notebook));
+
+  const index = await getAllNotebooks();
+  const existingIndex = index.findIndex((n) => n.id === id);
+
+  const meta: NotebookMeta = { id, title, createdAt: notebook.createdAt };
+
+  if (existingIndex >= 0) {
+    index[existingIndex] = meta;
+  } else {
+    index.push(meta);
+  }
+
+  localStorage.setItem(INDEX_KEY, JSON.stringify(index));
+}
+
+export async function deleteNotebook(id: string): Promise<void> {
+  localStorage.removeItem(`${NOTEBOOK_PREFIX}${id}`);
+  const index = await getAllNotebooks();
+  const newIndex = index.filter((n) => n.id !== id);
+  localStorage.setItem(INDEX_KEY, JSON.stringify(newIndex));
+}
+
+interface FullBackup {
+  version: number;
+  index: NotebookMeta[];
+  notebooks: Record<string, Notebook>;
+}
+
+export async function createFullBackup(): Promise<string> {
+  const index = await getAllNotebooks();
+  const notebooks: Record<string, Notebook> = {};
+
+  for (const meta of index) {
+    const content = await getNotebook(meta.id);
+    if (content) {
+      notebooks[meta.id] = content;
+    }
+  }
+
+  const backup: FullBackup = {
+    version: 1,
+    index,
+    notebooks,
+  };
+
+  return JSON.stringify(backup, null, 2);
+}
+
+export async function restoreFullBackup(jsonString: string): Promise<boolean> {
+  try {
+    const backup: FullBackup = JSON.parse(jsonString);
+
+    if (!backup.index || !backup.notebooks) {
+      throw new Error("Formato de backup inválido");
+    }
+
+    for (const [id, notebook] of Object.entries(backup.notebooks)) {
+      localStorage.setItem(`${NOTEBOOK_PREFIX}${id}`, JSON.stringify(notebook));
+    }
+
+    const storedIndex = localStorage.getItem(INDEX_KEY);
+    let currentIndex = storedIndex ? JSON.parse(storedIndex) : [];
+
+    let newIndex;
+
+    if (Array.isArray(currentIndex) && Array.isArray(backup.index)) {
+      const indexMap = new Map();
+
+      currentIndex.forEach((item: any) => {
+        const key = item.id || item;
+        indexMap.set(key, item);
+      });
+
+      backup.index.forEach((item: any) => {
+        const key = item.id || item;
+        indexMap.set(key, item);
+      });
+
+      newIndex = Array.from(indexMap.values());
+    } else if (
+      typeof currentIndex === "object" &&
+      typeof backup.index === "object"
+    ) {
+      newIndex = { ...currentIndex, ...backup.index };
+    } else {
+      newIndex = backup.index;
+    }
+
+    localStorage.setItem(INDEX_KEY, JSON.stringify(newIndex));
+
+    return true;
+  } catch (e) {
+    console.error("Erro ao restaurar backup:", e);
+    return false;
+  }
+}

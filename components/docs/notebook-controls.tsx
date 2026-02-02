@@ -15,8 +15,8 @@ export function NotebookControls() {
           flex items-center gap-2 px-4 py-2 rounded-md text-xs font-bold transition-all border
           ${
             hasSaved
-              ? "bg-green-500/10 border-green-500/50 text-green-400"
-              : "bg-orange-600 border-orange-700 text-white hover:bg-orange-500 hover:border-orange-600"
+              ? "bg-emerald-500 border-green-500/50 text-white"
+              : "bg-emerald-600 border-emerald-700 text-white hover:bg-emerald-500 hover:border-emerald-600"
           }
         `}
       >

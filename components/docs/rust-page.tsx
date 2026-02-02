@@ -5,6 +5,9 @@ import { Plus, Trash2, GripVertical, Code2 } from "lucide-react";
 import { motion, Reorder, AnimatePresence } from "framer-motion";
 import { RustNotebook } from "./rust-editor";
 import { useNotebook } from "./notebook-context";
+import { useDragControls } from "framer-motion";
+import { useNotebookManager } from "./notebook-manager";
+import Markdown from "react-markdown";
 
 type BlockType = "text" | "code";
 
@@ -29,6 +32,7 @@ export default function RustInteractivePage({
     isDragging,
     setIsDragging,
   } = useNotebook();
+  const dragControls = useDragControls();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [blocks, setBlocks] = useState<Block[]>([
     {
@@ -134,7 +138,7 @@ export default function RustInteractivePage({
                         addBlock(index, "text");
                         triggerAddBlock();
                       }}
-                      className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#252525] text-[#555] hover:text-blue-400 rounded transition-colors"
+                      className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#252525] text-[#555] hover:text-blue-400 hover:cursor-pointer rounded transition-colors"
                     >
                       <Plus size={12} />
                       <span className="text-sm font-medium uppercase">
@@ -144,7 +148,7 @@ export default function RustInteractivePage({
                     <div className="w-px h-3 bg-[#333]" />
                     <button
                       onClick={() => addBlock(index, "code")}
-                      className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#252525] text-[#555] hover:text-orange-500 rounded transition-colors"
+                      className="flex items-center gap-1.5 px-2 py-1 hover:bg-[#252525] text-[#555] hover:cursor-pointer hover:text-emerald-500 rounded transition-colors"
                     >
                       <Code2 size={12} />
                       <span className="text-sm font-medium uppercase">
@@ -159,11 +163,15 @@ export default function RustInteractivePage({
             <Reorder.Item
               value={block}
               id={block.id}
-              className="flex gap-4 items-start"
+              className="group/item flex gap-4 items-start relative"
+              dragControls={dragControls}
               onDragStart={() => setIsDragging(true)}
               onDragEnd={() => setIsDragging(false)}
             >
-              <div className="opacity-0 group-hover:opacity-100 flex flex-col gap-2 mt-4 transition-opacity">
+              <div
+                className="flex flex-col gap-2 mt-4 transition-opacity hover:cursor-grab active:cursor-grabbing"
+                onPointerDown={(e) => dragControls.start(e)}
+              >
                 <GripVertical
                   size={16}
                   className="text-gray-600 cursor-grab active:cursor-grabbing"
@@ -211,7 +219,7 @@ function TextBlock({
     return (
       <textarea
         autoFocus
-        className="w-full bg-transparent text-gray-200 text-lg outline-none resize-none border-l-2 border-blue-500 pl-4 py-2"
+        className="w-full bg-transparent text-gray-200 text-lg outline-none resize-none border-l-2 border-emerald-500 pl-4 py-2"
         value={content}
         onBlur={() => setIsEditing(false)}
         onChange={(e) => onChange(e.target.value)}
@@ -226,7 +234,9 @@ function TextBlock({
       onClick={() => setIsEditing(true)}
       className="prose prose-invert max-w-none cursor-text hover:bg-white/5 p-2 rounded-lg transition-colors min-h-[3em] whitespace-pre-wrap"
     >
-      {content || (
+      {content ? (
+        <Markdown>{content}</Markdown>
+      ) : (
         <span className="text-gray-600 italic">Clique para escrever...</span>
       )}
     </div>

@@ -100,7 +100,7 @@ export function RustNotebook({
                 ${
                   isRunning
                     ? "bg-[#444] text-[#888] cursor-not-allowed"
-                    : "bg-orange-600 text-white hover:bg-orange-500 active:scale-95 shadow-lg shadow-orange-900/20"
+                    : "bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 shadow-lg shadow-emerald-900/20"
                 }
             `}
           >

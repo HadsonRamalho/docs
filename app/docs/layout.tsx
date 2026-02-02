@@ -1,3 +1,6 @@
+import { NotebookProvider } from "@/components/docs/notebook-context";
+import { NotebookManagerProvider } from "@/components/docs/notebook-manager";
+import { UserSidebar } from "@/components/docs/user-sidebar";
 import { DocsLayout } from "@/components/layout/docs";
 import { env } from "@/lib/env";
 import { baseOptions } from "@/lib/layout.shared";
@@ -21,14 +24,19 @@ export default function Layout({ children }: LayoutProps<"/docs">) {
   };
 
   return (
-    <DocsLayout
-      tree={filteredTree}
-      {...baseOptions()}
-      sidebar={{
-        defaultOpenLevel: 1,
-      }}
-    >
-      {children}
-    </DocsLayout>
+    <NotebookManagerProvider>
+      <NotebookProvider>
+        <DocsLayout
+          tree={filteredTree}
+          {...baseOptions()}
+          sidebar={{
+            defaultOpenLevel: 1,
+            banner: <UserSidebar />,
+          }}
+        >
+          {children}
+        </DocsLayout>
+      </NotebookProvider>
+    </NotebookManagerProvider>
   );
 }
