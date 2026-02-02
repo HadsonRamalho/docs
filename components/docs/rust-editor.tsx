@@ -47,10 +47,29 @@ export function RustNotebook({
       if (data.stderr) {
         setStatus("error");
         setOutput(data.stderr);
-      } else {
-        setOutput(data.stdout || "Código executado com sucesso.");
-        setStatus("success");
+
+        if (data.stderr.includes("file not found for module")) {
+          setOutput(
+            "Falha relacionada a outro módulo. Tente compilar outros blocos primeiro :))\n\n" +
+              data.stderr,
+          );
+          return;
+        }
+
+        if (
+          data.stderr.includes(
+            "Finished `dev` profile [unoptimized + debuginfo] ",
+          )
+        ) {
+          setOutput("Bloco compilado!");
+          setStatus("success");
+          return;
+        }
+        return;
       }
+
+      setOutput(data.stdout || "Código executado com sucesso.");
+      setStatus("success");
     } catch (err) {
       setOutput("Erro: Não foi possível conectar ao servidor Rust.");
       setStatus("error");
