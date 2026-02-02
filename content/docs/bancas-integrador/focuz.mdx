@@ -7,7 +7,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 ## Observações sobre o artigo
 ### Introdução
 <Steps>
-    <Step> 
+    <Step>
         ```diff
         - Nesse cenário destaca-se...
         + Nesse cenário, destaca-se...
@@ -16,18 +16,18 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
             Por ser uma expressão curta, a vírgula é facultativa, mas seu uso é altamente recomendado em textos acadêmicos para marcar a pausa e isolar a circunstância, melhorando a fluidez da leitura.
         </Callout>
     </Step>
-    <Step>  
+    <Step>
         ```diff
         - Nesse sentido, muitos eventos locais e microrregionais dependem significativa-
         - mente de serem divulgados por meio de cartazes,
         + Nesse aspecto, muitos eventos locais e microrregionais dependem significativa-
-        + mente de divulgação por meio de cartazes, 
-        ``` 
+        + mente de divulgação por meio de cartazes,
+        ```
         <Callout>
             Substituir **"serem divulgados"** pelo substantivo **"divulgação"** torna a frase mais direta e menos prolixa, característica importante na escrita científica.
         </Callout>
     </Step>
-    <Step>  
+    <Step>
         ```diff
         - Segundo [Oliveira e Gomes 2023, p. 302],
         + Segundo Oliveira e Gomes (2023, p. 302),
@@ -36,7 +36,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
             Quando o nome dos autores faz parte da narrativa, apenas o ano e a página devem ficar entre parênteses. O uso de colchetes é geralmente reservado para outros casos, não para a chamada da citação em si.
         </Callout>
     </Step>
-    <Step>  
+    <Step>
         ```diff
         - Diante disso, este artigo apresenta o desenvolvimento da plataforma web cha-
         - mada Focuz,
@@ -51,17 +51,17 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
     <Step>
         ```diff
         - Assim, a plataforma Focuz além de facilitar o acesso à informação, também va-
-        - loriza a cultura local, incentivando a participação social e fortalecendo 
+        - loriza a cultura local, incentivando a participação social e fortalecendo
         - o vínculo entre os membros da comunidade.
         + Assim, a plataforma Focuz visa facilitar o acesso à informação e fomentar a
-        + valorização da cultura local, buscando incentivar a participação social e o 
+        + valorização da cultura local, buscando incentivar a participação social e o
         + fortalecimento dos vínculos comunitários.
         ```
         <Callout type="warn">
-            1. O texto original afirma resultados (valorização, incentivo, fortalecimento) como fatos consumados. Em um artigo científico, essas afirmações só podem ser feitas na conclusão, após a análise dos dados. 
-            2. Utilize verbos de intenção (*visa, busca, propõe-se a*) para indicar que esses são os objetivos ou impactos esperados do projeto, e não verdades absolutas. 
+            1. O texto original afirma resultados (valorização, incentivo, fortalecimento) como fatos consumados. Em um artigo científico, essas afirmações só podem ser feitas na conclusão, após a análise dos dados.
+            2. Utilize verbos de intenção (*visa, busca, propõe-se a*) para indicar que esses são os objetivos ou impactos esperados do projeto, e não verdades absolutas.
         </Callout>
-    </Step> 
+    </Step>
 </Steps>
 
 ### Contextualização
@@ -80,7 +80,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
         <Callout>
             1. Nesse penúltimo parágrafo, é repetido que as plataformas não atendem eventos locais e que eles carecem de visibilidade. Isso já foi dito no parágrafo anterior.
             2. **"muitas vezes"** também é repetido... muitas vezes.
-        </Callout>  
+        </Callout>
     </Step>
 </Steps>
 
@@ -101,7 +101,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
         - No desenvolvimento da aplicação, adotamos uma arquitetura baseada em API REST
         + O desenvolvimento da plataforma utilizou uma arquitetura baseada em API REST
         ...
-        - e Front-end, que é responsável por fornecer dados à parte visual da plataforma.        
+        - e Front-end, que é responsável por fornecer dados à parte visual da plataforma.
         - Logo abaixo no Quadro 1, iremos exibir as ferramentas que
         ```
         <Callout type="warn">
@@ -110,7 +110,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
             3. Cuidado ao escrever **"Logo abaixo"** para referenciar anexos. É comum que os elementos sejam reposicionados na interface, e isso pode quebrar o fluxo da leitura.
         </Callout>
     </Step>
-    <Step> 
+    <Step>
         <DiffBlock type="removed">
             | Tecnologia | Função |
             | :--- | :--- |
@@ -161,12 +161,12 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
             2. O texto mantém um bom tom impessoal, mas a repetição de "Deve ser possível" em quase todos os requisitos torna a leitura monótona e cansativa.
         </Callout>
     </Step>
-    <Step> 
+    <Step>
         <DiffBlock type="removed">
             | Identificador | Requisito | Classificação |
             | :--- | :--- | :--- |
             | **RNF05** | O criador do evento deve poder escolher a
-            quantidade de dias de impulsionamento. | Regra de Negócio | 
+            quantidade de dias de impulsionamento. | Regra de Negócio |
         </DiffBlock>
         <Callout>
             Esse item descreve uma ação que o usuário realiza no sistema. Isso é, por definição, um Requisito Funcional (ou uma Regra de Negócio que se desdobra em funcionalidade).
@@ -243,5 +243,126 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
         <Callout>
             No quadro 4 e na tabela de tecnologias, os autores citaram JWT e Bcrypt, qual o motivo dessa frase na conclusão do texto?
         </Callout>
+    </Step>
+</Steps>
+
+## Observações sobre o código
+### Interface e usabilidade
+<Steps>
+    <Step>
+        O código só foi enviado para o repositório nos últimos dias de entrega. É importante fazer envios graduais para o GitHub, dessa forma poderemos
+        avaliar de maneira mais precisa e acompanhar o processo de desenvolvimento.
+    </Step>
+    <Step>
+        A seed do banco de dados foi executada, mas não populou o banco corretamente.
+    </Step>
+    <Step>
+        As variáveis de ambiente EMAIL_USUARIO e EMAIL_SENHA_APP não foram citadas no readme.
+    </Step>
+    <Step>
+        Todo o código do backend se beneficiaria de logs melhores. Não é uma recomendação para console.log/console.error, mas sim de um sistema especializado
+        em logs de requisições e eventos.
+        Além disso, as mensagens de erro do servidor são extremamente genéricas, o que dificulta o processo de depuração.
+    </Step>
+    <Step>
+        O arquivo `schema.prisma` deveria estar modularizado, separado em vários arquivos menores, com responsabilidades bem definidas.
+    </Step>
+    <Step>
+        Os schemas zod do backend poderiam estar em arquivos separados para serem reutilizados em outras partes do código.
+    </Step>
+    <Step>
+        O trecho de código `if(validacao.success === false) {\` poderia ser simplificado para \`!validacao.success\`.
+    </Step>
+    <Step>
+        O padrão `res.status(); return;` poderia ser simplificado para `return res.status()`.
+    </Step>
+    <Step>
+        O upload de imagens poderia ser feito para o Cloudinary, que possui um plano gratuito bem robusto.
+    </Step>
+    <Step>
+        Os controllers deveriam ser mais específicos, com responsabilidades mais distribuídas.
+        A interação com o banco não deveria ser de responsabilidade desse domínio.
+    </Step>
+    <Step>
+        A função \`atualiarEvento\` no \`eventosControllers\` tem erro de digitação.
+    </Step>
+    <Step>
+        Os campos `success_url` e `cancel_url` do checkout da Stripe deveriam pegar a URL do front a partir do `.env` para redirecionar corretamente.
+    </Step>
+    <Step>
+        O webhook da Stripe deveria verificar os eventos com switch/case para tratar todos os cenários corretamente. Além disso, é importante manter
+        status referentes a esses cenários no banco de dados.
+    </Step>
+    <Step>
+        O usuário ADMIN existe, mas não introduz nenhuma alteração nas funcionalidades, permissões ou telas do sistema.
+    </Step>
+    <Step>
+        No perfil do usuário, as abas "Meu Perfil", "Meus Eventos", "Configurações", e "Meu Impulsos" deveriam ter ícones
+        vinculados pra facilitar a visualização.
+    </Step>
+    <Step>
+        No perfil do usuário, a aba "Meu Impulsos" possui erro de digitação em **Meu**.
+    </Step>
+    <Step>
+        No perfil do usuário, o hover nos cards gera um reposicionamento ao interagir com o select de "Eventos mais acessados".
+    </Step>
+    <Step>
+        Nas configurações do usuário, deveria ser possível remover a foto após confirmar e enviar.
+    </Step>
+    <Step>
+        Nas configurações do usuário, é possível enviar um nome em branco `   ` (três espaços). A validação deveria ser melhor.
+    </Step>
+    <Step>
+        Nas configurações do usuário, a atualização de senha deveria exibir uma mensagem de sucesso para o usuário.
+    </Step>
+    <Step>
+        Nas configurações do usuário, a mensagem de deleção da conta diz para o usuário digitar "DELETAR" em um campo abaixo.
+        No entanto, esse campo não existe, e parece ter sido trocado por um botão de confirmação.
+    </Step>
+    <Step>
+        No header da aplicação, há um botão "Plataforma de Eventos" em destaque, junto a um botão de `+`, mas que não faz nada ao ser clicado.
+        Se for um substítulo, o estilo deve ser alterado para não confundir o usuário.
+    </Step>
+    <Step>
+        Na página "Eventos", ao não encontrar um evento (seja pela não existência, ou por resultado dos filtros), o sistema deveria exibir um
+        botão que redirecione o usuário para a criação de um evento
+    </Step>
+    <Step>
+        No cadastro de um evento, a tela de seleção de datas deve sofrer um ajuste nos elementos.
+        O seletor de horário deve ficar abaixo do seletor de data, para fazer melhor uso da interface.
+        Além disso, é interessante adicionar um botão de confirmação.
+    </Step>
+    <Step>
+        No cadastro de um evento, além de desativar o botão de cadastro, o sistema deveria indicar melhor quais campos ainda precisam ser preenchidos.
+    </Step>
+    <Step>
+        No cadastro de um evento, o sistema deveria exibir a mensagem de erro em uma área mais visível da interface.
+        Outra opção é exibir o erro com uma notificação toast.
+    </Step>
+    <Step>
+        No cadastro de um evento, o sistema deveria validar melhor os campos de título e descrição. É possível enviar uma única letra e vários espaços.
+    </Step>
+    <Step>
+        Ao editar um evento, o sistema não carrega de volta o Estado, a Cidade ou o Endereço (Latitude e Longitude) cadastrados anteriormente.
+    </Step>
+    <Step>
+        Ao visualizar um evento, a aba "Mapa Endereço" se beneficiaria de um nome melhor. Ex.: "Localização", "Local do Evento", "Endereço do Evento", etc.
+    </Step>
+    <Step>
+        Ao visualizar um evento, o sistema não carrega corretamente o endereço que foi cadastrado.
+    </Step>
+    <Step>
+        Ao visualizar um evento, o card "Categoria" da página "Mapa Endereço" parece desalinhado.
+    </Step>
+    <Step>
+        Ao visualizar um evento, pode ser interessante redirecionar o usuário para entrar em contato com o organizador, de acordo com as
+        informações disponíveis no card "Informações de Contato". Ex.: **Links** para telefone, e-mail, e instagram.
+    </Step>
+    <Step>
+        Na tela de Impulsionar Evento, o "Plano Único" retorna com o preço NaN (Not a Number).
+    </Step>
+    <Step>
+        Na tela Meus Impulsos, o sistema exibe dois status: Aguardando Pagamento e Status Ativo. É interessante explicar melhor o funcionamento dos status
+        para o usuário. Ex.: Há um tooltip que exibe o nome do evento ao dar hover no registro, o mesmo seria interessante para explicar os status.
     </Step>
 </Steps>
