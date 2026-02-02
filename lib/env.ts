@@ -25,6 +25,9 @@ const envSchema = z.object({
     })
     .optional(),
   NEXT_PUBLIC_MODE: z.enum(["JSON", "API", "NO_ENDPOINTS"]),
+  NEXT_PUBLIC_RUST_NOTEBOOK_API: z.url({
+    error: "NEXT_PUBLIC_RUST_NOTEBOOK_API é obrigatório",
+  }),
 });
 
 const envError = "Não é possível acessar o ENV antes de carregá-lo";

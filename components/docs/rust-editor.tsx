@@ -1,5 +1,6 @@
 "use client";
 
+import { env } from "@/lib/env";
 import Editor from "@monaco-editor/react";
 import {
   Play,
@@ -31,18 +32,16 @@ export function RustNotebook({
   };
 
   async function handleRun() {
+    const API_URL = env.get("NEXT_PUBLIC_RUST_NOTEBOOK_API");
     setIsRunning(true);
     setStatus("idle");
     setOutput("");
     try {
-      const response = await fetch(
-        "https://fxppb0wx-3001.brs.devtunnels.ms/run",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code }),
-        },
-      );
+      const response = await fetch(`${API_URL}/run`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
       const data = await response.json();
       if (data.stderr) {
         setStatus("error");
