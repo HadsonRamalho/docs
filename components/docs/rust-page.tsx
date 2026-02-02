@@ -232,7 +232,7 @@ function TextBlock({
   return (
     <div
       onClick={() => setIsEditing(true)}
-      className="prose prose-invert max-w-none cursor-text hover:bg-white/5 p-2 rounded-lg transition-colors min-h-[3em] whitespace-pre-wrap"
+      className="prose prose-invert max-w-none prose-headings:mt-2 prose-headings:mb-1 prose-p:my-1 cursor-text hover:bg-white/5 p-2 rounded-lg transition-colors"
     >
       {content ? (
         <Markdown>{content}</Markdown>
