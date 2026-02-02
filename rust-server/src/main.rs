@@ -28,7 +28,7 @@ async fn main() {
         .route("/run", post(verify_request))
         .layer(CorsLayer::permissive());
 
-    let addr = "127.0.0.1:3001";
+    let addr = "0.0.0.0:3001";
     println!("API rodando em http://{}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
