@@ -32,6 +32,7 @@ export function RustNotebook({
   };
 
   async function handleRun() {
+    env.loadEnv();
     const API_URL = env.get("NEXT_PUBLIC_RUST_NOTEBOOK_API");
     setIsRunning(true);
     setStatus("idle");
