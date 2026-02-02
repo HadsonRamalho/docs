@@ -11,6 +11,9 @@ import { env } from "@/lib/env";
 import { formatFullDate } from "@/lib/formatFullDate";
 import { getPageImage, source } from "@/lib/source";
 import { getMDXComponents } from "@/mdx-components";
+import { NotebookProvider } from "@/components/docs/notebook-context";
+import { NotebookControls } from "@/components/docs/notebook-controls";
+import RustInteractivePage from "@/components/docs/rust-page";
 
 type UpdatedAtProps = {
   date: Date;
@@ -30,7 +33,9 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
   if (!page) notFound();
   const lastModifiedTime = page.data.lastModified;
 
-  const MDX = page.data.body;
+  const pageUniqueId = params.slug ? params.slug.join("-") : "home";
+
+  const isRustPage = page.path.includes("rust");
 
   if (page.data.title === "API Reference") {
     const mode = env.get("NEXT_PUBLIC_MODE");
@@ -47,32 +52,33 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
       );
     }
   }
+  const MDX = page.data.body;
 
   return (
-    <DocsPage
-      toc={page.data.toc}
-      full={page.data.full}
-      tableOfContent={{
-        style: "clerk",
-      }}
-      tableOfContentPopover={{
-        style: "clerk",
-      }}
-    >
-      <DocsTitle>{page.data.title}</DocsTitle>
-      <DocsDescription className="mb-0">
-        {page.data.description}
-      </DocsDescription>
-      {lastModifiedTime && <UpdatedAt date={lastModifiedTime} />}
-      <DocsBody>
-        <MDX
-          components={getMDXComponents({
-            // this allows you to link to other pages with relative file paths
-            a: createRelativeLink(source, page),
-          })}
-        />
-      </DocsBody>
-    </DocsPage>
+    <NotebookProvider>
+      <DocsPage>
+        <DocsTitle>{page.data.title}</DocsTitle>
+        <DocsDescription>{page.data.description}</DocsDescription>
+        {lastModifiedTime && <UpdatedAt date={lastModifiedTime} />}
+        <div className="flex items-start justify-end gap-4">
+          {isRustPage && (
+            <div className="mt-2">
+              <NotebookControls />
+            </div>
+          )}
+        </div>
+
+        <DocsBody>
+          <MDX
+            components={getMDXComponents({
+              a: createRelativeLink(source, page),
+            })}
+          />
+
+          {isRustPage && <RustInteractivePage pageId={pageUniqueId} />}
+        </DocsBody>
+      </DocsPage>
+    </NotebookProvider>
   );
 }
 

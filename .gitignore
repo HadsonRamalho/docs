@@ -27,3 +27,7 @@ yarn-error.log*
 .env.production
 .vercel
 next-env.d.ts
+rust-server/target
+rust-server/logs
+rust-server/files
+rust-server/Cargo.lock
