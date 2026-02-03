@@ -35,14 +35,14 @@ export function ReorderItem({
     <Reorder.Item
       value={block}
       id={block.id}
-      className="group/item flex gap-4 items-start relative"
+      className="group/item flex items-start relative mb-4"
       dragControls={dragControls}
       onDragStart={() => setIsDragging(true)}
       onDragEnd={() => setIsDragging(false)}
       dragListener={false}
     >
       <div
-        className="flex flex-col gap-2 mt-4 transition-opacity hover:cursor-grab active:cursor-grabbing select-none touch-none"
+        className="absolute -left-6 top-2 flex flex-col gap-2 transition-opacity opacity-0 group-hover/item:opacity-100 hover:cursor-grab active:cursor-grabbing select-none touch-none"
         onPointerDown={(e) => dragControls.start(e)}
       >
         <GripVertical

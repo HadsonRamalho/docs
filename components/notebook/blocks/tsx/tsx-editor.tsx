@@ -9,10 +9,18 @@ import {
   SandpackPreview,
   SandpackProvider,
 } from "@codesandbox/sandpack-react";
-import { Eye, EyeClosed, Play } from "lucide-react";
+import { Cpu, Eye, EyeClosed, Play, Wifi } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SandpackManager } from "./sandpack-manager";
 import { RunTsxInSandbox } from "@/lib/api";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface TsxEditorProps {
   pageFiles: Record<string, any>;
@@ -106,7 +114,7 @@ export function TsxEditor({
         options={editorOptions}
       >
         <div className="flex flex-col border border-[#333] rounded-lg overflow-hidden bg-[#1a1a1a]">
-          <div className="flex items-center justify-end px-4 gap-2 py-2 bg-[#252525] border-b border-[#333]">
+          <div className="grid grid-cols-1 md:flex items-center justify-end px-4 gap-2 py-2 bg-[#252525] border-b border-[#333]">
             <input
               value={block.title}
               onChange={(e) => {
@@ -119,15 +127,7 @@ export function TsxEditor({
               placeholder="Nome do componente..."
             />
 
-            <div className="flex flex-cols gap-2">
-              <select
-                value={mode}
-                onChange={(e) => setMode(e.target.value as any)}
-                className="bg-[#333] hover:bg-[#444] p-1 rounded text-xs text-foreground"
-              >
-                <option value="advanced">Modo Sandpack</option>
-                <option value="simple">Modo Nativo</option>
-              </select>
+            <div className="grid grid-cols-1 md:flex flex-cols gap-2 w-full justify-end">
               {mode === "simple" && (
                 <button
                   onClick={handleRunSimple}
@@ -138,6 +138,39 @@ export function TsxEditor({
                   </div>
                 </button>
               )}
+              <Select
+                onValueChange={(e) => {
+                  setMode(e as TsMode);
+                }}
+              >
+                <SelectTrigger className="bg-[#333] hover:bg-[#444] py-5 w-full justify-center md:w-44 h-full rounded text-foreground">
+                  <SelectValue
+                    placeholder={
+                      mode === "advanced" ? (
+                        <div className="flex justify-center">
+                          <Wifi /> Modo Sandpack
+                        </div>
+                      ) : (
+                        <div className="flex justify-center">
+                          <Cpu />
+                          Modo Nativo
+                        </div>
+                      )
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="advanced">
+                      <Wifi /> Modo Sandpack
+                    </SelectItem>
+                    <SelectItem value="simple">
+                      <Cpu />
+                      Modo Nativo
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
               <button
                 onClick={() => setShowPreview(!showPreview)}
                 className="px-3 py-1 text-xs bg-[#333] hover:bg-[#444] text-white rounded transition-colors"

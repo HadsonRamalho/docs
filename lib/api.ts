@@ -113,6 +113,7 @@ export async function RunTsxInSandbox(block: Block, pageBlocks: Block[]) {
             import React from "react";
             import ReactDOM from "react-dom/client";
             window.React = React;
+            Object.defineProperty(window, 'parent', { get: () => undefined });
 
             const virtualFS = ${JSON.stringify(modulesData)};
             const mainCode = ${JSON.stringify(mainCodeTranspiled)};
