@@ -1,18 +1,16 @@
 "use client";
 
-import { Block, TsMode } from "@/lib/types";
 import {
   SandpackCodeEditor,
   SandpackConsole,
-  SandpackInternalOptions,
+  type SandpackInternalOptions,
   SandpackLayout,
   SandpackPreview,
   SandpackProvider,
 } from "@codesandbox/sandpack-react";
-import { Cpu, Eye, EyeClosed, Play, Wifi } from "lucide-react";
+import { Clock, Cpu, Eye, EyeClosed, Play, Wifi } from "lucide-react";
+import Script from "next/script";
 import { useEffect, useState } from "react";
-import { SandpackManager } from "./sandpack-manager";
-import { RunTsxInSandbox } from "@/lib/api";
 import {
   Select,
   SelectContent,
@@ -21,8 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RunTsxInSandbox } from "@/lib/api";
+import type { Block, TsMode } from "@/lib/types";
+import { SandpackManager } from "./sandpack-manager";
 
 interface TsxEditorProps {
+  // biome-ignore lint/suspicious/noExplicitAny: <necessário para armazenar os arquivos>
   pageFiles: Record<string, any>;
   block: Block;
   pageBlocks: Block[];
@@ -42,6 +44,7 @@ function RenderPreview({ id, mode, sandboxUrl }: RenderPreviewProps) {
       <div id={`preview-${id}`} className="bg-white overflow-hidden relative">
         {sandboxUrl ? (
           <iframe
+            title="TsxPreview"
             src={sandboxUrl}
             sandbox="allow-scripts"
             className="w-full h-full border-none"
@@ -78,6 +81,7 @@ export function TsxEditor({
   const [showPreview, setShowPreview] = useState(true);
   const [mode, setMode] = useState<TsMode>("advanced");
   const [sandboxUrl, setSandboxUrl] = useState<string | null>(null);
+  const [babelReady, setBabelReady] = useState(false);
 
   function loadBabel() {
     const script = document.createElement("script");
@@ -86,12 +90,16 @@ export function TsxEditor({
     document.head.appendChild(script);
 
     script.onload = () => console.log("Babel carregado dinamicamente!");
+    setBabelReady(true);
   }
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <loadBabel não precisa estar no array de dependências>
   useEffect(() => {
-    if (!(window as any).Babel) {
+    // biome-ignore lint/suspicious/noExplicitAny: <necessário para acessar a janela>
+    if (!(window as any).Babel && !babelReady) {
       loadBabel();
     }
-  }, []);
+  }, [babelReady]);
 
   const editorOptions: SandpackInternalOptions = {
     initMode: "lazy",
@@ -107,6 +115,11 @@ export function TsxEditor({
 
   return (
     <div className="rounded-lg overflow-hidden border border-[#333]">
+      <Script
+        src="https://unpkg.com/@babel/standalone/babel.min.js"
+        strategy="lazyOnload"
+        onLoad={() => setBabelReady(true)}
+      />
       <SandpackProvider
         theme="dark"
         template="react-ts"
@@ -130,11 +143,21 @@ export function TsxEditor({
             <div className="grid grid-cols-1 md:flex flex-cols gap-2 w-full justify-end">
               {mode === "simple" && (
                 <button
+                  type="button"
+                  disabled={!babelReady}
                   onClick={handleRunSimple}
                   className="px-3 py-1 text-xs bg-[#333] hover:bg-[#444] text-white rounded transition-colors"
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <Play className="size-4" /> Executar
+                    {babelReady ? (
+                      <>
+                        <Play className="size-4" /> Executar
+                      </>
+                    ) : (
+                      <>
+                        <Clock /> Carregando o Compilador...
+                      </>
+                    )}
                   </div>
                 </button>
               )}
@@ -172,6 +195,7 @@ export function TsxEditor({
                 </SelectContent>
               </Select>
               <button
+                type="button"
                 onClick={() => setShowPreview(!showPreview)}
                 className="px-3 py-1 text-xs bg-[#333] hover:bg-[#444] text-white rounded transition-colors"
               >
