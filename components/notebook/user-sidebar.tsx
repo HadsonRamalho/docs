@@ -1,7 +1,6 @@
 "use client";
 
 import { Plus, FileText, Trash } from "lucide-react";
-import Link from "next/link";
 import { useNotebookManager } from "./notebook-manager";
 import { usePathname, useRouter } from "next/navigation";
 import { DeletePageDialog } from "../delete-page-dialog";

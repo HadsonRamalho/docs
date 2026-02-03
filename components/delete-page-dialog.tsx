@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useNotebookManager } from "./docs/notebook-manager";
+import { useNotebookManager } from "./notebook/notebook-manager";
 
 interface DeletePageDialogProps {
   pageId: string;

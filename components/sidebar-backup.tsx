@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useNotebookManager } from "./docs/notebook-manager";
+import { useNotebookManager } from "./notebook/notebook-manager";
 
 export function SidebarBackup() {
   const { downloadBackup, uploadBackup } = useNotebookManager();

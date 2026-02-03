@@ -1,6 +1,8 @@
 "use client";
 
+import { RunRust } from "@/lib/api";
 import { env } from "@/lib/env";
+import { RunStatus } from "@/lib/types";
 import Editor from "@monaco-editor/react";
 import {
   Play,
@@ -17,75 +19,28 @@ interface RustNotebookProps {
   isDragging?: boolean;
 }
 
-export function RustNotebook({
+export function RustEditor({
   code,
   onCodeChange,
   isDragging = false,
 }: RustNotebookProps) {
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [status, setStatus] = useState<RunStatus>("idle");
+
+  async function handleRun() {
+    await RunRust({
+      setIsRunning,
+      setOutput,
+      setStatus,
+      code,
+    });
+  }
 
   const getFileName = (codeVal: string): string => {
     const match = codeVal.match(/^\/\/ *#\[mod=([a-zA-Z0-9_]+)\]/m);
     return match && match[1] ? `${match[1]}.rs` : "main.rs";
   };
-
-  async function handleRun() {
-    try {
-      env.loadEnv();
-    } catch (e) {
-      console.error("Erro de configuração:", e);
-      setOutput("Erro interno: Ambiente não configurado corretamente.");
-      setStatus("error");
-      setIsRunning(false);
-      return;
-    }
-
-    const API_URL = env.get("NEXT_PUBLIC_RUST_NOTEBOOK_API");
-    setIsRunning(true);
-    setStatus("idle");
-    setOutput("");
-    try {
-      const response = await fetch(`${API_URL}/run`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
-      const data = await response.json();
-      if (data.stderr) {
-        setStatus("error");
-        setOutput(data.stderr);
-
-        if (data.stderr.includes("file not found for module")) {
-          setOutput(
-            "Falha relacionada a outro módulo. Tente compilar outros blocos primeiro :))\n\n" +
-              data.stderr,
-          );
-          return;
-        }
-
-        if (
-          data.stderr.includes(
-            "Finished `dev` profile [unoptimized + debuginfo] ",
-          )
-        ) {
-          setOutput("Bloco compilado!");
-          setStatus("success");
-          return;
-        }
-        return;
-      }
-
-      setOutput(data.stdout || "Código executado com sucesso.");
-      setStatus("success");
-    } catch (err) {
-      setOutput("Erro: Não foi possível conectar ao servidor Rust.");
-      setStatus("error");
-    } finally {
-      setIsRunning(false);
-    }
-  }
 
   return (
     <div
@@ -105,13 +60,12 @@ export function RustNotebook({
             disabled={isRunning}
             onClick={handleRun}
             className={`
-                flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold transition-all
-                ${
-                  isRunning
-                    ? "bg-[#444] text-[#888] cursor-not-allowed"
-                    : "bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 shadow-lg shadow-emerald-900/20"
-                }
-            `}
+              flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold transition-all
+              ${
+                isRunning
+                  ? "bg-[#444] text-[#888] cursor-not-allowed"
+                  : "bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 shadow-lg shadow-emerald-900/20"
+              }`}
           >
             {isRunning ? (
               <Loader2 className="size-3.5 animate-spin" />
@@ -124,7 +78,9 @@ export function RustNotebook({
 
         <div className="relative group">
           {isDragging ? (
-            <p>Termine de ordenar antes de continuar editando...</p>
+            <div className="h-100">
+              <p>Termine de editar antes de continuar escrevendo...</p>
+            </div>
           ) : (
             <Editor
               height="280px"
@@ -152,12 +108,12 @@ export function RustNotebook({
               </span>
               {status !== "idle" && (
                 <div
-                  className={`flex items-center gap-1.5 text-[10px] font-bold uppercase ${status === "success" ? "text-green-500" : "text-red-500"}`}
+                  className={`flex items-center gap-1.5 text-[12px] font-bold uppercase ${status === "success" ? "text-emerald-500" : "text-red-500"}`}
                 >
                   {status === "success" ? (
-                    <CheckCircle2 size={12} />
+                    <CheckCircle2 size={16} />
                   ) : (
-                    <AlertCircle size={12} />
+                    <AlertCircle size={16} />
                   )}
                   {status === "success" ? "Sucesso" : "Falha"}
                 </div>
