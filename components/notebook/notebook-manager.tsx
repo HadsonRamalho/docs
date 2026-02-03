@@ -8,7 +8,7 @@ import {
   saveNotebook,
   restoreFullBackup,
   createFullBackup,
-} from "@/lib/storage"; // Importe do arquivo acima
+} from "@/lib/storage";
 import { NotebookMeta } from "@/lib/types";
 
 interface NotebookManagerType {
