@@ -42,7 +42,7 @@ export function ReorderItem({
       dragListener={false}
     >
       <div
-        className="absolute -left-6 top-2 flex flex-col gap-2 transition-opacity opacity-0 group-hover/item:opacity-100 hover:cursor-grab active:cursor-grabbing select-none touch-none"
+        className="absolute -left-6 top-2 flex flex-col gap-2 transition-opacity opacity-100 md:opacity-0 group-hover/item:opacity-100 hover:cursor-grab active:cursor-grabbing select-none touch-none"
         onPointerDown={(e) => dragControls.start(e)}
       >
         <GripVertical
