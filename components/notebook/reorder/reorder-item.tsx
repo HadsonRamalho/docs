@@ -11,6 +11,7 @@ import { TsxEditor } from "../blocks/tsx/tsx-editor";
 interface ReorderItemProps {
   block: Block;
   isDragging: boolean;
+  // biome-ignore lint/suspicious/noExplicitAny: <Necessário pra gerenciar os arquivos>
   pageFiles: Record<string, any>;
   pageBlocks: Block[];
   setBlocks: (b: Block[]) => void;

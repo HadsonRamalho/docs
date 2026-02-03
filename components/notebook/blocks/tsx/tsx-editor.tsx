@@ -8,17 +8,8 @@ import {
   SandpackPreview,
   SandpackProvider,
 } from "@codesandbox/sandpack-react";
-import { Clock, Cpu, Eye, EyeClosed, Play, Wifi } from "lucide-react";
 import Script from "next/script";
 import { useEffect, useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { RunTsxInSandbox } from "@/lib/api";
 import type { Block, TsMode } from "@/lib/types";
 import { EditorHeader } from "../default/editor-header";

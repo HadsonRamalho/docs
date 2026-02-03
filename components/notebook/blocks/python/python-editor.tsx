@@ -1,6 +1,6 @@
 "use client";
 import Editor from "@monaco-editor/react";
-import { AlertCircle, CheckCircle2, Terminal } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import Script from "next/script";
 import { useState } from "react";
 import type { Block, RunStatus, TsMode } from "@/lib/types";
@@ -19,7 +19,6 @@ export default function PythonSandbox({
   block,
 }: PythonSandboxProps) {
   const [output, setOutput] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [isRunning, setIsRunning] = useState(false);
   const [status, setStatus] = useState<RunStatus>("idle");
 
@@ -40,10 +39,7 @@ export default function PythonSandbox({
 
   return (
     <div className="rounded-lg p-2">
-      <Script
-        src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"
-        onLoad={() => setIsLoading(false)}
-      />
+      <Script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js" />
       <div
         className={`flex flex-col gap-6 w-full mb-6 mt-2 ${isDragging ? "pointer-events-none" : ""}`}
       >
@@ -63,7 +59,7 @@ export default function PythonSandbox({
             <RunButton
               isRunning={isRunning}
               handleRun={handleRun}
-              isLoading={isLoading}
+              isLoading={false}
             />
           </div>
 
