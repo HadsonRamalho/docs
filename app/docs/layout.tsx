@@ -1,6 +1,6 @@
-import { NotebookProvider } from "@/components/docs/notebook-context";
-import { NotebookManagerProvider } from "@/components/docs/notebook-manager";
-import { UserSidebar } from "@/components/docs/user-sidebar";
+import { NotebookProvider } from "@/components/notebook/notebook-context";
+import { NotebookManagerProvider } from "@/components/notebook/notebook-manager";
+import { UserSidebar } from "@/components/notebook/user-sidebar";
 import { DocsLayout } from "@/components/layout/docs";
 import { env } from "@/lib/env";
 import { baseOptions } from "@/lib/layout.shared";

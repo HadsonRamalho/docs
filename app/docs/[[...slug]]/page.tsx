@@ -11,9 +11,9 @@ import { env } from "@/lib/env";
 import { formatFullDate } from "@/lib/formatFullDate";
 import { getPageImage, source } from "@/lib/source";
 import { getMDXComponents } from "@/mdx-components";
-import { NotebookProvider } from "@/components/docs/notebook-context";
-import { NotebookControls } from "@/components/docs/notebook-controls";
-import RustInteractivePage from "@/components/docs/rust-page";
+import { NotebookProvider } from "@/components/notebook/notebook-context";
+import { NotebookControls } from "@/components/notebook/notebook-controls";
+import RustInteractivePage from "@/components/notebook/notebook-page";
 
 export const dynamicParams = true;
 

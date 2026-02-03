@@ -11,7 +11,7 @@ import {
   EyeClosed,
 } from "lucide-react";
 import { motion, Reorder, AnimatePresence } from "framer-motion";
-import { RustNotebook } from "./rust-editor";
+import { RustNotebook } from "./editors/rust/rust-notebook";
 import { useNotebook } from "./notebook-context";
 import { useDragControls } from "framer-motion";
 import {
@@ -22,7 +22,7 @@ import {
   SandpackProvider,
 } from "@codesandbox/sandpack-react";
 import Markdown from "react-markdown";
-import { SandpackManager } from "./sandpack-manager";
+import { SandpackManager } from "./editors/tsx/sandpack-manager";
 import { Block, BlockType, Language } from "@/lib/types";
 
 interface RustInteractivePageProps {
