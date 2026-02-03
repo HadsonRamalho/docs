@@ -1,7 +1,6 @@
 "use client";
 import Editor from "@monaco-editor/react";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
-import Script from "next/script";
 import { useState } from "react";
 import type { Block, RunStatus, TsMode } from "@/lib/types";
 import { EditorHeader } from "../default/editor-header";
@@ -39,7 +38,6 @@ export default function PythonSandbox({
 
   return (
     <div className="rounded-lg p-2">
-      <Script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js" />
       <div
         className={`flex flex-col gap-6 w-full mb-6 mt-2 ${isDragging ? "pointer-events-none" : ""}`}
       >

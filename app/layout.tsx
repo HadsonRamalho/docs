@@ -1,9 +1,10 @@
-import { env } from "@/lib/env";
 import { RootProvider } from "fumadocs-ui/provider/next";
+import { env } from "@/lib/env";
 import "katex/dist/katex.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./global.css";
+import Script from "next/script";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,6 +27,7 @@ export default function Layout({ children }: LayoutProps<"/">) {
       <body className="flex flex-col min-h-screen">
         <RootProvider>{children}</RootProvider>
       </body>
+      <Script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js" />
     </html>
   );
 }
