@@ -5,8 +5,8 @@ import { Reorder } from "framer-motion";
 import { useDragControls } from "framer-motion";
 import { Block } from "@/lib/types";
 import { TextBlock } from "../blocks/text/text-block";
-import { TsxEditor } from "../editors/tsx/tsx-editor";
-import { RustEditor } from "../editors/rust/rust-editor";
+import { TsxEditor } from "../blocks/tsx/tsx-editor";
+import { RustEditor } from "../blocks/rust/rust-editor";
 
 interface ReorderItemProps {
   block: Block;
