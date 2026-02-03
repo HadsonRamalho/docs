@@ -12,7 +12,7 @@ import {
 import { Eye, EyeClosed, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SandpackManager } from "./sandpack-manager";
-import { RunTsx } from "@/lib/api";
+import { RunTsxInSandbox } from "@/lib/api";
 
 interface TsxEditorProps {
   pageFiles: Record<string, any>;
@@ -25,15 +25,27 @@ interface TsxEditorProps {
 interface RenderPreviewProps {
   id: string;
   mode: TsMode;
+  sandboxUrl: string | null;
 }
 
-function RenderPreview({ id, mode }: RenderPreviewProps) {
-  if (mode === "simple")
+function RenderPreview({ id, mode, sandboxUrl }: RenderPreviewProps) {
+  if (mode === "simple") {
     return (
-      <div id={`preview-${id}`} className="bg-card p-4 max-w-1/2 overflow-auto">
-        <p className="text-muted-foreground">O conteúdo aparecerá aqui...</p>
+      <div id={`preview-${id}`} className="bg-white overflow-hidden relative">
+        {sandboxUrl ? (
+          <iframe
+            src={sandboxUrl}
+            sandbox="allow-scripts"
+            className="w-full h-full border-none"
+          />
+        ) : (
+          <div className="p-4 text-gray-400 italic">
+            Clique em "Executar" para renderizar...
+          </div>
+        )}
       </div>
     );
+  }
 
   if (mode === "advanced") {
     return (
@@ -57,7 +69,7 @@ export function TsxEditor({
 }: TsxEditorProps) {
   const [showPreview, setShowPreview] = useState(true);
   const [mode, setMode] = useState<TsMode>("advanced");
-  const containerId = `preview-${block.id}`;
+  const [sandboxUrl, setSandboxUrl] = useState<string | null>(null);
 
   function loadBabel() {
     const script = document.createElement("script");
@@ -80,8 +92,9 @@ export function TsxEditor({
   };
   const editorFiles = { ...pageFiles, "/App.tsx": block.content };
 
-  const handleRunSimple = () => {
-    RunTsx(block, containerId, pageBlocks);
+  const handleRunSimple = async () => {
+    const url = await RunTsxInSandbox(block, pageBlocks);
+    setSandboxUrl(url);
   };
 
   return (
@@ -105,40 +118,42 @@ export function TsxEditor({
               className="bg-transparent text-foreground text-sm font-mono focus:outline-none focus:text-emerald-400 w-1/2"
               placeholder="Nome do componente..."
             />
-            <select
-              value={mode}
-              onChange={(e) => setMode(e.target.value as any)}
-              className="bg-background p-1 rounded-md text-xs text-foreground"
-            >
-              <option value="advanced">Modo Sandpack</option>
-              <option value="simple">Modo Nativo</option>
-            </select>
 
-            {mode === "simple" && (
+            <div className="flex flex-cols gap-2">
+              <select
+                value={mode}
+                onChange={(e) => setMode(e.target.value as any)}
+                className="bg-[#333] hover:bg-[#444] p-1 rounded text-xs text-foreground"
+              >
+                <option value="advanced">Modo Sandpack</option>
+                <option value="simple">Modo Nativo</option>
+              </select>
+              {mode === "simple" && (
+                <button
+                  onClick={handleRunSimple}
+                  className="px-3 py-1 text-xs bg-[#333] hover:bg-[#444] text-white rounded transition-colors"
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <Play className="size-4" /> Executar
+                  </div>
+                </button>
+              )}
               <button
-                onClick={handleRunSimple}
+                onClick={() => setShowPreview(!showPreview)}
                 className="px-3 py-1 text-xs bg-[#333] hover:bg-[#444] text-white rounded transition-colors"
               >
-                <div className="flex items-center justify-center gap-2">
-                  <Play className="size-4" /> Executar
-                </div>
+                {showPreview ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Eye className="size-4" /> Ocultar Renderização
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2">
+                    <EyeClosed className="size-4" />
+                    Mostrar Renderização
+                  </div>
+                )}
               </button>
-            )}
-            <button
-              onClick={() => setShowPreview(!showPreview)}
-              className="px-3 py-1 text-xs bg-[#333] hover:bg-[#444] text-white rounded transition-colors"
-            >
-              {showPreview ? (
-                <div className="flex items-center justify-center gap-2">
-                  <Eye className="size-4" /> Ocultar Renderização
-                </div>
-              ) : (
-                <div className="flex items-center justify-center gap-2">
-                  <EyeClosed className="size-4" />
-                  Mostrar Renderização
-                </div>
-              )}
-            </button>
+            </div>
           </div>
           <SandpackLayout>
             <SandpackCodeEditor
@@ -148,7 +163,13 @@ export function TsxEditor({
               showRunButton={mode === "advanced"}
               className="h-100 text-[0.9rem]"
             />
-            {showPreview && <RenderPreview id={block.id} mode={mode} />}
+            {showPreview && (
+              <RenderPreview
+                sandboxUrl={sandboxUrl}
+                id={block.id}
+                mode={mode}
+              />
+            )}
           </SandpackLayout>
 
           <div className="border-t bg-card h-24">
