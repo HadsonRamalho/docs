@@ -1,4 +1,5 @@
 import { env } from "@/lib/env";
+import { getSharedPyodide } from "./pyodideStore";
 import type { Block, RunStatus } from "./types";
 
 interface RunRustProps {
@@ -154,26 +155,10 @@ export async function RunTsxInSandbox(block: Block, pageBlocks: Block[]) {
   return URL.createObjectURL(blob);
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: <Instância genérica do Pyodide, para compartilhar ambiente de forma global>
-let pyodideInstance: any = null;
-async function getPyodide() {
-  if (pyodideInstance) return pyodideInstance;
-
-  // biome-ignore lint/suspicious/noExplicitAny: <Necessário pra utilizar window>
-  const loadPyodide = (window as any).loadPyodide;
-  if (!loadPyodide) throw new Error("Pyodide script não encontrado.");
-
-  pyodideInstance = await loadPyodide({
-    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/",
-  });
-
-  return pyodideInstance;
-}
-
 export async function RunPythonInSandbox(code: string) {
-  const pyodide = await getPyodide();
-
   try {
+    const pyodide = await getSharedPyodide();
+
     let output = "";
     pyodide.setStdout({
       batched: (str: string) => {
@@ -188,7 +173,6 @@ export async function RunPythonInSandbox(code: string) {
       output: output,
       result: result?.toString(),
     };
-    // biome-ignore lint/suspicious/noExplicitAny: <Erro :P>
   } catch (err: any) {
     return { error: err.message };
   }
