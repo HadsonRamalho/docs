@@ -1,8 +1,8 @@
 "use client";
 
-import { Plus, Code2, Boxes } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { BlockType, Language } from "@/lib/types";
+import { AnimatePresence, motion } from "framer-motion";
+import { Boxes, Code2, Pi, Plus } from "lucide-react";
+import type { BlockType, Language } from "@/lib/types";
 
 interface ReorderToolsProps {
   hoveredIndex: number | null;
@@ -43,6 +43,12 @@ export function ReorderTools({
               className="flex items-center gap-1.5 px-3 py-1 hover:bg-[#252525] text-gray-400 hover:text-cyan-400 rounded-full transition-colors text-xs font-bold uppercase"
             >
               <Boxes size={14} /> React/TS
+            </button>
+            <button
+              onClick={() => addBlock(index, "code", "python")}
+              className="flex items-center gap-1.5 px-3 py-1 hover:bg-[#252525] text-gray-400 hover:text-indigo-500 rounded-full transition-colors text-xs font-bold uppercase"
+            >
+              <Pi size={14} /> Python
             </button>
           </div>
         </motion.div>

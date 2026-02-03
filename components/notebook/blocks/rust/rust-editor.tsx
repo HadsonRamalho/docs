@@ -1,26 +1,21 @@
 "use client";
 
-import { RunRust } from "@/lib/api";
-import { env } from "@/lib/env";
-import { RunStatus } from "@/lib/types";
 import Editor from "@monaco-editor/react";
-import {
-  Play,
-  Loader2,
-  Terminal,
-  AlertCircle,
-  CheckCircle2,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import { RunRust } from "@/lib/api";
+import type { Block, RunStatus, TsMode } from "@/lib/types";
+import { EditorHeader } from "../default/editor-header";
+import { RunButton } from "../default/run-button";
 
 interface RustNotebookProps {
-  code: string;
+  block: Block;
   onCodeChange: (newCode: string) => void;
   isDragging?: boolean;
 }
 
 export function RustEditor({
-  code,
+  block,
   onCodeChange,
   isDragging = false,
 }: RustNotebookProps) {
@@ -33,47 +28,32 @@ export function RustEditor({
       setIsRunning,
       setOutput,
       setStatus,
-      code,
+      code: block.content,
     });
   }
-
-  const getFileName = (codeVal: string): string => {
-    const match = codeVal.match(/^\/\/ *#\[mod=([a-zA-Z0-9_]+)\]/m);
-    return match && match[1] ? `${match[1]}.rs` : "main.rs";
-  };
 
   return (
     <div
       className={`flex flex-col gap-6 w-full mb-6 mt-2 ${isDragging ? "pointer-events-none" : ""}`}
     >
-      <div className="flex flex-col rounded-xl border border-[#333] bg-[#1e1e1e] shadow-2xl overflow-hidden transition-all duration-300 hover:border-[#444]">
-        <div className="flex items-center justify-between bg-[#252525] px-4 py-2 border-b border-[#333]">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-[#888]">
-              <Terminal size={14} />
-              <span className="text-xs font-mono uppercase tracking-widest">
-                {getFileName(code)}
-              </span>
-            </div>
-          </div>
-          <button
-            disabled={isRunning}
-            onClick={handleRun}
-            className={`
-              flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold transition-all
-              ${
-                isRunning
-                  ? "bg-[#444] text-[#888] cursor-not-allowed"
-                  : "bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 shadow-lg shadow-emerald-900/20"
-              }`}
-          >
-            {isRunning ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <Play className="size-3.5 fill-current" />
-            )}
-            {isRunning ? "Compilando..." : "Executar"}
-          </button>
+      <div className="flex flex-col rounded-xl border border-border bg-card shadow-2xl overflow-hidden transition-all duration-300">
+        <div className="flex items-center justify-between bg-card px-4 py-2 border-b border-border">
+          <EditorHeader
+            block={block}
+            pageBlocks={[]}
+            setBlocksAction={(_b: Block[]): void => {}}
+            mode={"simple"}
+            babelReady={false}
+            handleRunSimple={(): void => {}}
+            setMode={(_m: TsMode): void => {}}
+            setShowPreview={(_s: boolean): void => {}}
+            showPreview={false}
+          />
+          <RunButton
+            isRunning={isRunning}
+            handleRun={handleRun}
+            isLoading={false}
+          />
         </div>
 
         <div className="relative group">
@@ -86,7 +66,8 @@ export function RustEditor({
               height="280px"
               defaultLanguage="rust"
               theme="vs-dark"
-              value={code}
+              className="bg-card"
+              value={block.content}
               onChange={(v) => onCodeChange(v || "")}
               options={{
                 fontSize: 14,
@@ -127,7 +108,7 @@ export function RustEditor({
                   {output}
                 </pre>
               ) : (
-                <span className="text-[#444] italic">// Output...</span>
+                <span className="text-[#444] italic">Output...</span>
               )}
             </div>
           </div>

@@ -1,5 +1,5 @@
 export type BlockType = "text" | "code";
-export type Language = "rust" | "typescript";
+export type Language = "rust" | "typescript" | "python";
 export type RunStatus = "idle" | "success" | "error";
 export type TsMode = "simple" | "advanced";
 

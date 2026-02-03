@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { RunTsxInSandbox } from "@/lib/api";
 import type { Block, TsMode } from "@/lib/types";
+import { EditorHeader } from "../default/editor-header";
 import { SandpackManager } from "./sandpack-manager";
 
 interface TsxEditorProps {
@@ -114,7 +115,7 @@ export function TsxEditor({
   };
 
   return (
-    <div className="rounded-lg overflow-hidden border border-[#333]">
+    <div className="rounded-lg overflow-hidden border bg-card border-border">
       <Script
         src="https://unpkg.com/@babel/standalone/babel.min.js"
         strategy="lazyOnload"
@@ -126,92 +127,21 @@ export function TsxEditor({
         files={editorFiles}
         options={editorOptions}
       >
-        <div className="flex flex-col border border-[#333] rounded-lg overflow-hidden bg-[#1a1a1a]">
-          <div className="grid grid-cols-1 md:flex items-center justify-end px-4 gap-2 py-2 bg-[#252525] border-b border-[#333]">
-            <input
-              value={block.title}
-              onChange={(e) => {
-                const newBlocks = pageBlocks.map((b) =>
-                  b.id === block.id ? { ...b, title: e.target.value } : b,
-                );
-                setBlocksAction(newBlocks);
-              }}
-              className="bg-transparent text-foreground text-sm font-mono focus:outline-none focus:text-emerald-400 w-1/2"
-              placeholder="Nome do componente..."
-            />
+        <div className="flex bg-card">
+          <EditorHeader
+            block={block}
+            pageBlocks={pageBlocks}
+            setBlocksAction={setBlocksAction}
+            mode={mode}
+            babelReady={babelReady}
+            handleRunSimple={handleRunSimple}
+            setMode={setMode}
+            setShowPreview={setShowPreview}
+            showPreview={showPreview}
+          />
+        </div>
 
-            <div className="grid grid-cols-1 md:flex flex-cols gap-2 w-full justify-end">
-              {mode === "simple" && (
-                <button
-                  type="button"
-                  disabled={!babelReady}
-                  onClick={handleRunSimple}
-                  className="px-3 py-1 text-xs bg-[#333] hover:bg-[#444] text-white rounded transition-colors"
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    {babelReady ? (
-                      <>
-                        <Play className="size-4" /> Executar
-                      </>
-                    ) : (
-                      <>
-                        <Clock /> Carregando o Compilador...
-                      </>
-                    )}
-                  </div>
-                </button>
-              )}
-              <Select
-                onValueChange={(e) => {
-                  setMode(e as TsMode);
-                }}
-              >
-                <SelectTrigger className="bg-[#333] hover:bg-[#444] py-5 w-full justify-center md:w-44 h-full rounded text-foreground">
-                  <SelectValue
-                    placeholder={
-                      mode === "advanced" ? (
-                        <div className="flex justify-center">
-                          <Wifi /> Modo Sandpack
-                        </div>
-                      ) : (
-                        <div className="flex justify-center">
-                          <Cpu />
-                          Modo Nativo
-                        </div>
-                      )
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="advanced">
-                      <Wifi /> Modo Sandpack
-                    </SelectItem>
-                    <SelectItem value="simple">
-                      <Cpu />
-                      Modo Nativo
-                    </SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              <button
-                type="button"
-                onClick={() => setShowPreview(!showPreview)}
-                className="px-3 py-1 text-xs bg-[#333] hover:bg-[#444] text-white rounded transition-colors"
-              >
-                {showPreview ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <Eye className="size-4" /> Ocultar Renderização
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center gap-2">
-                    <EyeClosed className="size-4" />
-                    Mostrar Renderização
-                  </div>
-                )}
-              </button>
-            </div>
-          </div>
+        <div className="flex flex-col rounded-lg overflow-hidden bg-card">
           <SandpackLayout>
             <SandpackCodeEditor
               showTabs

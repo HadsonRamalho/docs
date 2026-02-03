@@ -1,12 +1,12 @@
 "use client";
 
-import { Trash2, GripVertical } from "lucide-react";
-import { Reorder } from "framer-motion";
-import { useDragControls } from "framer-motion";
-import { Block } from "@/lib/types";
+import { Reorder, useDragControls } from "framer-motion";
+import { GripVertical, Trash2 } from "lucide-react";
+import type { Block } from "@/lib/types";
+import PythonSandbox from "../blocks/python/python-editor";
+import { RustEditor } from "../blocks/rust/rust-editor";
 import { TextBlock } from "../blocks/text/text-block";
 import { TsxEditor } from "../blocks/tsx/tsx-editor";
-import { RustEditor } from "../blocks/rust/rust-editor";
 
 interface ReorderItemProps {
   block: Block;
@@ -50,6 +50,7 @@ export function ReorderItem({
           className="text-gray-600 cursor-grab active:cursor-grabbing"
         />
         <button
+          type="button"
           onClick={() => removeBlock(block.id)}
           className="text-gray-600 hover:text-red-500"
         >
@@ -71,10 +72,16 @@ export function ReorderItem({
             setBlocksAction={setBlocks}
             updateBlockAction={updateBlock}
           />
+        ) : block.language === "python" ? (
+          <PythonSandbox
+            onCodeChange={(val: string) => updateBlock(block.id, val)}
+            block={block}
+            isDragging={isDragging}
+          />
         ) : (
           <RustEditor
+            block={block}
             isDragging={isDragging}
-            code={block.content}
             onCodeChange={(val: string) => updateBlock(block.id, val)}
           />
         )}

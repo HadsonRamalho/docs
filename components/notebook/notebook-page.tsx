@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import { Reorder } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import type { Block, BlockType, Language } from "@/lib/types";
 import { useNotebook } from "./notebook-context";
-import { Block, BlockType, Language } from "@/lib/types";
 import { ReorderItem } from "./reorder/reorder-item";
 import { ReorderTools } from "./reorder/reorder-tools";
 
@@ -73,7 +73,7 @@ export default function RustInteractivePage({
     (acc, b) => {
       if (b.type === "code" && b.language === "typescript" && b.title) {
         let name = b.title.replace(/[^a-zA-Z0-9]/g, "_");
-        if (/^\d/.test(name)) name = "_" + name;
+        if (/^\d/.test(name)) name = `_${name}`;
 
         acc[`/${name}.tsx`] = {
           code: b.content,
@@ -85,18 +85,37 @@ export default function RustInteractivePage({
     {} as Record<string, any>,
   );
 
-  const addBlock = (index: number, type: BlockType, language?: Language) => {
-    const codeBlock =
-      language === "rust"
-        ? '// Escreva seu código Rust aqui :))\nfn main() {\n    println!("Olá mundo!");\n}'
-        : "export default function App() {\n  return <h1>Olá React!</h1>\n}";
+  function getInitialCode(language: Language): string {
+    const templates: Record<Language, string> = {
+      rust: '// Escreva seu código Rust aqui :))\nfn main() {\n    println!("Olá mundo!");\n}',
+      typescript:
+        "export default function App() {\n  return <h1>Olá React!</h1>\n}",
+      python: 'import math \nprint(f"O valor de PI é {math.pi}")',
+    };
 
-    const title =
-      type === "code" && language === "typescript"
-        ? `Componente_${blocks.length}`
-        : type === "code" && language === "rust"
-          ? "file.rs"
-          : "Bloco de Texto";
+    return templates[language] ?? templates.python;
+  }
+
+  function getBlockTitle(
+    type: BlockType,
+    language: Language,
+    blockCount: number,
+  ): string {
+    if (type !== "code") return "Bloco de Texto";
+
+    const titles: Record<string, string> = {
+      typescript: `Componente_${blockCount}`,
+      rust: "file.rs",
+      python: "script.py",
+    };
+
+    return titles[language] ?? "Arquivo de Código";
+  }
+
+  const addBlock = (index: number, type: BlockType, language?: Language) => {
+    const codeBlock = getInitialCode(language ?? "rust");
+
+    const title = getBlockTitle(type, language ?? "rust", blocks.length);
 
     const newBlock: Block = {
       id: Math.random().toString(36).slice(2, 11),
@@ -153,6 +172,7 @@ export default function RustInteractivePage({
             }
             delete filesForThisBlock[currentBlockFileName];
             return (
+              // biome-ignore lint/a11y/noStaticElementInteractions: <Necessário pra controlar o render>
               <div
                 key={block.id}
                 className="relative group overflow-visible"

@@ -1,5 +1,5 @@
 import { env } from "@/lib/env";
-import { Block, RunStatus } from "./types";
+import type { Block, RunStatus } from "./types";
 
 interface RunRustProps {
   setOutput: (o: string) => void;
@@ -151,4 +151,37 @@ export async function RunTsxInSandbox(block: Block, pageBlocks: Block[]) {
     `;
   const blob = new Blob([iframeHtml], { type: "text/html" });
   return URL.createObjectURL(blob);
+}
+
+export async function RunPythonInSandbox(code: string) {
+  const loadPyodide = (window as any).loadPyodide;
+
+  if (!loadPyodide) {
+    throw new Error(
+      "Pyodide script não encontrado. Adicione o script no layout.",
+    );
+  }
+
+  const pyodide = await loadPyodide({
+    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/",
+  });
+
+  try {
+    let output = "";
+    pyodide.setStdout({
+      batched: (str: string) => {
+        output += `${str}\n`;
+      },
+    });
+
+    await pyodide.loadPackagesFromImports(code);
+    const result = await pyodide.runPythonAsync(code);
+
+    return {
+      output: output,
+      result: result?.toString(),
+    };
+  } catch (err: any) {
+    return { error: err.message };
+  }
 }

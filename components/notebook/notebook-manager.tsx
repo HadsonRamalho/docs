@@ -1,15 +1,16 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import type React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import {
-  getAllNotebooks,
-  deleteNotebook as dbDelete,
-  saveNotebook,
-  restoreFullBackup,
   createFullBackup,
+  deleteNotebook as dbDelete,
+  getAllNotebooks,
+  restoreFullBackup,
+  saveNotebook,
 } from "@/lib/storage";
-import { NotebookMeta } from "@/lib/types";
+import type { NotebookMeta } from "@/lib/types";
 
 interface NotebookManagerType {
   pages: NotebookMeta[];
@@ -37,12 +38,20 @@ export function NotebookManagerProvider({
     setPages(data);
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <Desnecessário no array de dependências>
   useEffect(() => {
     refreshPages();
   }, []);
 
   const createPage = async () => {
-    const newId = crypto.randomUUID();
+    const newId =
+      typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            const v = c === "x" ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+          });
 
     await saveNotebook(newId, [], "Nova Página");
 

@@ -1,6 +1,6 @@
-import { Block, BlockType, Language } from "@/lib/types";
-import { ReorderTools } from "../reorder/reorder-tools";
+import type { Block, BlockType, Language } from "@/lib/types";
 import { ReorderItem } from "../reorder/reorder-item";
+import { ReorderTools } from "../reorder/reorder-tools";
 
 interface RenderBlockProps {
   block: Block;
@@ -57,6 +57,7 @@ export function RenderBlock({
   delete filesForThisBlock[currentBlockFileName];
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: <Necessário para interagir com o render>
     <div
       key={block.id}
       className="relative group overflow-visible"
