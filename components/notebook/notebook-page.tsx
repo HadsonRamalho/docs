@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { Reorder } from "framer-motion";
 import { useNotebook } from "./notebook-context";
 import { Block, BlockType, Language } from "@/lib/types";
-import { RenderBlock } from "./blocks";
+import { ReorderItem } from "./reorder/reorder-item";
+import { ReorderTools } from "./reorder/reorder-tools";
 
 interface RustInteractivePageProps {
   pageId: string;
@@ -131,22 +132,52 @@ export default function RustInteractivePage({
         className="space-y-4"
       >
         {blocks.length > 0 &&
-          blocks.map((block, index) => (
-            <RenderBlock
-              block={block}
-              isDragging={isDragging}
-              pageFiles={pageFiles}
-              pageBlocks={blocks}
-              index={index}
-              hoveredIndex={hoveredIndex}
-              setBlocks={setBlocks}
-              setIsDragging={setIsDragging}
-              removeBlock={removeBlock}
-              updateBlock={updateBlock}
-              setHoveredIndex={setHoveredIndex}
-              addBlock={addBlock}
-            />
-          ))}
+          blocks.map((block, index) => {
+            const blockName = getFileName(block.title);
+            const currentBlockFileName = `/${blockName}.tsx`;
+            const isTS = block.language === "typescript";
+            const filesForThisBlock = {
+              ...pageFiles,
+              [currentBlockFileName]: block.content,
+            };
+            if (isTS) {
+              filesForThisBlock["/App.tsx"] = {
+                code: `
+                import { App as Component } from "./${blockName}";
+                export default function Main() {
+                  return <Component />;
+                }
+              `,
+                hidden: true,
+              };
+            }
+            delete filesForThisBlock[currentBlockFileName];
+            return (
+              <div
+                key={block.id}
+                className="relative group overflow-visible"
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              >
+                <ReorderTools
+                  hoveredIndex={hoveredIndex}
+                  index={index}
+                  addBlock={addBlock}
+                />
+
+                <ReorderItem
+                  block={block}
+                  isDragging={isDragging}
+                  pageFiles={pageFiles}
+                  pageBlocks={blocks}
+                  setBlocks={setBlocks}
+                  setIsDragging={setIsDragging}
+                  removeBlock={removeBlock}
+                  updateBlock={updateBlock}
+                />
+              </div>
+            );
+          })}
       </Reorder.Group>
     </div>
   );
