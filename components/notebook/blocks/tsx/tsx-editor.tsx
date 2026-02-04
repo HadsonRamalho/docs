@@ -116,7 +116,7 @@ export function TsxEditor({
     if (!(window as any).Babel && !babelReady && mode === "simple") {
       loadBabel();
     }
-  }, [babelReady]);
+  }, [babelReady, mode]);
 
   const editorOptions: SandpackInternalOptions = {
     initMode: "lazy",
