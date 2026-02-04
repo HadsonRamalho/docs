@@ -76,29 +76,39 @@ export function TsxEditor({
   const [sandboxUrl, setSandboxUrl] = useState<string | null>(null);
   const [babelReady, setBabelReady] = useState(false);
 
-  function loadBabel() {
-    try {
-      const script = document.createElement("script");
-      script.src = "https://unpkg.com/@babel/standalone/babel.min.js";
-      script.async = true;
-      document.head.appendChild(script);
+  const loadBabel = () => {
+    if ((window as any).Babel) {
+      setBabelReady(true);
+      return;
+    }
 
-      script.onload = () => console.log("Babel carregado dinamicamente!");
+    const global = window as any;
+    const amdDefine = global.define;
+    const amdRequire = global.require;
 
-      // biome-ignore lint/suspicious/noExplicitAny: <Necessário para acessar a window>
-      const babel = (window as any).Babel;
+    global.define = undefined;
+    global.require = undefined;
+
+    const script = document.createElement("script");
+    script.src = "https://unpkg.com/@babel/standalone/babel.min.js";
+    script.async = true;
+
+    script.onload = () => {
+      global.define = amdDefine;
+      global.require = amdRequire;
 
       setBabelReady(true);
-      if (!babel) {
-        setBabelReady(false);
-        throw new Error(
-          "O Babel ainda está sendo carregado, aguarde alguns instantes.",
-        );
-      }
-    } catch (error) {
-      console.error("Erro ao carregar o Babel: ", error);
-    }
-  }
+      console.log("Babel carregado com sucesso (AMD restaurado).");
+    };
+
+    script.onerror = (e) => {
+      global.define = amdDefine;
+      global.require = amdRequire;
+      console.error("Falha ao carregar o Babel.", e);
+    };
+
+    document.body.appendChild(script);
+  };
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <loadBabel não precisa estar no array de dependências>
   useEffect(() => {
