@@ -1,11 +1,11 @@
 "use client";
 
-import { Plus, FileText, Trash } from "lucide-react";
-import { useNotebookManager } from "./notebook-manager";
+import { FileText, Plus } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { DeletePageDialog } from "../delete-page-dialog";
 import { SidebarBackup } from "../sidebar-backup";
 import { Button } from "../ui/button";
+import { useNotebookManager } from "./notebook-manager";
 
 export function UserSidebar() {
   const { pages, createPage } = useNotebookManager();
@@ -22,6 +22,7 @@ export function UserSidebar() {
           <div className="w-px h-3 bg-white/10 mx-1" />
 
           <button
+            type="button"
             onClick={createPage}
             className="p-1 hover:bg-white/10 rounded transition-colors text-gray-400 hover:text-white"
             title="Nova Página"

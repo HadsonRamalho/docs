@@ -9,7 +9,7 @@ import {
   SandpackProvider,
 } from "@codesandbox/sandpack-react";
 import Script from "next/script";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { RunTsxInSandbox } from "@/lib/api";
 import type { Block, TsMode } from "@/lib/types";
 import { EditorHeader } from "../default/editor-header";
@@ -73,25 +73,7 @@ export function TsxEditor({
   const [showPreview, setShowPreview] = useState(true);
   const [mode, setMode] = useState<TsMode>("advanced");
   const [sandboxUrl, setSandboxUrl] = useState<string | null>(null);
-  const [babelReady, setBabelReady] = useState(false);
-
-  function loadBabel() {
-    const script = document.createElement("script");
-    script.src = "https://unpkg.com/@babel/standalone/babel.min.js";
-    script.async = true;
-    document.head.appendChild(script);
-
-    script.onload = () => console.log("Babel carregado dinamicamente!");
-    setBabelReady(true);
-  }
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <loadBabel não precisa estar no array de dependências>
-  useEffect(() => {
-    // biome-ignore lint/suspicious/noExplicitAny: <necessário para acessar a janela>
-    if (!(window as any).Babel && !babelReady) {
-      loadBabel();
-    }
-  }, [babelReady]);
+  const [babelReady, setBabelReady] = useState(true);
 
   const editorOptions: SandpackInternalOptions = {
     initMode: "lazy",

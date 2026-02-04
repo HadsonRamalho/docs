@@ -1,6 +1,6 @@
 "use client";
 
-import { Save, Loader2, Check } from "lucide-react";
+import { Check, Loader2, Save } from "lucide-react";
 import { useNotebook } from "./notebook-context";
 
 export function SavePageButton() {
@@ -8,6 +8,7 @@ export function SavePageButton() {
 
   return (
     <button
+      type="button"
       onClick={triggerSave}
       disabled={isSaving}
       className={`

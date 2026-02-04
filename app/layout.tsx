@@ -28,6 +28,7 @@ export default function Layout({ children }: LayoutProps<"/">) {
         <RootProvider>{children}</RootProvider>
       </body>
       <Script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js" />
+      <Script src="https://unpkg.com/@babel/standalone/babel.min.js" />
     </html>
   );
 }

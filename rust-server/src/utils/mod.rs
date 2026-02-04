@@ -1,5 +1,8 @@
 use std::time::{Duration, SystemTime};
 
+const ONE_SECOND: u64 = 1000;
+const ONE_MINUTE: u64 = 60 * ONE_SECOND;
+
 pub fn extract_module_name(code: &str) -> Option<String> {
     for line in code.lines() {
         let trimmed = line.trim();
@@ -15,8 +18,9 @@ pub fn extract_module_name(code: &str) -> Option<String> {
 }
 
 pub async fn auto_delete_files() {
-    let intervalo_verificacao = Duration::from_mins(20);
-    let tempo_maximo_vida = Duration::from_mins(20);
+    let mins = ONE_MINUTE * 20;
+    let intervalo_verificacao = Duration::from_millis(mins);
+    let tempo_maximo_vida = Duration::from_millis(mins);
 
     println!("LOG: Iniciando tarefa de limpeza automática");
 

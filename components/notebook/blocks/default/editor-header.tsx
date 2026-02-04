@@ -1,6 +1,4 @@
 import { Clock, Cpu, Eye, EyeClosed, Play, Terminal, Wifi } from "lucide-react";
-import Script from "next/script";
-import { useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -9,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Block, Language, TsMode } from "@/lib/types";
+import type { Block, TsMode } from "@/lib/types";
 
 const getRustFileName = (codeVal: string): string => {
   const match = codeVal.match(/^\/\/ *#\[mod=([a-zA-Z0-9_]+)\]/m);
