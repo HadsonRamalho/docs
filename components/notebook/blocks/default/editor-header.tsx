@@ -61,6 +61,7 @@ interface EditorHeaderProps {
   setMode: (m: TsMode) => void;
   setShowPreview: (s: boolean) => void;
   showPreview: boolean;
+  loadBabel?: () => void;
 }
 
 export function EditorHeader({
@@ -72,6 +73,7 @@ export function EditorHeader({
   setMode,
   handleRunSimple,
   setShowPreview,
+  loadBabel,
   showPreview,
 }: EditorHeaderProps) {
   const fileName =
@@ -110,8 +112,7 @@ export function EditorHeader({
           {mode === "simple" && (
             <button
               type="button"
-              disabled={!babelReady}
-              onClick={handleRunSimple}
+              onClick={babelReady ? handleRunSimple : loadBabel}
               className="px-3 py-1 text-xs bg-card text-white rounded transition-colors"
             >
               <div className="flex items-center justify-center gap-2">
@@ -121,7 +122,7 @@ export function EditorHeader({
                   </>
                 ) : (
                   <>
-                    <Clock /> Carregando o Compilador...
+                    <Clock /> Carregar o Compilador...
                   </>
                 )}
               </div>

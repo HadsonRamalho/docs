@@ -8,7 +8,6 @@ import {
   SandpackPreview,
   SandpackProvider,
 } from "@codesandbox/sandpack-react";
-import { Clock3Icon } from "lucide-react";
 import Script from "next/script";
 import { useEffect, useState } from "react";
 import { RunTsxInSandbox } from "@/lib/api";
@@ -154,16 +153,6 @@ export function TsxEditor({
             setShowPreview={setShowPreview}
             showPreview={showPreview}
           />
-          {mode === "simple" && (
-            <button
-              type="button"
-              className="text-white flex items-center justify-center"
-              onClick={loadBabel}
-            >
-              <Clock3Icon className="size-4" />
-              Carregar o Babel
-            </button>
-          )}
         </div>
 
         <div className="flex flex-col rounded-lg overflow-hidden bg-card">
