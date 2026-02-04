@@ -112,8 +112,7 @@ export function TsxEditor({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <loadBabel não precisa estar no array de dependências>
   useEffect(() => {
-    // biome-ignore lint/suspicious/noExplicitAny: <necessário para acessar a janela>
-    if (!(window as any).Babel && !babelReady && mode === "simple") {
+    if (!babelReady && mode === "simple") {
       loadBabel();
     }
   }, [babelReady, mode]);
