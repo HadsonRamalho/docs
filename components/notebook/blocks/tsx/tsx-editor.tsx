@@ -8,6 +8,7 @@ import {
   SandpackPreview,
   SandpackProvider,
 } from "@codesandbox/sandpack-react";
+import { Clock3Icon } from "lucide-react";
 import Script from "next/script";
 import { useEffect, useState } from "react";
 import { RunTsxInSandbox } from "@/lib/api";
@@ -76,22 +77,26 @@ export function TsxEditor({
   const [babelReady, setBabelReady] = useState(false);
 
   function loadBabel() {
-    const script = document.createElement("script");
-    script.src = "https://unpkg.com/@babel/standalone/babel.min.js";
-    script.async = true;
-    document.head.appendChild(script);
+    try {
+      const script = document.createElement("script");
+      script.src = "https://unpkg.com/@babel/standalone/babel.min.js";
+      script.async = true;
+      document.head.appendChild(script);
 
-    script.onload = () => console.log("Babel carregado dinamicamente!");
+      script.onload = () => console.log("Babel carregado dinamicamente!");
 
-    // biome-ignore lint/suspicious/noExplicitAny: <Necessário para acessar a window>
-    const babel = (window as any).Babel;
+      // biome-ignore lint/suspicious/noExplicitAny: <Necessário para acessar a window>
+      const babel = (window as any).Babel;
 
-    setBabelReady(true);
-    if (!babel) {
-      setBabelReady(false);
-      throw new Error(
-        "O Babel ainda está sendo carregado, aguarde alguns instantes.",
-      );
+      setBabelReady(true);
+      if (!babel) {
+        setBabelReady(false);
+        throw new Error(
+          "O Babel ainda está sendo carregado, aguarde alguns instantes.",
+        );
+      }
+    } catch (error) {
+      console.error("Erro ao carregar o Babel: ", error);
     }
   }
 
@@ -140,6 +145,16 @@ export function TsxEditor({
             setShowPreview={setShowPreview}
             showPreview={showPreview}
           />
+          {mode === "simple" && (
+            <button
+              type="button"
+              className="text-white flex items-center justify-center"
+              onClick={loadBabel}
+            >
+              <Clock3Icon className="size-4" />
+              Carregar o Babel
+            </button>
+          )}
         </div>
 
         <div className="flex flex-col rounded-lg overflow-hidden bg-card">
