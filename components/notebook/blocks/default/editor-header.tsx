@@ -112,7 +112,7 @@ export function EditorHeader({
               type="button"
               disabled={!babelReady}
               onClick={handleRunSimple}
-              className="px-3 py-1 text-xs bg-[#333] hover:bg-[#444] text-white rounded transition-colors"
+              className="px-3 py-1 text-xs bg-card text-white rounded transition-colors"
             >
               <div className="flex items-center justify-center gap-2">
                 {babelReady ? (
@@ -132,12 +132,14 @@ export function EditorHeader({
               setMode(e as TsMode);
             }}
           >
-            <SelectTrigger className="bg-[#333] hover:bg-[#444] py-5 w-full justify-center md:w-44 h-full rounded text-foreground">
+            <SelectTrigger className="bg-transparent py-6 w-full justify-center md:w-44 border-none h-full rounded text-foreground">
               <SelectValue
+                className="bg-transparent"
                 placeholder={
                   mode === "advanced" ? (
                     <div className="flex justify-center">
-                      <Wifi /> Modo Sandpack
+                      <Wifi />
+                      Modo Sandpack
                     </div>
                   ) : (
                     <div className="flex justify-center">
@@ -151,7 +153,8 @@ export function EditorHeader({
             <SelectContent>
               <SelectGroup>
                 <SelectItem value="advanced">
-                  <Wifi /> Modo Sandpack
+                  <Wifi />
+                  Modo Sandpack
                 </SelectItem>
                 <SelectItem value="simple">
                   <Cpu />
@@ -163,7 +166,7 @@ export function EditorHeader({
           <button
             type="button"
             onClick={() => setShowPreview(!showPreview)}
-            className="px-3 py-1 text-xs bg-[#333] hover:bg-[#444] text-white rounded transition-colors"
+            className="px-3 py-1 text-xs bg-transparent text-white rounded transition-colors"
           >
             {showPreview ? (
               <div className="flex items-center justify-center gap-2">
@@ -172,7 +175,7 @@ export function EditorHeader({
             ) : (
               <div className="flex items-center justify-center gap-2">
                 <EyeClosed className="size-4" />
-                Mostrar Renderização
+                Exibir Renderização
               </div>
             )}
           </button>
