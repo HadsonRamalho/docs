@@ -72,6 +72,20 @@ export async function RunRust({
 }
 
 export async function RunTsxInSandbox(block: Block, pageBlocks: Block[]) {
+  if (typeof window === "undefined") {
+    console.error("Window não foi definida");
+    return null;
+  }
+
+  // biome-ignore lint/suspicious/noExplicitAny: <Necessário pra acessar a window>
+  const babel = (window as any).Babel;
+
+  if (!babel) {
+    throw new Error(
+      "O Babel ainda está sendo carregado, aguarde alguns instantes.",
+    );
+  }
+
   const modulesData = pageBlocks
     .filter(
       (b) =>
