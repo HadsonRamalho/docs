@@ -82,7 +82,10 @@ export async function RunTsxInSandbox(block: Block, pageBlocks: Block[]) {
   }
 
   const modulesData = pageBlocks
-    .filter((b) => b.type === "code" && b.id !== block.id)
+    .filter(
+      (b) =>
+        b.type === "code" && b.id !== block.id && b.language === "typescript",
+    )
     .reduce(
       (acc, b) => {
         const name = `./${b.title.replace(/[^a-zA-Z0-9]/g, "_")}`;
