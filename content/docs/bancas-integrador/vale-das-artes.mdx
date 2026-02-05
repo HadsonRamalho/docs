@@ -1,0 +1,298 @@
+---
+title: Vale das Artes
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Observações sobre o artigo
+### Dada a incapacidade do grupo de se dedicar à escrita do trabalho (uso de IA), sinto-me no direito de nem ao menos iniciar a leitura.
+
+
+## Observações sobre o código
+<Steps>
+    <Step>
+        O cadastro do usuário possui diversos campos que não possuem validação.
+        Além disso, alguns campos, como o de `Estado` não deveriam estar abertos ao usuário,
+        e sim com valores predefinidos que ele poderia escolher.
+    </Step>
+    <Step>
+        No cadastro de usuário, os campos deveriam possuir máscaras de input Ex.: XXX.XXX.XXX-XX.
+    </Step>
+    <Step>
+        No perfil do usuário, é possível salvar o usuário com dados que deveriam ser inválidos;
+        - Nome: `    a        a        a `
+        - Telefone: `     3     3    3`
+        - Logradouro: `      a   a`
+        - Cidade: ` a  a`
+        - Bairro: `a   a`
+        - Nova Senha: Espaços em branco
+        ![perfil](/bancas-integrador/vale-das-artes/perfil.png)
+    </Step>
+    <Step>
+        No perfil do usuário, não é possível remover a foto após o cadastro.
+    </Step>
+    <Step>
+        É possível avaliar um produto infinitamente, mesmo que você seja o vendedor, e que não tenha comprado o produto.
+        Além disso, não é possível editar ou excluir uma avaliação.
+    </Step>
+    <Step>
+        No perfil de usuário vendedor, a usabilidade é descartada ao não carregar o endereço automaticamente com base no CEP.
+    </Step>
+    <Step>
+        No perfil de usuário vendedor, a pré-visualização do perfil não é coerente com o perfil real do vendedor.
+    </Step>
+    <Step>
+        No carrinho, o formulário não possui validação alguma, todos os campos podem ser enviados com espaço em branco.
+    </Step>
+    <Step>
+        O código possui vários sinais de uso de IA, como nos seguintes exemplos:
+        ```java title="src/main/java/br/com/valedasartes/domain/artista/service/ArtistaService.java"
+        // --- MÉTODO CORRIGIDO ---
+        @Transactional
+        public ArtistaResponseDTO atualizarEndereco(Long id, ArtistaEnderecoUpdateDTO dto) {
+            Artista artista = artistaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Artista não encontrado"));
+
+            Endereco endereco = artista.getEndereco();
+
+            // Se não existir endereço, cria um novo e vincula
+            if (endereco == null) {
+                endereco = new Endereco();
+                endereco.setArtista(artista);
+                artista.setEndereco(endereco);
+            }
+
+            // Atualiza os campos
+            endereco.setCep(dto.cep());
+            endereco.setLogradouro(dto.logradouro());
+            endereco.setComplemento(dto.complemento());
+            endereco.setBairro(dto.bairro());
+            endereco.setCidade(dto.cidade());
+
+            // CORREÇÃO 1: Usa dto.estado() para bater com o DTO novo
+            endereco.setEstado(dto.estado());
+
+            // CORREÇÃO 2: Salva o telefone
+            endereco.setTelefone(dto.telefone());
+
+            // Lógica segura de conversão de Número (String -> Integer)
+            if (dto.numero() != null && !dto.numero().trim().isEmpty()) {
+                try {
+                    // Remove caracteres não numéricos (ex: "46A" vira "46")
+                    String numeroLimpo = dto.numero().replaceAll("\\D", "");
+                    if (!numeroLimpo.isEmpty()) {
+                        endereco.setNumero(Integer.parseInt(numeroLimpo));
+                    } else {
+                        endereco.setNumero(0); // Se for só texto (ex: "S/N"), salva 0
+                    }
+                } catch (NumberFormatException e) {
+                    endereco.setNumero(0);
+                }
+            } else {
+                endereco.setNumero(null);
+            }
+
+            // Salva explicitamente
+            artistaRepository.save(artista);
+
+            return new ArtistaResponseDTO(artista);
+        }
+        ```
+
+        ```java title="src/main/java/br/com/valedasartes/domain/auth/service/AuthService.java"
+        public void solicitarRecuperacaoSenha(String cpf, String telefone) {
+
+            Long usuarioId = null;
+            String tipo = null;
+            String nomeUsuario = "";
+
+            Optional<Cliente> clienteOpt = clienteRepository.findByCpfAndTelefone(cpf, telefone);
+
+            if (clienteOpt.isPresent()) {
+                usuarioId = clienteOpt.get().getId();
+                tipo = "CLIENTE";
+                nomeUsuario = clienteOpt.get().getNome();
+            } else {
+
+                Optional<Artista> artistaOpt = artistaRepository.findByCpfAndTelefone(cpf, telefone);
+                if (artistaOpt.isPresent()) {
+                    usuarioId = artistaOpt.get().getId();
+                    tipo = "ARTISTA";
+                    nomeUsuario = artistaOpt.get().getNome();
+                }
+            }
+
+            if (usuarioId != null) {
+                String tokenUuid = UUID.randomUUID().toString();
+
+
+                TokenRecuperacao novoToken = new TokenRecuperacao(
+                    tokenUuid,
+                    usuarioId,
+                    tipo,
+                    LocalDateTime.now().plusMinutes(30)
+                );
+
+                tokenRepository.save(novoToken);
+
+                String link = "http://localhost:5500/redefinir-senha.html?token=" + tokenUuid;
+
+                System.out.println("=================================================");
+                System.out.println(">>> 🔐 RECUPERAÇÃO CONFIRMADA (CPF + TEL)");
+                System.out.println(">>> Para: " + nomeUsuario);
+                System.out.println(">>> Link WhatsApp: " + link);
+                System.out.println("=================================================");
+            } else {
+                System.out.println("⚠️ Tentativa falha: CPF e Telefone não conferem.");
+                throw new RuntimeException("CPF ou Telefone incorretos.");
+            }
+        }
+        ```
+
+        ```java title="src/main/java/br/com/valedasartes/domain/carrinho/service/CarrinhoService.java"
+
+        /**
+         * --- MÉTODO CORRIGIDO ---
+         * Agora ele busca um carrinho ativo, e SÓ cria um novo se não existir.
+         */
+        @Transactional
+        public Carrinho criarCarrinhoParaCliente(Long clienteId) {
+
+            // 1. TENTA BUSCAR UM CARRINHO ATIVO
+            Optional<Carrinho> carrinhoExistente = carrinhoRepository
+                    .findByClienteIdAndStatus(clienteId, CarrinhoStatus.ATIVO);
+
+            // 2. SE O CARRINHO EXISTE, APENAS RETORNA ELE
+            if (carrinhoExistente.isPresent()) {
+                return carrinhoExistente.get();
+            }
+
+            // 3. SE NÃO EXISTE, CRIA UM NOVO
+            Cliente cliente = clienteRepository.findById(clienteId)
+                    .orElseThrow(() -> new RuntimeException("Cliente não encontrado!"));
+
+            Carrinho carrinho = new Carrinho();
+            carrinho.setCliente(cliente);
+            carrinho.setDataCriacao(LocalDateTime.now());
+            carrinho.setStatus(CarrinhoStatus.ATIVO);
+
+            return carrinhoRepository.save(carrinho);
+        }
+        ```
+
+        ```css title="src/main/resources/static/css/style-index.css"
+
+        /* --- CARROSSEL (ATUALIZADO) --- */
+        #destaques {
+           margin-top: 30px; /* Ajuste a folga que você quer aqui */
+            width: 100vw;
+            position: relative;
+            width: 100vw;
+            position: relative;
+            left: 50%;
+            right: 50%;
+            margin-left: -50vw;
+            margin-right: -50vw;
+
+            margin-bottom: 60px;
+            border-radius: 0; /* Removi borda arredondada pois agora encosta na tela */
+            overflow: hidden;
+            background-color: #EAE4D8;
+        }
+
+        #destaques-carousel {
+            width: 50%;
+            height: 500px;
+            background-color: #EAE4D8;
+            margin: 0 auto; /* <--- ADICIONE ESTA LINHA PARA CENTRALIZAR */
+        }
+        ```
+
+        ```js title="src/main/resources/static/js/dashboard-cliente.js"
+        // --- Carga Inicial de Dados ---
+        async function checkLoginAndLoadData() {
+            const role = localStorage.getItem('userRole');
+            const userId = getUserId();
+
+            if (!getToken() || !userId || role !== 'ROLE_CLIENTE') {
+                alert("Acesso negado. Por favor, faça o login.");
+                localStorage.clear();
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const cliente = await apiClient(`/clientes/${userId}`, 'GET');
+
+                // --- LÓGICA DO HEADER IGUAL AO ARTESÃO ---
+                if (cliente.nome) localStorage.setItem('userName', cliente.nome);
+                if (cliente.fotoUrl) localStorage.setItem('userPhoto', cliente.fotoUrl);
+
+                // Atualiza avatar do header se existir
+                const headerAvatar = document.getElementById('nav-user-avatar');
+                if (headerAvatar && cliente.fotoUrl) {
+                    headerAvatar.src = `${cliente.fotoUrl}?t=${new Date().getTime()}`;
+                }
+                // ------------------------------------------
+
+                populatePage(cliente);
+            } catch (error) {
+                console.error("Erro ao buscar dados:", error);
+            }
+        }
+        ```
+
+        ```js title="src/main/resources/static/js/produto-detalhe.js"
+        async function enviarAvaliacao(e) {
+            e.preventDefault();
+
+            const token = localStorage.getItem('userToken');
+            const userId = localStorage.getItem('userId');
+
+            // PEGA O NOME QUE ESTÁ SALVO NO MOMENTO DO LOGIN
+            // Se estiver "Sheva" aqui, é porque você precisa deslogar e logar de novo.
+            const nomeUsuarioLogado = localStorage.getItem('userName');
+
+            console.log("Tentando enviar avaliação como:", nomeUsuarioLogado); // <--- OLHE O CONSOLE (F12)
+
+            if (!token || !userId) {
+                alert("Faça login para avaliar.");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const notaInput = document.getElementById('nota-avaliacao');
+            const comentarioInput = document.getElementById('comentario-avaliacao');
+
+            const dto = {
+                nota: parseFloat(notaInput.value),
+                comentario: comentarioInput.value,
+                produtoId: parseInt(produtoId),
+                clienteId: parseInt(userId),
+                // AQUI ESTÁ O PULO DO GATO: Enviamos o nome que pegamos do localStorage
+                nomeCliente: nomeUsuarioLogado
+            };
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/avaliacoes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(dto)
+                });
+
+                if (res.ok) {
+                    alert("Avaliação enviada!");
+                    comentarioInput.value = '';
+                    carregarAvaliacoes();
+                } else {
+                    const erroData = await res.json().catch(() => ({}));
+                    alert("Erro ao enviar avaliação: " + (erroData.message || "Tente novamente"));
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Erro de conexão.");
+            }
+        }
+        ```
+    </Step>
+</Steps>
