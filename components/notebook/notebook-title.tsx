@@ -31,15 +31,20 @@ export function NotebookTitle() {
   const handleBlur = () => {
     setIsEditing(false);
 
-    const currentTitle = title?.trim() || "";
-    const originalTitle = notebook?.title?.trim() || "";
+    if (!notebook) {
+      console.error("Notebook não encontrado. Impossível atualizar título.");
+      return;
+    }
 
-    if (!currentTitle && notebook) {
+    const currentTitle = title?.trim() || "";
+    const originalTitle = notebook.title?.trim() || "";
+
+    if (!currentTitle) {
       setTitle(originalTitle);
       return;
     }
 
-    if (notebook && currentTitle !== originalTitle) {
+    if (currentTitle !== originalTitle) {
       renamePage(notebook.id, currentTitle);
     }
   };
