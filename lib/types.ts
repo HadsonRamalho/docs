@@ -1,4 +1,5 @@
-import { CalloutContainerProps } from "fumadocs-ui/components/callout";
+import type { CalloutContainerProps } from "fumadocs-ui/components/callout";
+import type { BannerVariant } from "@/components/banner";
 
 export type BlockType = "text" | "code" | "component";
 export type Language = "rust" | "typescript" | "python";
@@ -34,10 +35,16 @@ export interface GithubRepoMetadata {
   };
 }
 
+export interface BannerMetadata {
+  type: "banner";
+  variant: BannerVariant;
+}
+
 export type BlockMetadata =
   | CardMetadata
   | CalloutMetadata
   | GithubRepoMetadata
+  | BannerMetadata
   | { type: "generic"; props?: Record<string, any> };
 
 export interface Block {

@@ -2,21 +2,22 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  AlertCircle,
+  Box,
   Boxes,
+  ChevronLeft,
   Code2,
+  IdCard,
+  Info,
   Loader,
   Pi,
   Plus,
-  ChevronLeft,
-  AlertCircle,
-  Info,
-  Zap,
   Terminal,
-  Box,
+  Zap,
 } from "lucide-react";
 import { useState } from "react";
-import type { BlockType, Language, BlockMetadata } from "@/lib/types";
 import { GithubIcon } from "@/components/github-info";
+import type { BlockMetadata, BlockType, Language } from "@/lib/types";
 
 interface ReorderToolsProps {
   hoveredIndex: number | null;
@@ -115,6 +116,12 @@ export function ReorderTools({
             }),
         },
         {
+          label: "Banner",
+          icon: <IdCard size={14} />,
+          color: "hover:text-red-500",
+          targetView: "ui_banner",
+        },
+        {
           label: "Github Repo",
           icon: <GithubIcon />,
           color: "hover:text-indigo-400",
@@ -122,6 +129,31 @@ export function ReorderTools({
             addBlock(index, "component", undefined, {
               type: "github_repo",
               props: { owner: "HadsonRamalho", repo: "docs" },
+            }),
+        },
+      ],
+    },
+    ui_banner: {
+      parent: "ui",
+      buttons: [
+        {
+          label: "Banner Normal",
+          icon: <IdCard size={14} />,
+          color: "hover:text-red-600",
+          onClick: () =>
+            addBlock(index, "component", undefined, {
+              type: "banner",
+              variant: "normal",
+            }),
+        },
+        {
+          label: "Banner Arco-íris",
+          icon: <IdCard size={14} />,
+          color: "hover:text-pink-600",
+          onClick: () =>
+            addBlock(index, "component", undefined, {
+              type: "banner",
+              variant: "rainbow",
             }),
         },
       ],
@@ -206,6 +238,7 @@ export function ReorderTools({
 
 const ToolButton = ({ onClick, icon, label, color }: any) => (
   <button
+    type="button"
     onClick={onClick}
     className={`flex items-center gap-1.5 px-3 py-2 sm:py-1.5 hover:bg-white/5 text-gray-400 ${color} rounded-xl transition-all text-[10px] font-bold uppercase tracking-tight`}
   >
@@ -215,6 +248,7 @@ const ToolButton = ({ onClick, icon, label, color }: any) => (
 
 const BackButton = ({ onClick }: { onClick: () => void }) => (
   <button
+    type="button"
     onClick={onClick}
     className="p-2 mr-1 hover:bg-white/10 rounded-xl text-gray-500 transition-colors"
   >

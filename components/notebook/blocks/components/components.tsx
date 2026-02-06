@@ -5,6 +5,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 import { TextBlock } from "../text/text-block";
 import { Card } from "fumadocs-ui/components/card";
 import { GithubInfo } from "@/components/github-info";
+import { Banner } from "@/components/banner";
 
 interface ComponentRendererProps {
   block: Block;
@@ -56,6 +57,18 @@ export function ComponentRenderer({
           />
         </div>
       );
+
+    case "banner":
+      return (
+        <div className="relative my-4">
+          <Banner changeLayout={false} variant={block.metadata.variant} className="rounded-md">
+            <TextBlock
+              content={block.content}
+              onChange={(newVal) => updateBlockAction(block.id, newVal)}
+            />
+          </Banner>
+        </div>
+      )
 
     default:
       return (

@@ -79,6 +79,7 @@ export function RenderBlock({
         setIsDragging={setIsDragging}
         removeBlock={removeBlock}
         updateBlock={updateBlock}
+        updateBlockMetadata={() => {}}
       />
     </div>
   );
