@@ -2,7 +2,7 @@
 
 import { Reorder } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import type { Block, BlockType, Language } from "@/lib/types";
+import type { Block, BlockMetadata, BlockType, Language } from "@/lib/types";
 import { useNotebook } from "./notebook-context";
 import { ReorderItem } from "./reorder/reorder-item";
 import { ReorderTools } from "./reorder/reorder-tools";
@@ -112,7 +112,12 @@ export default function RustInteractivePage({
     return titles[language] ?? "Arquivo de Código";
   }
 
-  const addBlock = (index: number, type: BlockType, language?: Language) => {
+  const addBlock = (
+    index: number,
+    type: BlockType,
+    language?: Language,
+    metadata?: BlockMetadata,
+  ) => {
     const codeBlock = getInitialCode(language ?? "rust");
 
     const title = getBlockTitle(type, language ?? "rust", blocks.length);
@@ -123,6 +128,7 @@ export default function RustInteractivePage({
       title,
       content: type === "code" ? codeBlock : "",
       language,
+      metadata,
     };
     const newBlocks = [...blocks];
     newBlocks.splice(index + 1, 0, newBlock);

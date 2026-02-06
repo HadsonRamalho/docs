@@ -7,6 +7,7 @@ import PythonSandbox from "../blocks/python/python-editor";
 import { RustEditor } from "../blocks/rust/rust-editor";
 import { TextBlock } from "../blocks/text/text-block";
 import { TsxEditor } from "../blocks/tsx/tsx-editor";
+import { ComponentRenderer } from "../blocks/components/components";
 
 interface ReorderItemProps {
   block: Block;
@@ -65,6 +66,8 @@ export function ReorderItem({
             content={block.content}
             onChange={(val) => updateBlock(block.id, val)}
           />
+        ) : block.type === "component" ? (
+          <ComponentRenderer block={block} updateBlockAction={updateBlock} />
         ) : block.language === "typescript" ? (
           <TsxEditor
             pageFiles={pageFiles}

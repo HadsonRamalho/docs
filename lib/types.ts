@@ -1,7 +1,29 @@
-export type BlockType = "text" | "code";
+import { CalloutContainerProps } from "fumadocs-ui/components/callout";
+
+export type BlockType = "text" | "code" | "component";
 export type Language = "rust" | "typescript" | "python";
 export type RunStatus = "idle" | "success" | "error";
 export type TsMode = "simple" | "advanced";
+export type BlockComponentType = "callout" | "card" | "steps" | "tabs";
+
+export interface CalloutMetadata {
+  type: "callout";
+  props: CalloutContainerProps;
+}
+
+export interface CardMetadata {
+  type: "card";
+  props: {
+    title: string;
+    description?: string;
+    href?: string;
+  };
+}
+
+export type BlockMetadata =
+  | CalloutMetadata
+  | CardMetadata
+  | { type: "generic"; props?: Record<string, any> };
 
 export interface Block {
   id: string;
@@ -9,6 +31,7 @@ export interface Block {
   type: BlockType;
   content: string;
   language?: Language;
+  metadata?: BlockMetadata;
 }
 
 export interface NotebookMeta {
