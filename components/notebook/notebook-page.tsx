@@ -136,6 +136,13 @@ export default function RustInteractivePage({
     setHoveredIndex(null);
   };
 
+  const updateBlockMetadata = (id: string, newMetadata: BlockMetadata) => {
+    const newBlocks = blocks.map((b) =>
+      b.id === id ? { ...b, metadata: newMetadata } : b,
+    );
+    setBlocks(newBlocks);
+  };
+
   const updateBlock = (id: string, newContent: string) => {
     setBlocks((prev) =>
       prev.map((b) => (b.id === id ? { ...b, content: newContent } : b)),
@@ -200,6 +207,7 @@ export default function RustInteractivePage({
                   setIsDragging={setIsDragging}
                   removeBlock={removeBlock}
                   updateBlock={updateBlock}
+                  updateBlockMetadata={updateBlockMetadata}
                 />
               </div>
             );

@@ -17,17 +17,20 @@ const SUPPORTED_SERVICES: ServiceConfig[] = [
 const envSchema = z.object({
   NEXT_PUBLIC_API_JSON_PATH: z
     .string()
-    .min(1, "NEXT_PUBLIC_API_JSON_PATH é obrigatório")
+    .min(1, "NEXT_PUBLIC_API_JSON_PATH deve ser uma string válida")
     .optional(),
   NEXT_PUBLIC_API: z
     .url({
-      error: "NEXT_PUBLIC_API é obrigatório",
+      error: "NEXT_PUBLIC_API deve ser uma URL válida",
     })
     .optional(),
   NEXT_PUBLIC_MODE: z.enum(["JSON", "API", "NO_ENDPOINTS"]),
   NEXT_PUBLIC_RUST_NOTEBOOK_API: z.url({
     error: "NEXT_PUBLIC_RUST_NOTEBOOK_API é obrigatório",
   }),
+  NEXT_PUBLIC_GITHUB_TOKEN: z
+    .string()
+    .min(1, { error: "NEXT_PUBLIC_GITHUB_TOKEN é obrigatório" }),
 });
 
 const envError = "Não é possível acessar o ENV antes de carregá-lo";
@@ -44,6 +47,7 @@ class Env {
     const values = {
       NEXT_PUBLIC_MODE: process.env.NEXT_PUBLIC_MODE,
       NEXT_PUBLIC_RUST_NOTEBOOK_API: process.env.NEXT_PUBLIC_RUST_NOTEBOOK_API,
+      NEXT_PUBLIC_GITHUB_TOKEN: process.env.NEXT_PUBLIC_GITHUB_TOKEN,
     };
 
     const result = envSchema.safeParse(values);

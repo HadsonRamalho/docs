@@ -14,6 +14,7 @@ import { getMDXComponents } from "@/mdx-components";
 import { NotebookProvider } from "@/components/notebook/notebook-context";
 import { NotebookControls } from "@/components/notebook/notebook-controls";
 import RustInteractivePage from "@/components/notebook/notebook-page";
+import { NotebookTitle } from "@/components/notebook/notebook-title";
 
 export const dynamicParams = true;
 
@@ -34,13 +35,31 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
   console.log("Acessando Slug:", params.slug);
   const page = source.getPage(params.slug);
 
+  if (params.slug && params.slug.length === 1) {
+    const pageId = params.slug[0];
+    return (
+      <NotebookProvider pageId={pageId}>
+        <DocsPage>
+          <div className="mb-8">
+            <NotebookTitle />
+            <p className="text-muted-foreground text-xs mt-1 font-mono">
+              ID: {pageId}
+            </p>
+            <div className="flex mt-2 justify-end">
+              <NotebookControls />
+            </div>
+          </div>
+
+          <DocsBody>
+            <RustInteractivePage pageId={pageId} />
+          </DocsBody>
+        </DocsPage>
+      </NotebookProvider>
+    );
+  }
+
   if (page) {
     const lastModifiedTime = page.data.lastModified;
-
-    const pageUniqueId = params.slug ? params.slug.join("-") : "home";
-
-    const isRustPage = page.path.includes("rust");
-
     if (page.data.title === "API Reference") {
       const mode = env.get("NEXT_PUBLIC_MODE");
       if (mode === "NO_ENDPOINTS") {
@@ -59,53 +78,18 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
     const MDX = page.data.body;
 
     return (
-      <NotebookProvider>
-        <DocsPage>
-          <DocsTitle>{page.data.title}</DocsTitle>
-          <DocsDescription>{page.data.description}</DocsDescription>
-          {lastModifiedTime && <UpdatedAt date={lastModifiedTime} />}
-          <div className="flex items-start justify-end gap-4">
-            {isRustPage && (
-              <div className="mt-2">
-                <NotebookControls />
-              </div>
-            )}
-          </div>
-
-          <DocsBody>
-            <MDX
-              components={getMDXComponents({
-                a: createRelativeLink(source, page),
-              })}
-            />
-
-            {isRustPage && <RustInteractivePage pageId={pageUniqueId} />}
-          </DocsBody>
-        </DocsPage>
-      </NotebookProvider>
-    );
-  }
-
-  if (params.slug && params.slug.length === 1) {
-    const pageId = params.slug[0];
-    console.log(pageId);
-
-    return (
-      <NotebookProvider>
-        <DocsPage>
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold">Meu Caderno</h1>
-            <p className="text-muted-foreground text-sm">ID: {pageId}</p>
-            <div className="flex mt-2 justify-end">
-              <NotebookControls />
-            </div>
-          </div>
-
-          <DocsBody>
-            <RustInteractivePage pageId={pageId} />
-          </DocsBody>
-        </DocsPage>
-      </NotebookProvider>
+      <DocsPage>
+        <DocsTitle>{page.data.title}</DocsTitle>
+        <DocsDescription>{page.data.description}</DocsDescription>
+        {lastModifiedTime && <UpdatedAt date={lastModifiedTime} />}
+        <DocsBody>
+          <MDX
+            components={getMDXComponents({
+              a: createRelativeLink(source, page),
+            })}
+          />
+        </DocsBody>
+      </DocsPage>
     );
   }
 

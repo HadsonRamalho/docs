@@ -1,16 +1,32 @@
 "use client";
 
-import { FileText, Plus } from "lucide-react";
+import { Check, FileText, Pencil, Plus } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { DeletePageDialog } from "../delete-page-dialog";
 import { SidebarBackup } from "../sidebar-backup";
 import { Button } from "../ui/button";
 import { useNotebookManager } from "./notebook-manager";
+import { useState } from "react";
+import { NotebookMeta } from "@/lib/types";
 
 export function UserSidebar() {
   const { pages, createPage } = useNotebookManager();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [tempTitle, setTempTitle] = useState("");
+  const { renamePage } = useNotebookManager();
+
   const router = useRouter();
   const pathname = usePathname();
+
+  const handleStartEditing = (page: NotebookMeta) => {
+    setEditingId(page.id);
+    setTempTitle(page.title);
+  };
+
+  const handleSaveRename = async (id: string) => {
+    await renamePage(id, tempTitle);
+    setEditingId(null);
+  };
 
   return (
     <div className="flex flex-col gap-2 mb-4 pb-4 border-b border-white/10">
@@ -39,25 +55,57 @@ export function UserSidebar() {
           </span>
         )}
 
-        {pages.map((page) => {
-          return (
-            <div
-              key={page.id}
-              className="group flex items-center justify-between pr-2 rounded-md hover:bg-white/5"
-            >
-              <Button
-                onClick={() => {
-                  router.push(`/docs/${page.id}`);
-                }}
-                className={`... ${pathname === `/docs/${page.id}` ? "text-emerald-400 underline" : "text-emerald-700 ..."} flex items-center hover:cursor-pointer justify-center gap-2 p-2`}
-              >
-                <FileText size={14} />
-                <span className="truncate">{page.title}</span>
-              </Button>
-              <DeletePageDialog pageId={page.id} pageTitle={page.title} />
-            </div>
-          );
-        })}
+        {pages.map((page) => (
+          <div
+            key={page.id}
+            className="group flex items-center justify-between rounded-md hover:bg-white/5 pr-1"
+          >
+            {editingId === page.id ? (
+              <div className="flex items-center gap-1 p-1 w-full">
+                <input
+                  autoFocus
+                  className="bg-transparent border-b border-emerald-500 outline-none text-sm text-white w-full px-1"
+                  value={tempTitle}
+                  onChange={(e) => setTempTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveRename(page.id);
+                    if (e.key === "Escape") setEditingId(null);
+                  }}
+                />
+                <button
+                  onClick={() => handleSaveRename(page.id)}
+                  className="text-emerald-500"
+                >
+                  <Check size={14} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between w-full">
+                <Button
+                  onClick={() => router.push(`/docs/${page.id}`)}
+                  className={`flex-1 justify-start gap-2 p-2 hover:cursor-pointer ${
+                    pathname === `/docs/${page.id}`
+                      ? "text-sidebar-primary font-medium"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  <FileText size={14} />
+                  <span className="truncate max-w-30">{page.title}</span>
+                </Button>
+
+                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => handleStartEditing(page)}
+                    className="p-2 rounded-md hover:bg-muted text-muted-foreground hover:cursor-pointer"
+                  >
+                    <Pencil size={12} />
+                  </button>
+                  <DeletePageDialog pageId={page.id} pageTitle={page.title} />
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

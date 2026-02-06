@@ -1,26 +1,29 @@
 "use client";
 
-import type { Block } from "@/lib/types";
+import type { Block, BlockMetadata } from "@/lib/types";
 import { Callout } from "fumadocs-ui/components/callout";
 import { TextBlock } from "../text/text-block";
 import { Card } from "fumadocs-ui/components/card";
+import { GithubInfo } from "@/components/github-info";
 
 interface ComponentRendererProps {
   block: Block;
   updateBlockAction: (id: string, content: string) => void;
+  updateBlockMetadata: (id: string, newMetadata: BlockMetadata) => void;
 }
 
 export function ComponentRenderer({
   block,
   updateBlockAction,
+  updateBlockMetadata,
 }: ComponentRendererProps) {
-  const metadata = block.metadata;
+  if (block.type !== "component" || !block.metadata) return null;
 
-  switch (metadata?.type) {
-    case "callout":
+  switch (block.metadata.type) {
+    case "callout": {
       return (
         <div className="group relative my-4">
-          <Callout type={metadata.props?.type || "info"}>
+          <Callout type={block.metadata.props?.type || "info"}>
             <TextBlock
               content={block.content}
               onChange={(newVal) => updateBlockAction(block.id, newVal)}
@@ -28,11 +31,12 @@ export function ComponentRenderer({
           </Callout>
         </div>
       );
+    }
 
     case "card":
       return (
         <div className="group relative my-4">
-          <Card title={block.metadata?.props?.title}>
+          <Card title={block.metadata.props.title}>
             <TextBlock
               content={block.content}
               onChange={(newVal) => updateBlockAction(block.id, newVal)}
@@ -41,10 +45,22 @@ export function ComponentRenderer({
         </div>
       );
 
+    case "github_repo":
+      return (
+        <div className="group relative my-4">
+          <GithubInfo
+            updateBlockMetadata={updateBlockMetadata}
+            owner={block.metadata.props?.owner || "HadsonRamalho"}
+            repo={block.metadata.props?.repo || "docs"}
+            blockId={block.id}
+          />
+        </div>
+      );
+
     default:
       return (
         <div className="p-4 border border-dashed border-white/10 rounded-lg italic text-gray-500">
-          Componente {metadata?.type} em desenvolvimento...
+          Componente {block.metadata.type} em desenvolvimento...
         </div>
       );
   }

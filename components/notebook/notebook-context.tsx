@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { getNotebook } from "@/lib/storage";
+import { Notebook } from "@/lib/types";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 
 interface NotebookContextType {
   triggerSave: () => void;
@@ -13,21 +21,38 @@ interface NotebookContextType {
   setIsDragging: (v: boolean) => void;
   triggerAddBlock: () => void;
   addBlockSignal: number;
+  notebook: Notebook | null;
+  setNotebook: (n: Notebook) => void;
 }
 
 const NotebookContext = createContext<NotebookContextType | undefined>(
   undefined,
 );
 
-export function NotebookProvider({ children }: { children: ReactNode }) {
+export function NotebookProvider({
+  children,
+  pageId,
+}: {
+  children: ReactNode;
+  pageId: string;
+}) {
   const [saveSignal, setSaveSignal] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [hasSaved, setHasSaved] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [addBlockSignal, setAddBlockSignal] = useState(0);
+  const [notebook, setNotebook] = useState<Notebook | null>(null);
 
   const triggerSave = () => setSaveSignal((prev) => prev + 1);
   const triggerAddBlock = () => setAddBlockSignal((prev) => prev + 1);
+
+  useEffect(() => {
+    if (pageId) {
+      getNotebook(pageId).then((data) => {
+        if (data) setNotebook(data);
+      });
+    }
+  }, [pageId]);
 
   return (
     <NotebookContext.Provider
@@ -36,6 +61,8 @@ export function NotebookProvider({ children }: { children: ReactNode }) {
         saveSignal,
         isSaving,
         setIsSaving,
+        notebook,
+        setNotebook,
         isDragging,
         setIsDragging,
         hasSaved,

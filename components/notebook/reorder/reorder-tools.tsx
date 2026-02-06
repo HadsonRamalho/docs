@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { BlockType, Language, BlockMetadata } from "@/lib/types";
+import { GithubIcon } from "@/components/github-info";
 
 interface ReorderToolsProps {
   hoveredIndex: number | null;
@@ -111,6 +112,16 @@ export function ReorderTools({
             addBlock(index, "component", undefined, {
               type: "card",
               props: { title: "" },
+            }),
+        },
+        {
+          label: "Github Repo",
+          icon: <GithubIcon />,
+          color: "hover:text-indigo-400",
+          onClick: () =>
+            addBlock(index, "component", undefined, {
+              type: "github_repo",
+              props: { owner: "HadsonRamalho", repo: "docs" },
             }),
         },
       ],

@@ -4,7 +4,13 @@ export type BlockType = "text" | "code" | "component";
 export type Language = "rust" | "typescript" | "python";
 export type RunStatus = "idle" | "success" | "error";
 export type TsMode = "simple" | "advanced";
-export type BlockComponentType = "callout" | "card" | "steps" | "tabs";
+
+export type BlockComponentType =
+  | "callout"
+  | "card"
+  | "steps"
+  | "tabs"
+  | "github_repo";
 
 export interface CalloutMetadata {
   type: "callout";
@@ -20,9 +26,18 @@ export interface CardMetadata {
   };
 }
 
+export interface GithubRepoMetadata {
+  type: "github_repo";
+  props: {
+    owner: string;
+    repo: string;
+  };
+}
+
 export type BlockMetadata =
-  | CalloutMetadata
   | CardMetadata
+  | CalloutMetadata
+  | GithubRepoMetadata
   | { type: "generic"; props?: Record<string, any> };
 
 export interface Block {

@@ -7,6 +7,7 @@ import {
   createFullBackup,
   deleteNotebook as dbDelete,
   getAllNotebooks,
+  getNotebook,
   restoreFullBackup,
   saveNotebook,
 } from "@/lib/storage";
@@ -19,6 +20,7 @@ interface NotebookManagerType {
   refreshPages: () => void;
   downloadBackup: () => Promise<void>;
   uploadBackup: (file: File) => Promise<void>;
+  renamePage: (id: string, newTitle: string) => Promise<void>;
 }
 
 const NotebookManagerContext = createContext<NotebookManagerType | undefined>(
@@ -42,6 +44,22 @@ export function NotebookManagerProvider({
   useEffect(() => {
     refreshPages();
   }, []);
+
+  const renamePage = async (id: string, newTitle: string) => {
+    if (!newTitle.trim()) return;
+
+    const notebook = await getNotebook(id);
+
+    await saveNotebook(id, notebook?.blocks || [], newTitle);
+
+    window.dispatchEvent(
+      new CustomEvent("notebook-title-updated", {
+        detail: { id, title: newTitle },
+      }),
+    );
+
+    await refreshPages();
+  };
 
   const createPage = async () => {
     const newId =
@@ -111,6 +129,7 @@ export function NotebookManagerProvider({
       value={{
         pages,
         createPage,
+        renamePage,
         deletePage,
         refreshPages,
         uploadBackup,

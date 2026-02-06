@@ -2,7 +2,7 @@
 
 import { Reorder, useDragControls } from "framer-motion";
 import { GripVertical, Trash2 } from "lucide-react";
-import type { Block } from "@/lib/types";
+import type { Block, BlockMetadata } from "@/lib/types";
 import PythonSandbox from "../blocks/python/python-editor";
 import { RustEditor } from "../blocks/rust/rust-editor";
 import { TextBlock } from "../blocks/text/text-block";
@@ -19,6 +19,7 @@ interface ReorderItemProps {
   setIsDragging: (d: boolean) => void;
   removeBlock: (id: string) => void;
   updateBlock: (id: string, newContent: string) => void;
+  updateBlockMetadata: (id: string, newMetadata: BlockMetadata) => void;
 }
 
 export function ReorderItem({
@@ -30,6 +31,7 @@ export function ReorderItem({
   setBlocks,
   updateBlock,
   removeBlock,
+  updateBlockMetadata,
 }: ReorderItemProps) {
   const dragControls = useDragControls();
 
@@ -67,7 +69,11 @@ export function ReorderItem({
             onChange={(val) => updateBlock(block.id, val)}
           />
         ) : block.type === "component" ? (
-          <ComponentRenderer block={block} updateBlockAction={updateBlock} />
+          <ComponentRenderer
+            block={block}
+            updateBlockAction={updateBlock}
+            updateBlockMetadata={updateBlockMetadata}
+          />
         ) : block.language === "typescript" ? (
           <TsxEditor
             pageFiles={pageFiles}
