@@ -25,7 +25,7 @@ export default function Layout({ children }: LayoutProps<"/docs">) {
 
   return (
     <NotebookManagerProvider>
-      <NotebookProvider>
+      <NotebookProvider pageId={null}>
         <DocsLayout
           tree={filteredTree}
           {...baseOptions()}

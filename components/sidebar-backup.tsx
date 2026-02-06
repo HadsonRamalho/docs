@@ -1,7 +1,7 @@
 "use client";
 
+import { Download, Settings, Upload } from "lucide-react";
 import { useRef } from "react";
-import { Settings, Download, Upload } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +43,7 @@ export function SidebarBackup() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
+            type="button"
             className="p-1 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors"
             title="Configurações e Backup"
           >

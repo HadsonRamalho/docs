@@ -34,7 +34,7 @@ export function NotebookProvider({
   pageId,
 }: {
   children: ReactNode;
-  pageId: string;
+  pageId: string | null;
 }) {
   const [saveSignal, setSaveSignal] = useState(0);
   const [isSaving, setIsSaving] = useState(false);

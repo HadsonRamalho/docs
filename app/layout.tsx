@@ -25,7 +25,9 @@ export default function Layout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={inter.className} suppressHydrationWarning>
       <body className="flex flex-col min-h-screen">
-        <RootProvider>{children}</RootProvider>
+        <RootProvider>
+          {children}
+        </RootProvider>
       </body>
       <Script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js" />
       <Script src="https://unpkg.com/@babel/standalone/babel.min.js" />
