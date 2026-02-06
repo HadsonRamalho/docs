@@ -50,7 +50,12 @@ export function NotebookManagerProvider({
 
     const notebook = await getNotebook(id);
 
-    await saveNotebook(id, notebook?.blocks || [], newTitle);
+    if (!notebook) {
+      console.error("Notebook não encontrado");
+      return;
+    }
+
+    await saveNotebook(id, notebook.blocks, newTitle);
 
     window.dispatchEvent(
       new CustomEvent("notebook-title-updated", {

@@ -1,8 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useNotebook } from "./notebook-context";
 import { useNotebookManager } from "./notebook-manager";
-import { useState, useEffect } from "react";
 
 export function NotebookTitle() {
   const { notebook } = useNotebook();
@@ -51,7 +51,6 @@ export function NotebookTitle() {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         onBlur={handleBlur}
-        autoFocus
       />
     );
   }
