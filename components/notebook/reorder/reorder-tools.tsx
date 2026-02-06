@@ -198,7 +198,7 @@ const ToolButton = ({ onClick, icon, label, color }: any) => (
     onClick={onClick}
     className={`flex items-center gap-1.5 px-3 py-2 sm:py-1.5 hover:bg-white/5 text-gray-400 ${color} rounded-xl transition-all text-[10px] font-bold uppercase tracking-tight`}
   >
-    {icon} <span className="hidden md:inline">{label}</span>
+    {icon} <span>{label}</span>
   </button>
 );
 
