@@ -1,0 +1,244 @@
+use crate::schema::blocks::dsl as blocks_dsl;
+use chrono::{DateTime, Utc};
+use diesel::{
+    ExpressionMethods, QueryDsl, Selectable,
+    prelude::{Associations, Identifiable, Insertable, Queryable},
+};
+use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
+use diesel_derive_enum::DbEnum;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use uuid::Uuid;
+
+use crate::schema::{blocks, notebooks};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DbEnum, Serialize, Deserialize)]
+#[ExistingTypePath = "crate::schema::sql_types::BlockTypeEnum"]
+#[serde(rename_all = "lowercase")]
+pub enum BlockType {
+    Text,
+    Code,
+    Component,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, DbEnum, Serialize, Deserialize)]
+#[ExistingTypePath = "crate::schema::sql_types::LanguageEnum"]
+#[serde(rename_all = "lowercase")]
+pub enum Language {
+    Rust,
+    Typescript,
+    Python,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum BlockMetadata {
+    Callout {
+        props: CalloutProps,
+    },
+    Card {
+        props: CardProps,
+    },
+    GithubRepo {
+        props: GithubRepoProps,
+    },
+    Banner {
+        variant: String,
+    },
+    Generic {
+        #[serde(flatten)]
+        props: serde_json::Value,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CalloutProps {
+    pub title: Option<String>,
+    pub icon: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CardProps {
+    pub title: String,
+    pub description: Option<String>,
+    pub href: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GithubRepoProps {
+    pub owner: String,
+    pub repo: String,
+}
+
+#[derive(Queryable, Selectable, Identifiable, Serialize, Debug)]
+#[diesel(table_name = crate::schema::notebooks)]
+pub struct Notebook {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub title: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Queryable, Selectable, Identifiable, Associations, Serialize, Debug)]
+#[diesel(belongs_to(Notebook))]
+#[diesel(table_name = crate::schema::blocks)]
+pub struct Block {
+    pub id: Uuid,
+    pub notebook_id: Uuid,
+    pub block_type: BlockType,
+    pub language: Option<Language>,
+    pub content: String,
+    pub metadata: Option<serde_json::Value>,
+    pub position: i32,
+}
+
+#[derive(Serialize)]
+pub struct NotebookResponse {
+    #[serde(flatten)]
+    pub meta: Notebook,
+    pub blocks: Vec<BlockResponse>,
+}
+
+#[derive(Serialize)]
+pub struct BlockResponse {
+    pub id: Uuid,
+    #[serde(rename = "type")]
+    pub block_type: BlockType,
+    pub content: String,
+    pub language: Option<Language>,
+    pub metadata: Option<BlockMetadata>,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = notebooks)]
+pub struct NewNotebook {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub title: String,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = blocks)]
+pub struct NewBlock {
+    pub id: Uuid,
+    pub notebook_id: Uuid,
+    pub block_type: BlockType,
+    pub language: Option<Language>,
+    pub content: String,
+    pub metadata: Option<Value>,
+    pub position: i32,
+}
+
+pub async fn create_notebook(
+    conn: &mut AsyncPgConnection,
+    new_notebook: &NewNotebook,
+) -> Result<(), String> {
+    use crate::schema::notebooks::dsl::*;
+
+    match diesel::insert_into(notebooks)
+        .values(new_notebook)
+        .execute(conn)
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+pub async fn find_notebook_by_id(
+    conn: &mut AsyncPgConnection,
+    param_id: &Uuid,
+) -> Result<Notebook, String> {
+    use crate::schema::notebooks::dsl::*;
+    match notebooks
+        .filter(id.eq(param_id))
+        .get_result::<Notebook>(conn)
+        .await
+    {
+        Ok(notebook) => Ok(notebook),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+pub async fn delete_notebook(conn: &mut AsyncPgConnection, param_id: &Uuid) -> Result<(), String> {
+    use crate::schema::notebooks::dsl::*;
+
+    match diesel::delete(notebooks.filter(id.eq(param_id)))
+        .execute(conn)
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+pub async fn get_all_notebooks(
+    conn: &mut AsyncPgConnection,
+    param_id: &Uuid,
+) -> Result<Vec<Notebook>, String> {
+    use crate::schema::notebooks::dsl::*;
+
+    match notebooks
+        .filter(user_id.eq(param_id))
+        .order(updated_at.desc())
+        .load::<Notebook>(conn)
+        .await
+    {
+        Ok(items) => Ok(items),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+pub async fn find_blocks_by_notebook_id(
+    conn: &mut AsyncPgConnection,
+    param_nb_id: &Uuid,
+) -> Result<Vec<Block>, String> {
+    match blocks_dsl::blocks
+        .filter(blocks_dsl::notebook_id.eq(param_nb_id))
+        .order(blocks_dsl::position.asc()) // Importante: Ordem correta
+        .load::<Block>(conn)
+        .await
+    {
+        Ok(items) => Ok(items),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+pub async fn sync_notebook_content(
+    conn: &mut AsyncPgConnection,
+    nb_id: Uuid,
+    new_title: String,
+    new_blocks: Vec<NewBlock>,
+) -> Result<(), String> {
+    use crate::schema::notebooks::dsl::*;
+
+    let result = conn
+        .transaction::<_, diesel::result::Error, _>(|conn| {
+            Box::pin(async move {
+                diesel::update(notebooks.filter(id.eq(nb_id)))
+                    .set((title.eq(new_title), updated_at.eq(chrono::Utc::now())))
+                    .execute(conn)
+                    .await?;
+
+                diesel::delete(blocks_dsl::blocks.filter(blocks_dsl::notebook_id.eq(nb_id)))
+                    .execute(conn)
+                    .await?;
+
+                if !new_blocks.is_empty() {
+                    diesel::insert_into(blocks_dsl::blocks)
+                        .values(&new_blocks)
+                        .execute(conn)
+                        .await?;
+                }
+
+                Ok(())
+            })
+        })
+        .await;
+
+    match result {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e.to_string()),
+    }
+}

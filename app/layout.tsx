@@ -1,9 +1,12 @@
-import { env } from "@/lib/env";
 import "katex/dist/katex.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./global.css";
+import { HomeLayout } from "fumadocs-ui/layouts/home";
 import Script from "next/script";
+import { Toaster } from "sonner";
+import { AuthProvider } from "@/context/auth-context";
+import { baseOptions } from "@/lib/layout.shared";
 import { Provider } from "./search-provider";
 
 const inter = Inter({
@@ -19,13 +22,16 @@ export const metadata: Metadata = {
   },
 };
 
-env.loadEnv();
-
 export default function Layout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={inter.className} suppressHydrationWarning>
       <body className="flex flex-col min-h-screen">
-        <Provider>{children}</Provider>
+        <AuthProvider>
+          <Toaster richColors={true} />
+          <Provider>
+            <HomeLayout {...baseOptions()}>{children}</HomeLayout>
+          </Provider>
+        </AuthProvider>
       </body>
       <Script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js" />
       <Script src="https://unpkg.com/@babel/standalone/babel.min.js" />

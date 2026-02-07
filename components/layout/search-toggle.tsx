@@ -7,7 +7,8 @@ import { cn } from "../../lib/cn";
 import { type ButtonProps, buttonVariants } from "../ui/fumadocs-button";
 
 interface SearchToggleProps
-  extends Omit<ComponentProps<"button">, "color">, ButtonProps {
+  extends Omit<ComponentProps<"button">, "color">,
+    ButtonProps {
   hideIfDisabled?: boolean;
 }
 

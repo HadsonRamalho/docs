@@ -1,16 +1,8 @@
-import { env } from "@/lib/env";
-import {
-  ArrowUpRight,
-  BookOpen,
-  Code2,
-  MoveRight,
-  Workflow,
-} from "lucide-react";
+import { MoveRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
-  const renderApiReference = env.get("NEXT_PUBLIC_MODE") !== "NO_ENDPOINTS";
   return (
     <main className="relative overflow-hidden">
       <section className="mx-auto max-w-7xl px-6 py-24 lg:py-32 text-center">
@@ -28,14 +20,12 @@ export default function HomePage() {
             Começar Agora <MoveRight className="ml-2 h-4 w-4" />
           </Link>
 
-          {renderApiReference && (
-            <Link
-              href="/docs/api-reference"
-              className="flex items-center justify-center rounded-xl border bg-fd-background px-8 py-4 text-sm font-bold hover:bg-muted transition-colors"
-            >
-              API Reference
-            </Link>
-          )}
+          <Link
+            href="/login"
+            className="flex items-center justify-center rounded-xl border bg-fd-primary px-8 py-4 text-sm font-bold text-fd-primary-foreground shadow-lg transition-transform hover:-translate-y-1"
+          >
+            Login <MoveRight className="ml-2 h-4 w-4" />
+          </Link>
         </div>
       </section>
 
