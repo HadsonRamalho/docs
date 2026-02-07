@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import Markdown from "react-markdown";
 
@@ -12,7 +13,6 @@ export function TextBlock({ content, onChange }: TextBlockProps) {
   if (isEditing) {
     return (
       <textarea
-        autoFocus
         className="w-full bg-transparent text-gray-200 text-lg outline-none resize-none border-l-2 border-emerald-500 pl-4 py-2"
         value={content}
         onBlur={() => setIsEditing(false)}

@@ -7,14 +7,14 @@ import {
   DocsPage,
   DocsTitle,
 } from "@/components/layout/docs/page";
-import { env } from "@/lib/env";
-import { formatFullDate } from "@/lib/formatFullDate";
-import { getPageImage, source } from "@/lib/source";
-import { getMDXComponents } from "@/mdx-components";
 import { NotebookProvider } from "@/components/notebook/notebook-context";
 import { NotebookControls } from "@/components/notebook/notebook-controls";
 import RustInteractivePage from "@/components/notebook/notebook-page";
 import { NotebookTitle } from "@/components/notebook/notebook-title";
+import { env } from "@/lib/env";
+import { formatFullDate } from "@/lib/formatFullDate";
+import { getPageImage, source } from "@/lib/source";
+import { getMDXComponents } from "@/mdx-components";
 
 export const dynamicParams = true;
 
@@ -41,7 +41,7 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
       <NotebookProvider pageId={pageId}>
         <DocsPage>
           <div className="mb-8">
-            <NotebookTitle />
+            <NotebookTitle pageTitle={page?.data.title} />
             <p className="text-muted-foreground text-xs mt-1 font-mono">
               ID: {pageId}
             </p>

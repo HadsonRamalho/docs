@@ -48,14 +48,14 @@ export function NotebookManagerProvider({
   const renamePage = async (id: string, newTitle: string) => {
     if (!newTitle.trim()) return;
 
-    const notebook = await getNotebook(id);
+    const currentNotebook = await getNotebook(id);
 
-    if (!notebook) {
-      console.error("Notebook não encontrado");
+    if (!currentNotebook) {
+      console.error("O notebook atual não foi encontrado");
       return;
     }
 
-    await saveNotebook(id, notebook.blocks, newTitle);
+    await saveNotebook(id, currentNotebook.blocks, newTitle);
 
     window.dispatchEvent(
       new CustomEvent("notebook-title-updated", {
@@ -76,7 +76,18 @@ export function NotebookManagerProvider({
             return v.toString(16);
           });
 
-    await saveNotebook(newId, [], "Nova Página");
+    await saveNotebook(
+      newId,
+      [
+        {
+          title: "Bloco de Texto",
+          id: "init-1",
+          type: "text",
+          content: "# Notas\nComece a editar...",
+        },
+      ],
+      "Nova Página",
+    );
 
     await refreshPages();
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Block, Notebook, NotebookMeta } from "./types";
+import type { Block, Notebook, NotebookMeta } from "./types";
 
 const INDEX_KEY = "my-notebook-pages";
 const NOTEBOOK_PREFIX = "rust-notebook-";
@@ -17,8 +17,21 @@ export async function getAllNotebooks(): Promise<NotebookMeta[]> {
 export async function getNotebook(id: string): Promise<Notebook | null> {
   await delay(100);
   if (typeof window === "undefined") return null;
+
   const data = localStorage.getItem(`${NOTEBOOK_PREFIX}${id}`);
-  return data ? JSON.parse(data) : null;
+  if (!data) return null;
+
+  try {
+    const parsed = JSON.parse(data);
+
+    return {
+      ...parsed,
+      blocks: Array.isArray(parsed.blocks) ? parsed.blocks : [],
+    };
+  } catch (error) {
+    console.error("Erro ao ler notebook:", error);
+    return null;
+  }
 }
 
 export async function saveNotebook(
@@ -34,7 +47,7 @@ export async function saveNotebook(
     title,
     createdAt: current?.createdAt || now,
     updatedAt: now,
-    blocks,
+    blocks: Array.isArray(blocks) ? blocks : [],
   };
 
   localStorage.setItem(`${NOTEBOOK_PREFIX}${id}`, JSON.stringify(notebook));
@@ -99,7 +112,7 @@ export async function restoreFullBackup(jsonString: string): Promise<boolean> {
     }
 
     const storedIndex = localStorage.getItem(INDEX_KEY);
-    let currentIndex = storedIndex ? JSON.parse(storedIndex) : [];
+    const currentIndex = storedIndex ? JSON.parse(storedIndex) : [];
 
     let newIndex;
 

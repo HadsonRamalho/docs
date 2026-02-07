@@ -2,6 +2,7 @@
 
 import { Reorder } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { getNotebook, saveNotebook } from "@/lib/storage";
 import type { Block, BlockMetadata, BlockType, Language } from "@/lib/types";
 import { useNotebook } from "./notebook-context";
 import { ReorderItem } from "./reorder/reorder-item";
@@ -14,8 +15,14 @@ interface RustInteractivePageProps {
 export default function RustInteractivePage({
   pageId = "default",
 }: RustInteractivePageProps) {
-  const { saveSignal, setIsSaving, setHasSaved, isDragging, setIsDragging } =
-    useNotebook();
+  const {
+    saveSignal,
+    notebook,
+    setIsSaving,
+    setHasSaved,
+    isDragging,
+    setIsDragging,
+  } = useNotebook();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [blocks, setBlocks] = useState<Block[]>([
     {
@@ -26,21 +33,23 @@ export default function RustInteractivePage({
     },
   ]);
 
-  const storageKey = `rust-notebook-${pageId}`;
-
   useEffect(() => {
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setBlocks(parsed);
-        }
-      } catch (e) {
-        console.error("Erro ao ler dados salvos", e);
+    let isMounted = true;
+
+    async function load() {
+      const notebook = await getNotebook(pageId);
+
+      if (isMounted && notebook?.blocks) {
+        setBlocks(notebook.blocks);
       }
     }
-  }, [storageKey]);
+
+    load();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [pageId]);
 
   const blocksRef = useRef(blocks);
   useEffect(() => {
@@ -53,17 +62,26 @@ export default function RustInteractivePage({
     const saveData = async () => {
       setIsSaving(true);
 
-      localStorage.setItem(storageKey, JSON.stringify(blocksRef.current));
+      try {
+        await saveNotebook(
+          pageId,
+          blocksRef.current,
+          notebook?.title || "Sem título",
+        );
 
-      await new Promise((r) => setTimeout(r, 600));
+        await new Promise((r) => setTimeout(r, 600));
 
-      setIsSaving(false);
-      setHasSaved(true);
-      setTimeout(() => setHasSaved(false), 2000);
+        setIsSaving(false);
+        setHasSaved(true);
+        setTimeout(() => setHasSaved(false), 2000);
+      } catch (error) {
+        console.error("Falha ao salvar:", error);
+        setIsSaving(false);
+      }
     };
 
     saveData();
-  }, [saveSignal, setIsSaving, setHasSaved, storageKey]);
+  }, [saveSignal, pageId, notebook?.title, setIsSaving, setHasSaved]);
 
   const getFileName = (title: string) => {
     return title.replace(/[^a-zA-Z0-9]/g, "_");

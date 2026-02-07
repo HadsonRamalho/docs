@@ -2,12 +2,12 @@
 
 import { Check, FileText, Pencil, Plus } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import type { NotebookMeta } from "@/lib/types";
 import { DeletePageDialog } from "../delete-page-dialog";
 import { SidebarBackup } from "../sidebar-backup";
 import { Button } from "../ui/button";
 import { useNotebookManager } from "./notebook-manager";
-import { useState } from "react";
-import { NotebookMeta } from "@/lib/types";
 
 export function UserSidebar() {
   const { pages, createPage } = useNotebookManager();
@@ -24,7 +24,9 @@ export function UserSidebar() {
   };
 
   const handleSaveRename = async (id: string) => {
-    await renamePage(id, tempTitle);
+    if (tempTitle.trim() !== "") {
+      await renamePage(id, tempTitle);
+    }
     setEditingId(null);
   };
 
@@ -63,7 +65,6 @@ export function UserSidebar() {
             {editingId === page.id ? (
               <div className="flex items-center gap-1 p-1 w-full">
                 <input
-                  autoFocus
                   className="bg-transparent border-b border-emerald-500 outline-none text-sm text-white w-full px-1"
                   value={tempTitle}
                   onChange={(e) => setTempTitle(e.target.value)}
@@ -73,6 +74,7 @@ export function UserSidebar() {
                   }}
                 />
                 <button
+                  type="button"
                   onClick={() => handleSaveRename(page.id)}
                   className="text-emerald-500"
                 >

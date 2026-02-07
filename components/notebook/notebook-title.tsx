@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { useNotebook } from "./notebook-context";
 import { useNotebookManager } from "./notebook-manager";
 
-export function NotebookTitle() {
+interface NotebookTitleProps {
+  pageTitle: string | undefined;
+}
+
+export function NotebookTitle({ pageTitle }: NotebookTitleProps) {
   const { notebook } = useNotebook();
   const { renamePage } = useNotebookManager();
   const [isEditing, setIsEditing] = useState(false);
@@ -32,21 +36,19 @@ export function NotebookTitle() {
     setIsEditing(false);
 
     if (!notebook) {
-      console.error("Notebook não encontrado. Impossível atualizar título.");
+      console.error("Notebook não encontrado");
       return;
     }
 
     const currentTitle = title?.trim() || "";
     const originalTitle = notebook.title?.trim() || "";
 
-    if (!currentTitle) {
+    if (!currentTitle || currentTitle === originalTitle) {
       setTitle(originalTitle);
       return;
     }
 
-    if (currentTitle !== originalTitle) {
-      renamePage(notebook.id, currentTitle);
-    }
+    renamePage(notebook.id, currentTitle);
   };
 
   if (isEditing) {
@@ -63,9 +65,11 @@ export function NotebookTitle() {
   return (
     <h1
       className="text-3xl font-bold cursor-text hover:bg-white/5 rounded px-1 transition-colors"
-      onClick={() => setIsEditing(true)}
+      onClick={() => {
+        !pageTitle && setIsEditing(true);
+      }}
     >
-      {title || "..."}
+      {title || pageTitle || "..."}
     </h1>
   );
 }
