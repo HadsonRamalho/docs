@@ -1,4 +1,4 @@
 pub mod error;
 pub mod jwt;
-pub mod notebooks;
+pub mod notebook;
 pub mod user;

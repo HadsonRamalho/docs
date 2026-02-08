@@ -7,7 +7,7 @@ use validator::Validate;
 use crate::{
     controllers::{
         jwt::{extract_claims_from_header, generate_jwt},
-        utils::{Sanitize, get_conn},
+        utils::{Sanitize, get_conn, password_hash},
     },
     models::{
         self,
@@ -27,6 +27,8 @@ pub async fn api_register_user(
     if let Err(errors) = user_input.validate() {
         return Err(ApiError::Request(errors.to_string()));
     }
+
+    user_input.password_hash = Some(password_hash(&user_input.password_hash.unwrap()));
 
     let conn = &mut get_conn(&pool)
         .await

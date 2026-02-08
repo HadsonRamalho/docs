@@ -39,7 +39,7 @@ export interface UpdateUser {
 export interface RegisterUser {
   name: string;
   email: string;
-  password: string;
+  password_hash: string;
 }
 
 export interface NewUserInternal {

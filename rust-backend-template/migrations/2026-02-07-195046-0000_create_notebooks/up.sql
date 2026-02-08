@@ -13,6 +13,8 @@ CREATE TABLE blocks (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     notebook_id UUID NOT NULL REFERENCES notebooks(id) ON DELETE CASCADE,
 
+    title TEXT NOT NULL DEFAULT '',
+
     block_type block_type_enum NOT NULL,
     language language_enum,
 

@@ -4,13 +4,12 @@ import { useRouter } from "next/navigation";
 import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import {
-  createFullBackup,
-  deleteNotebook as dbDelete,
-  getAllNotebooks,
-  getNotebook,
-  restoreFullBackup,
-  saveNotebook,
-} from "@/lib/storage";
+  createNotebook,
+  deleteNotebook,
+  getMyNotebooks,
+  updateNotebookTitle,
+} from "@/lib/api/notebook-service";
+import { restoreFullBackup } from "@/lib/storage";
 import type { NotebookMeta } from "@/lib/types";
 
 interface NotebookManagerType {
@@ -36,7 +35,7 @@ export function NotebookManagerProvider({
   const router = useRouter();
 
   const refreshPages = async () => {
-    const data = await getAllNotebooks();
+    const data = await getMyNotebooks();
     setPages(data);
   };
 
@@ -48,54 +47,35 @@ export function NotebookManagerProvider({
   const renamePage = async (id: string, newTitle: string) => {
     if (!newTitle.trim()) return;
 
-    const currentNotebook = await getNotebook(id);
+    try {
+      await updateNotebookTitle(id, newTitle);
 
-    if (!currentNotebook) {
-      console.error("O notebook atual não foi encontrado");
-      return;
+      window.dispatchEvent(
+        new CustomEvent("notebook-title-updated", {
+          detail: { id, title: newTitle },
+        }),
+      );
+
+      await refreshPages();
+    } catch (error) {
+      console.error("Erro ao renomear notebook:", error);
     }
-
-    await saveNotebook(id, currentNotebook.blocks, newTitle);
-
-    window.dispatchEvent(
-      new CustomEvent("notebook-title-updated", {
-        detail: { id, title: newTitle },
-      }),
-    );
-
-    await refreshPages();
   };
 
   const createPage = async () => {
-    const newId =
-      typeof crypto.randomUUID === "function"
-        ? crypto.randomUUID()
-        : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-            const r = (Math.random() * 16) | 0;
-            const v = c === "x" ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-          });
+    try {
+      const newId = await createNotebook();
 
-    await saveNotebook(
-      newId,
-      [
-        {
-          title: "Bloco de Texto",
-          id: "init-1",
-          type: "text",
-          content: "# Notas\nComece a editar...",
-        },
-      ],
-      "Nova Página",
-    );
+      await refreshPages();
 
-    await refreshPages();
-
-    router.push(`/docs/${newId}`);
+      router.push(`/docs/${newId}`);
+    } catch (error) {
+      console.error("Falha ao criar o notebook: ", error);
+    }
   };
 
   const deletePage = async (id: string) => {
-    await dbDelete(id);
+    await deleteNotebook(id);
 
     await refreshPages();
 
@@ -103,7 +83,8 @@ export function NotebookManagerProvider({
   };
 
   const downloadBackup = async () => {
-    const json = await createFullBackup();
+    const pages = await getMyNotebooks();
+    const json = JSON.stringify(pages, null, 2);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 

@@ -1,7 +1,7 @@
 use crate::schema::blocks::dsl as blocks_dsl;
 use chrono::{DateTime, Utc};
 use diesel::{
-    ExpressionMethods, QueryDsl, Selectable,
+    BelongingToDsl, ExpressionMethods, QueryDsl, Selectable,
     prelude::{Associations, Identifiable, Insertable, Queryable},
 };
 use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
@@ -76,7 +76,9 @@ pub struct Notebook {
     pub id: Uuid,
     pub user_id: Uuid,
     pub title: String,
+    #[serde(rename = "createdAt")]
     pub created_at: DateTime<Utc>,
+    #[serde(rename = "updatedAt")]
     pub updated_at: DateTime<Utc>,
 }
 
@@ -86,6 +88,7 @@ pub struct Notebook {
 pub struct Block {
     pub id: Uuid,
     pub notebook_id: Uuid,
+    pub title: String,
     pub block_type: BlockType,
     pub language: Option<Language>,
     pub content: String,
@@ -103,6 +106,7 @@ pub struct NotebookResponse {
 #[derive(Serialize)]
 pub struct BlockResponse {
     pub id: Uuid,
+    pub title: String,
     #[serde(rename = "type")]
     pub block_type: BlockType,
     pub content: String,
@@ -123,11 +127,34 @@ pub struct NewNotebook {
 pub struct NewBlock {
     pub id: Uuid,
     pub notebook_id: Uuid,
+    pub title: String,
     pub block_type: BlockType,
     pub language: Option<Language>,
     pub content: String,
     pub metadata: Option<Value>,
     pub position: i32,
+}
+
+#[derive(Deserialize)]
+pub struct UpdateNotebookTitle {
+    pub title: String,
+}
+
+#[derive(Deserialize)]
+pub struct SyncNotebookRequest {
+    pub title: String,
+    pub blocks: Vec<BlockRequest>,
+}
+
+#[derive(Deserialize)]
+pub struct BlockRequest {
+    pub id: Uuid,
+    pub title: String,
+    #[serde(rename = "type")]
+    pub block_type: BlockType,
+    pub content: String,
+    pub language: Option<Language>,
+    pub metadata: Option<BlockMetadata>,
 }
 
 pub async fn create_notebook(
@@ -138,6 +165,22 @@ pub async fn create_notebook(
 
     match diesel::insert_into(notebooks)
         .values(new_notebook)
+        .execute(conn)
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+pub async fn create_block(
+    conn: &mut AsyncPgConnection,
+    new_block: &NewBlock,
+) -> Result<(), String> {
+    use crate::schema::blocks::dsl::*;
+
+    match diesel::insert_into(blocks)
+        .values(new_block)
         .execute(conn)
         .await
     {
@@ -173,6 +216,23 @@ pub async fn delete_notebook(conn: &mut AsyncPgConnection, param_id: &Uuid) -> R
     }
 }
 
+pub async fn update_notebook_title(
+    conn: &mut AsyncPgConnection,
+    param_id: Uuid,
+    new_title: String,
+) -> Result<(), String> {
+    use crate::schema::notebooks::dsl::*;
+
+    match diesel::update(notebooks.filter(id.eq(param_id)))
+        .set((title.eq(new_title), updated_at.eq(Utc::now())))
+        .execute(conn)
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
 pub async fn get_all_notebooks(
     conn: &mut AsyncPgConnection,
     param_id: &Uuid,
@@ -196,7 +256,7 @@ pub async fn find_blocks_by_notebook_id(
 ) -> Result<Vec<Block>, String> {
     match blocks_dsl::blocks
         .filter(blocks_dsl::notebook_id.eq(param_nb_id))
-        .order(blocks_dsl::position.asc()) // Importante: Ordem correta
+        .order(blocks_dsl::position.asc())
         .load::<Block>(conn)
         .await
     {
@@ -241,4 +301,56 @@ pub async fn sync_notebook_content(
         Ok(_) => Ok(()),
         Err(e) => Err(e.to_string()),
     }
+}
+
+pub async fn get_notebook_with_blocks(
+    conn: &mut AsyncPgConnection,
+    param_id: &Uuid,
+) -> Result<NotebookResponse, String> {
+    let notebook: Notebook = match notebooks::table
+        .find(param_id)
+        .first::<Notebook>(conn)
+        .await
+    {
+        Ok(n) => n,
+        Err(e) => return Err(format!("Notebook não encontrado: {}", e)),
+    };
+
+    let db_blocks: Vec<Block> = match Block::belonging_to(&notebook)
+        .order(blocks::position.asc())
+        .load::<Block>(conn)
+        .await
+    {
+        Ok(b) => b,
+        Err(e) => return Err(format!("Erro ao buscar blocos: {}", e)),
+    };
+
+    let api_blocks: Vec<BlockResponse> = db_blocks
+        .into_iter()
+        .map(|b| {
+            let parsed_metadata: Option<BlockMetadata> =
+                b.metadata
+                    .and_then(|json_val| match serde_json::from_value(json_val) {
+                        Ok(meta) => Some(meta),
+                        Err(e) => {
+                            println!("Erro ao desserializar metadata do bloco {}: {}", b.id, e);
+                            None
+                        }
+                    });
+
+            BlockResponse {
+                id: b.id,
+                title: b.title,
+                block_type: b.block_type,
+                content: b.content,
+                language: b.language,
+                metadata: parsed_metadata,
+            }
+        })
+        .collect();
+
+    Ok(NotebookResponse {
+        meta: notebook,
+        blocks: api_blocks,
+    })
 }

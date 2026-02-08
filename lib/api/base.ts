@@ -37,7 +37,7 @@ export const api = {
   get: <T>(path: string, config?: FetchOptions) =>
     http<T>(path, { ...config, method: "GET" }),
 
-  post: <T>(path: string, body: any, config?: FetchOptions) =>
+  post: <T>(path: string, body?: any, config?: FetchOptions) =>
     http<T>(path, { ...config, method: "POST", body: JSON.stringify(body) }),
 
   put: <T>(path: string, body: any, config?: FetchOptions) =>

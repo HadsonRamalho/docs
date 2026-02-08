@@ -26,6 +26,7 @@ diesel::table! {
     blocks (id) {
         id -> Uuid,
         notebook_id -> Uuid,
+        title -> Text,
         block_type -> BlockTypeEnum,
         language -> Nullable<LanguageEnum>,
         content -> Text,

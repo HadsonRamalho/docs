@@ -51,7 +51,7 @@ export function SignupForm({
     setGlobalError("");
 
     try {
-      await register(data);
+      await register({...data, password_hash: data.password});
     } catch (err: any) {
       setGlobalError(err.message || "Erro ao criar conta. Tente novamente.");
     } finally {
