@@ -3,6 +3,7 @@ use crate::controllers::utils::get_database_url_from_env;
 use crate::models::error::ApiError;
 use crate::routes::docs::get_api_docs;
 use crate::routes::notebook::notebook_routes;
+use crate::routes::run_rust::run_rust_routes;
 use crate::routes::user::user_routes;
 use axum::{Json, Router};
 use axum::{
@@ -28,6 +29,7 @@ use utoipa_swagger_ui::SwaggerUi;
 
 pub mod docs;
 pub mod notebook;
+pub mod run_rust;
 pub mod user;
 
 pub async fn print_protected_route()
@@ -80,6 +82,7 @@ pub async fn init_routes() -> Router {
 
         return Router::new()
             .nest("/api", app.into())
+            .nest("/api", run_rust_routes().await.into())
             .nest("/api/user", user_routes().await.into())
             .nest("/api/notebook", notebook_routes().await.into())
             .nest("/api", protected_routes(pool.clone()).into())

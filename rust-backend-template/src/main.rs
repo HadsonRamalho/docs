@@ -1,13 +1,32 @@
+use serde::{Deserialize, Serialize};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+use crate::controllers::utils::auto_delete_files;
+
 pub mod controllers;
+pub mod file;
+pub mod http;
 pub mod models;
 pub mod routes;
 pub mod schema;
+pub mod sec;
+
+#[derive(Deserialize)]
+pub struct CodeRequest {
+    code: String,
+}
+
+#[derive(Serialize)]
+pub struct CodeResponse {
+    stdout: String,
+    stderr: String,
+}
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 4)]
 async fn main() {
+    tokio::spawn(auto_delete_files());
+
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()

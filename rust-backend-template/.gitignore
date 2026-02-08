@@ -2,3 +2,5 @@
 .env
 diesel.toml
 Cargo.lock
+/files
+/logs

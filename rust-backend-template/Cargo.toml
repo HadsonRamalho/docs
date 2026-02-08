@@ -1,5 +1,5 @@
 [package]
-name = "Rust-Backend-Template"
+name = "rust-server"
 version = "0.1.0"
 edition = "2024"
 authors = ["HadsonRamalho"]

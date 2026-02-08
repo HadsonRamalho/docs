@@ -3,10 +3,10 @@
 import Editor from "@monaco-editor/react";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
-import { RunRust } from "@/lib/api";
 import type { Block, RunStatus, TsMode } from "@/lib/types";
 import { EditorHeader } from "../default/editor-header";
 import { RunButton } from "../default/run-button";
+import { RunRust } from "@/lib/api/run-rust";
 
 interface RustNotebookProps {
   block: Block;

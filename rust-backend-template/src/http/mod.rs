@@ -6,11 +6,11 @@ use tokio::process::Command;
 
 use crate::CodeRequest;
 use crate::CodeResponse;
+use crate::controllers::utils::extract_module_name;
 use crate::file::register_log;
 use crate::file::run_safe_bin;
 use crate::file::setup_user_env;
 use crate::sec::verify_code;
-use crate::utils::extract_module_name;
 
 pub async fn verify_request(
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
