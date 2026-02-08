@@ -1,28 +1,41 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useNotebook } from "./notebook-context";
+import { getCurrentNotebook } from "@/lib/api/notebook-service";
 import { useNotebookManager } from "./notebook-manager";
 
 interface NotebookTitleProps {
   pageTitle: string | undefined;
+  pageId: string;
 }
 
-export function NotebookTitle({ pageTitle }: NotebookTitleProps) {
-  const { notebook } = useNotebook();
+export function NotebookTitle({ pageTitle, pageId }: NotebookTitleProps) {
   const { renamePage } = useNotebookManager();
   const [isEditing, setIsEditing] = useState(false);
-  const [title, setTitle] = useState<string | undefined>("");
+  const [title, setTitle] = useState<string | undefined>(undefined);
+  const [originalTitle, setOriginalTitle] = useState<string | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
-    if (notebook?.title) {
-      setTitle(notebook.title);
+    const loadNotebook = async () => {
+      try {
+        const notebook = await getCurrentNotebook(pageId);
+        setOriginalTitle(notebook.title);
+        setTitle(notebook.title);
+      } catch (error) {
+        console.error("Falha ao carregar o notebook.");
+        setTitle("...");
+      }
+    };
+    if (!originalTitle) {
+      loadNotebook();
     }
-  }, [notebook?.title]);
+  }, []);
 
   useEffect(() => {
-    const handleUpdate = (e: any) => {
-      if (e.detail.id === notebook?.id) {
+    const handleUpdate = async (e: any) => {
+      if (e.detail.id === pageId) {
         setTitle(e.detail.title);
       }
     };
@@ -30,25 +43,20 @@ export function NotebookTitle({ pageTitle }: NotebookTitleProps) {
     window.addEventListener("notebook-title-updated", handleUpdate);
     return () =>
       window.removeEventListener("notebook-title-updated", handleUpdate);
-  }, [notebook?.id]);
+  }, [pageId]);
 
-  const handleBlur = () => {
+  const handleBlur = async () => {
     setIsEditing(false);
 
-    if (!notebook) {
-      console.error("Notebook não encontrado");
-      return;
-    }
-
     const currentTitle = title?.trim() || "";
-    const originalTitle = notebook.title?.trim() || "";
+    const original = originalTitle?.trim() || "";
 
-    if (!currentTitle || currentTitle === originalTitle) {
-      setTitle(originalTitle);
+    if (!currentTitle || currentTitle === original) {
+      setTitle(original);
       return;
     }
 
-    renamePage(notebook.id, currentTitle);
+    await renamePage(pageId, currentTitle);
   };
 
   if (isEditing) {

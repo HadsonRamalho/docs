@@ -31,8 +31,9 @@ export function DeletePageDialog({ pageId, pageTitle }: DeletePageDialogProps) {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <button
+          type="button"
           onClick={(e) => e.stopPropagation()}
-          className="opacity-0 group-hover:opacity-100 hover:cursor-pointer p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-all"
+          className="md:opacity-0 group-hover:opacity-100 hover:cursor-pointer p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-all"
           title="Excluir página"
         >
           <Trash2 size={14} />

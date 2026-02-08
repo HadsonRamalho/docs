@@ -1,0 +1,12 @@
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use crate::models::user::UserRole;
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Claims {
+    pub id: Uuid,
+    pub public_id: i32,
+    pub role: UserRole,
+    pub email: String,
+    pub exp: usize,
+}

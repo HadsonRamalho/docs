@@ -1,7 +1,7 @@
+import { DocsLayout } from "@/components/layout/docs";
 import { NotebookProvider } from "@/components/notebook/notebook-context";
 import { NotebookManagerProvider } from "@/components/notebook/notebook-manager";
 import { UserSidebar } from "@/components/notebook/user-sidebar";
-import { DocsLayout } from "@/components/layout/docs";
 import { env } from "@/lib/env";
 import { baseOptions } from "@/lib/layout.shared";
 import { source } from "@/lib/source";

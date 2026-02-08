@@ -1,13 +1,16 @@
-use axum::{Router, routing::post};
 use serde::{Deserialize, Serialize};
-use tower_http::cors::CorsLayer;
+use tower_http::trace::TraceLayer;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::{http::verify_request, utils::auto_delete_files};
+use crate::controllers::utils::auto_delete_files;
 
+pub mod controllers;
 pub mod file;
 pub mod http;
+pub mod models;
+pub mod routes;
+pub mod schema;
 pub mod sec;
-pub mod utils;
 
 #[derive(Deserialize)]
 pub struct CodeRequest {
@@ -20,18 +23,25 @@ pub struct CodeResponse {
     stderr: String,
 }
 
-#[tokio::main]
+#[tokio::main(flavor = "multi_thread", worker_threads = 4)]
 async fn main() {
     tokio::spawn(auto_delete_files());
 
-    let app = Router::new()
-        .route("/run", post(verify_request))
-        .layer(CorsLayer::permissive());
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "info,tower_http=debug".into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
-    let addr = "0.0.0.0:3001";
-    println!("API rodando em http://{}", addr);
+    let app = crate::routes::init_routes()
+        .await
+        .layer(TraceLayer::new_for_http());
 
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3099").await.unwrap();
+
+    tracing::info!("Servidor rodando em http://0.0.0.0:3099");
 
     axum::serve(
         listener,

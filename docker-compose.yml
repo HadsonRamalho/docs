@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  api:
+    image: ubuntu/rust-server:latest
+    restart: always
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    depends_on:
+      - db
+    environment:
+      - RUST_LOG=${RUST_LOG}
+      - JWT_SECRET=${JWT_SECRET}
+
+      - DATABASE_URL=${DATABASE_URL}
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

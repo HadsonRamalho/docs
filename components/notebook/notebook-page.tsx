@@ -2,7 +2,13 @@
 
 import { Reorder } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { getNotebook, saveNotebook } from "@/lib/storage";
+import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
+import { useAuth } from "@/context/auth-context";
+import {
+  getCurrentNotebookWithBlocks,
+  saveNotebookData,
+} from "@/lib/api/notebook-service";
 import type { Block, BlockMetadata, BlockType, Language } from "@/lib/types";
 import { useNotebook } from "./notebook-context";
 import { ReorderItem } from "./reorder/reorder-item";
@@ -15,14 +21,18 @@ interface RustInteractivePageProps {
 export default function RustInteractivePage({
   pageId = "default",
 }: RustInteractivePageProps) {
+  const { user } = useAuth();
   const {
     saveSignal,
     notebook,
+    triggerSave,
     setIsSaving,
     setHasSaved,
     isDragging,
     setIsDragging,
+    isPublic,
   } = useNotebook();
+  const isOwner = notebook?.userId === user?.id;
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [blocks, setBlocks] = useState<Block[]>([
     {
@@ -37,7 +47,7 @@ export default function RustInteractivePage({
     let isMounted = true;
 
     async function load() {
-      const notebook = await getNotebook(pageId);
+      const notebook = await getCurrentNotebookWithBlocks(pageId);
 
       if (isMounted && notebook?.blocks) {
         setBlocks(notebook.blocks);
@@ -57,16 +67,17 @@ export default function RustInteractivePage({
   }, [blocks]);
 
   useEffect(() => {
-    if (saveSignal === 0) return;
+    if (saveSignal === 0 || !isOwner) return;
 
     const saveData = async () => {
       setIsSaving(true);
 
       try {
-        await saveNotebook(
+        await saveNotebookData(
           pageId,
-          blocksRef.current,
           notebook?.title || "Sem título",
+          blocksRef.current,
+          isPublic ?? false,
         );
 
         await new Promise((r) => setTimeout(r, 600));
@@ -75,13 +86,32 @@ export default function RustInteractivePage({
         setHasSaved(true);
         setTimeout(() => setHasSaved(false), 2000);
       } catch (error) {
-        console.error("Falha ao salvar:", error);
+        const errorMessage = `Falha ao salvar: ${error}`;
+        console.error(errorMessage);
+        toast.error(errorMessage);
+
         setIsSaving(false);
       }
     };
 
     saveData();
-  }, [saveSignal, pageId, notebook?.title, setIsSaving, setHasSaved]);
+  }, [
+    saveSignal,
+    pageId,
+    notebook?.title,
+    isPublic,
+    setIsSaving,
+    setHasSaved,
+    isOwner,
+  ]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      triggerSave();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [triggerSave]);
 
   const getFileName = (title: string) => {
     return title.replace(/[^a-zA-Z0-9]/g, "_");
@@ -141,7 +171,7 @@ export default function RustInteractivePage({
     const title = getBlockTitle(type, language ?? "rust", blocks.length);
 
     const newBlock: Block = {
-      id: Math.random().toString(36).slice(2, 11),
+      id: uuidv4(),
       type,
       title,
       content: type === "code" ? codeBlock : "",

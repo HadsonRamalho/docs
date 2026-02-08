@@ -1,27 +1,35 @@
-'use client';
+"use client";
 
-import { type ComponentProps, createContext, type ReactNode, use, useMemo } from 'react';
-import { cn } from '../../../lib/cn';
-import { useSidebar } from '../sidebar/base';
-import { usePathname } from 'fumadocs-core/framework';
-import Link from 'fumadocs-core/link';
-import type { SidebarTab } from '../sidebar/tabs';
-import { isTabActive } from '../sidebar/tabs/dropdown';
-import { useIsScrollTop } from 'fumadocs-ui/utils/use-is-scroll-top';
+import { usePathname } from "fumadocs-core/framework";
+import Link from "fumadocs-core/link";
+import { useIsScrollTop } from "fumadocs-ui/utils/use-is-scroll-top";
+import {
+  type ComponentProps,
+  createContext,
+  type ReactNode,
+  use,
+  useMemo,
+} from "react";
+import { cn } from "../../../lib/cn";
+import { useSidebar } from "../sidebar/base";
+import type { SidebarTab } from "../sidebar/tabs";
+import { isTabActive } from "../sidebar/tabs/dropdown";
 
 export const LayoutContext = createContext<{
   isNavTransparent: boolean;
 } | null>(null);
 
 export function LayoutContextProvider({
-  navTransparentMode = 'none',
+  navTransparentMode = "none",
   children,
 }: {
-  navTransparentMode?: 'always' | 'top' | 'none';
+  navTransparentMode?: "always" | "top" | "none";
   children: ReactNode;
 }) {
-  const isTop = useIsScrollTop({ enabled: navTransparentMode === 'top' }) ?? true;
-  const isNavTransparent = navTransparentMode === 'top' ? isTop : navTransparentMode === 'always';
+  const isTop =
+    useIsScrollTop({ enabled: navTransparentMode === "top" }) ?? true;
+  const isNavTransparent =
+    navTransparentMode === "top" ? isTop : navTransparentMode === "always";
 
   return (
     <LayoutContext
@@ -37,7 +45,7 @@ export function LayoutContextProvider({
   );
 }
 
-export function LayoutHeader(props: ComponentProps<'header'>) {
+export function LayoutHeader(props: ComponentProps<"header">) {
   const { isNavTransparent } = use(LayoutContext)!;
 
   return (
@@ -47,14 +55,19 @@ export function LayoutHeader(props: ComponentProps<'header'>) {
   );
 }
 
-export function LayoutBody({ className, style, children, ...props }: ComponentProps<'div'>) {
+export function LayoutBody({
+  className,
+  style,
+  children,
+  ...props
+}: ComponentProps<"div">) {
   const { collapsed } = useSidebar();
 
   return (
     <div
       id="nd-docs-layout"
       className={cn(
-        'grid transition-[grid-template-columns] overflow-x-clip min-h-(--fd-docs-height) auto-cols-auto auto-rows-auto [--fd-docs-height:100dvh] [--fd-header-height:0px] [--fd-toc-popover-height:0px] [--fd-sidebar-width:0px] [--fd-toc-width:0px]',
+        "grid transition-[grid-template-columns] overflow-x-clip min-h-(--fd-docs-height) auto-cols-auto auto-rows-auto [--fd-docs-height:100dvh] [--fd-header-height:0px] [--fd-toc-popover-height:0px] [--fd-sidebar-width:0px] [--fd-toc-width:0px]",
         className,
       )}
       data-sidebar-collapsed={collapsed}
@@ -63,10 +76,12 @@ export function LayoutBody({ className, style, children, ...props }: ComponentPr
           gridTemplate: `"sidebar header toc"
         "sidebar toc-popover toc"
         "sidebar main toc" 1fr / minmax(var(--fd-sidebar-col), 1fr) minmax(0, calc(var(--fd-layout-width,97rem) - var(--fd-sidebar-width) - var(--fd-toc-width))) minmax(min-content, 1fr)`,
-          '--fd-docs-row-1': 'var(--fd-banner-height, 0px)',
-          '--fd-docs-row-2': 'calc(var(--fd-docs-row-1) + var(--fd-header-height))',
-          '--fd-docs-row-3': 'calc(var(--fd-docs-row-2) + var(--fd-toc-popover-height))',
-          '--fd-sidebar-col': collapsed ? '0px' : 'var(--fd-sidebar-width)',
+          "--fd-docs-row-1": "var(--fd-banner-height, 0px)",
+          "--fd-docs-row-2":
+            "calc(var(--fd-docs-row-1) + var(--fd-header-height))",
+          "--fd-docs-row-3":
+            "calc(var(--fd-docs-row-2) + var(--fd-toc-popover-height))",
+          "--fd-sidebar-col": collapsed ? "0px" : "var(--fd-sidebar-width)",
           ...style,
         } as object
       }
@@ -80,7 +95,7 @@ export function LayoutBody({ className, style, children, ...props }: ComponentPr
 export function LayoutTabs({
   options,
   ...props
-}: ComponentProps<'div'> & {
+}: ComponentProps<"div"> & {
   options: SidebarTab[];
 }) {
   const pathname = usePathname();
@@ -92,7 +107,7 @@ export function LayoutTabs({
     <div
       {...props}
       className={cn(
-        'flex flex-row items-end gap-6 overflow-auto [grid-area:main]',
+        "flex flex-row items-end gap-6 overflow-auto [grid-area:main]",
         props.className,
       )}
     >
@@ -101,9 +116,9 @@ export function LayoutTabs({
           key={i}
           href={option.url}
           className={cn(
-            'inline-flex border-b-2 border-transparent transition-colors items-center pb-1.5 font-medium gap-2 text-fd-muted-foreground text-sm text-nowrap hover:text-fd-accent-foreground',
-            option.unlisted && selected !== option && 'hidden',
-            selected === option && 'border-fd-primary text-fd-primary',
+            "inline-flex border-b-2 border-transparent transition-colors items-center pb-1.5 font-medium gap-2 text-fd-muted-foreground text-sm text-nowrap hover:text-fd-accent-foreground",
+            option.unlisted && selected !== option && "hidden",
+            selected === option && "border-fd-primary text-fd-primary",
           )}
         >
           {option.title}

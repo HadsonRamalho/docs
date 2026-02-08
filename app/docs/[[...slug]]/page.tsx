@@ -41,7 +41,7 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
       <NotebookProvider pageId={pageId}>
         <DocsPage>
           <div className="mb-8">
-            <NotebookTitle pageTitle={page?.data.title} />
+            <NotebookTitle pageTitle={page?.data.title} pageId={pageId} />
             <p className="text-muted-foreground text-xs mt-1 font-mono">
               ID: {pageId}
             </p>

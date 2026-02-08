@@ -63,6 +63,8 @@ export interface NotebookMeta {
 }
 
 export interface Notebook extends NotebookMeta {
-  updatedAt: number;
+  userId: string;
   blocks: Block[];
+  isPublic: boolean;
+  updatedAt: number;
 }

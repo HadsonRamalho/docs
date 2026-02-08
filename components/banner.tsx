@@ -56,14 +56,15 @@ export function Banner({
       id={id}
       {...props}
       className={cn(
-        "sticky top-0 z-40 flex flex-row items-center justify-center px-4 text-center text-sm font-medium",
+        "sticky top-0 z-10 flex flex-row items-center justify-center px-4 py-2 text-center text-sm font-medium",
         variant === "normal" && "bg-fd-secondary",
         variant === "rainbow" && "bg-fd-background",
         !open && "hidden",
         props.className,
       )}
       style={{
-        height,
+        minHeight: height,
+        height: "auto",
       }}
     >
       {changeLayout && open ? (

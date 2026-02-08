@@ -1,0 +1,51 @@
+import { getCookie } from "cookies-next";
+
+const BASE_URL = process.env.NEXT_PUBLIC_API || "http://localhost:3099";
+
+interface FetchOptions extends RequestInit {
+  headers?: Record<string, string>;
+}
+
+async function http<T>(path: string, config?: FetchOptions): Promise<T> {
+  const url = `${BASE_URL}${path}`;
+  const token = getCookie("auth_token");
+
+  const init: RequestInit = {
+    ...config,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...config?.headers,
+    },
+  };
+
+  const response = await fetch(url, init);
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    const errorMessage =
+      errorBody.error || errorBody.message || "Erro na requisição";
+    throw new Error(errorMessage);
+  }
+
+  const text = await response.text();
+
+  return text ? JSON.parse(text) : (null as unknown as T);
+}
+
+export const api = {
+  get: <T>(path: string, config?: FetchOptions) =>
+    http<T>(path, { ...config, method: "GET" }),
+
+  post: <T>(path: string, body?: any, config?: FetchOptions) =>
+    http<T>(path, { ...config, method: "POST", body: JSON.stringify(body) }),
+
+  put: <T>(path: string, body: any, config?: FetchOptions) =>
+    http<T>(path, { ...config, method: "PUT", body: JSON.stringify(body) }),
+
+  delete: <T>(path: string, config?: FetchOptions) =>
+    http<T>(path, { ...config, method: "DELETE" }),
+
+  patch: <T>(path: string, body: any, config?: FetchOptions) =>
+    http<T>(path, { ...config, method: "PATCH", body: JSON.stringify(body) }),
+};
