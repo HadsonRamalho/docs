@@ -60,12 +60,12 @@ export function UserSidebar() {
         {pages.map((page) => (
           <div
             key={page.id}
-            className="group flex items-center justify-between rounded-md hover:bg-white/5 pr-1"
+            className=" w-full group flex items-center justify-between bg-card rounded-md pr-1"
           >
             {editingId === page.id ? (
               <div className="flex items-center gap-1 p-1 w-full">
                 <input
-                  className="bg-transparent border-b border-emerald-500 outline-none text-sm text-white w-full px-1"
+                  className="bg-transparent border-b border-emerald-500 outline-none text-sm text-foreground w-full px-1"
                   value={tempTitle}
                   onChange={(e) => setTempTitle(e.target.value)}
                   onKeyDown={(e) => {
@@ -82,10 +82,10 @@ export function UserSidebar() {
                 </button>
               </div>
             ) : (
-              <div className="flex items-center justify-between w-full">
+              <div className="flex items-center justify-between w-full group">
                 <Button
                   onClick={() => router.push(`/docs/${page.id}`)}
-                  className={`flex-1 justify-start gap-2 p-2 hover:cursor-pointer ${
+                  className={`flex-1 justify-start gap-2 p-2 w-full bg-card hover:bg-muted group-hover:bg-muted hover:cursor-pointer ${
                     pathname === `/docs/${page.id}`
                       ? "text-sidebar-primary font-medium"
                       : "text-muted-foreground"
@@ -95,8 +95,9 @@ export function UserSidebar() {
                   <span className="truncate max-w-30">{page.title}</span>
                 </Button>
 
-                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center md:opacity-0 group-hover:opacity-100 transition-opacity bg-card p-1 rounded-md">
                   <button
+                    type="button"
                     onClick={() => handleStartEditing(page)}
                     className="p-2 rounded-md hover:bg-muted text-muted-foreground hover:cursor-pointer"
                   >

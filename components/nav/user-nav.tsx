@@ -1,8 +1,7 @@
 "use client";
 
+import { LogOut, Settings, User as UserIcon } from "lucide-react";
 import Link from "next/link";
-import { LogOut, User as UserIcon, Settings } from "lucide-react";
-import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/context/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export function UserNav() {
@@ -72,7 +72,10 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={signOut} className="text-red-500 focus:text-red-500">
+        <DropdownMenuItem
+          onClick={signOut}
+          className="text-red-500 focus:text-red-500"
+        >
           <LogOut className="mr-2 h-4 w-4" />
           <span>Sair</span>
         </DropdownMenuItem>

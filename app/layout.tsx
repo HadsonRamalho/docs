@@ -2,11 +2,9 @@ import "katex/dist/katex.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./global.css";
-import { HomeLayout } from "fumadocs-ui/layouts/home";
 import Script from "next/script";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/context/auth-context";
-import { baseOptions } from "@/lib/layout.shared";
 import { Provider } from "./search-provider";
 
 const inter = Inter({
@@ -14,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Mitna Rachnun - Docs",
+  title: "Rust Notebook",
   icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",
@@ -28,9 +26,7 @@ export default function Layout({ children }: LayoutProps<"/">) {
       <body className="flex flex-col min-h-screen">
         <AuthProvider>
           <Toaster richColors={true} />
-          <Provider>
-            <HomeLayout {...baseOptions()}>{children}</HomeLayout>
-          </Provider>
+          <Provider>{children}</Provider>
         </AuthProvider>
       </body>
       <Script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js" />

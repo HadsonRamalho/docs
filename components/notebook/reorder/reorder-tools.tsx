@@ -215,18 +215,26 @@ export function ReorderTools({
                   <BackButton onClick={() => setView(currentMenu.parent!)} />
                 )}
 
-                {currentMenu.buttons.map((btn, i) => (
-                  <ToolButton
-                    key={btn.label}
-                    icon={btn.icon}
-                    label={btn.label}
-                    color={btn.color}
-                    onClick={() => {
-                      if (btn.targetView) setView(btn.targetView);
-                      if (btn.onClick) btn.onClick();
-                    }}
-                  />
-                ))}
+                <div
+                  className={
+                    currentMenu.buttons.length > 3
+                      ? "grid grid-rows-3 md:flex items-center gap-1 "
+                      : "flex items-center gap-1"
+                  }
+                >
+                  {currentMenu.buttons.map((btn, i) => (
+                    <ToolButton
+                      key={btn.label}
+                      icon={btn.icon}
+                      label={btn.label}
+                      color={btn.color}
+                      onClick={() => {
+                        if (btn.targetView) setView(btn.targetView);
+                        if (btn.onClick) btn.onClick();
+                      }}
+                    />
+                  ))}
+                </div>
               </motion.div>
             </AnimatePresence>
           </div>
