@@ -1,5 +1,5 @@
 use crate::controllers::jwt::jwt_auth;
-use crate::controllers::utils::get_database_url_from_env;
+use crate::controllers::utils::{get_database_url_from_env, get_frontend_url_from_env};
 use crate::models::error::ApiError;
 use crate::routes::docs::get_api_docs;
 use crate::routes::notebook::notebook_routes;
@@ -68,6 +68,8 @@ pub fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgC
 pub async fn init_routes() -> Router {
     let db_url = get_database_url_from_env().ok();
 
+    let frontend_url = get_frontend_url_from_env().unwrap();
+
     let mut config = ManagerConfig::default();
     config.custom_setup = Box::new(establish_connection);
 
@@ -91,9 +93,7 @@ pub async fn init_routes() -> Router {
             .layer(DefaultBodyLimit::max(1024 * 1024 * 100))
             .layer(
                 CorsLayer::new()
-                    .allow_origin(vec![
-                        "http://localhost:3000".parse::<HeaderValue>().unwrap(),
-                    ])
+                    .allow_origin(vec![frontend_url.parse::<HeaderValue>().unwrap()])
                     .allow_methods(Any)
                     .allow_headers(vec![AUTHORIZATION, CONTENT_TYPE]),
             );
