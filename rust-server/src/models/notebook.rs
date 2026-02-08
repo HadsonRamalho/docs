@@ -74,12 +74,15 @@ pub struct GithubRepoProps {
 #[diesel(table_name = crate::schema::notebooks)]
 pub struct Notebook {
     pub id: Uuid,
+    #[serde(rename = "userId")]
     pub user_id: Uuid,
     pub title: String,
     #[serde(rename = "createdAt")]
     pub created_at: DateTime<Utc>,
     #[serde(rename = "updatedAt")]
     pub updated_at: DateTime<Utc>,
+    #[serde(rename = "isPublic")]
+    pub is_public: bool,
 }
 
 #[derive(Queryable, Selectable, Identifiable, Associations, Serialize, Debug)]
@@ -144,6 +147,8 @@ pub struct UpdateNotebookTitle {
 pub struct SyncNotebookRequest {
     pub title: String,
     pub blocks: Vec<BlockRequest>,
+    #[serde(rename = "isPublic")]
+    pub is_public: bool,
 }
 
 #[derive(Deserialize)]
@@ -270,6 +275,7 @@ pub async fn sync_notebook_content(
     nb_id: Uuid,
     new_title: String,
     new_blocks: Vec<NewBlock>,
+    set_is_public: bool,
 ) -> Result<(), String> {
     use crate::schema::notebooks::dsl::*;
 
@@ -277,7 +283,11 @@ pub async fn sync_notebook_content(
         .transaction::<_, diesel::result::Error, _>(|conn| {
             Box::pin(async move {
                 diesel::update(notebooks.filter(id.eq(nb_id)))
-                    .set((title.eq(new_title), updated_at.eq(chrono::Utc::now())))
+                    .set((
+                        title.eq(new_title),
+                        updated_at.eq(chrono::Utc::now()),
+                        is_public.eq(set_is_public),
+                    ))
                     .execute(conn)
                     .await?;
 

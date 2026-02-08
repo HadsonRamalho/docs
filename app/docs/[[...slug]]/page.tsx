@@ -46,7 +46,7 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
               ID: {pageId}
             </p>
             <div className="flex mt-2 justify-end">
-              <NotebookControls />
+              <NotebookControls pageId={pageId} />
             </div>
           </div>
 

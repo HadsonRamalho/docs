@@ -103,7 +103,9 @@ pub async fn api_get_single_notebook(
 
     match models::notebook::find_notebook_by_id(conn, &notebook_id).await {
         Ok(notebook) => {
-            if let Err(e) = is_notebook_owner(conn, &id, &notebook_id).await {
+            if let Err(e) = is_notebook_owner(conn, &id, &notebook_id).await
+                && !notebook.is_public
+            {
                 return Err(e);
             }
             Ok((StatusCode::OK, Json(notebook)))
@@ -170,7 +172,9 @@ pub async fn api_get_single_notebook_with_blocks(
 
     match models::notebook::get_notebook_with_blocks(conn, &notebook_id).await {
         Ok(notebook) => {
-            if let Err(e) = is_notebook_owner(conn, &id, &notebook_id).await {
+            if let Err(e) = is_notebook_owner(conn, &id, &notebook_id).await
+                && !notebook.meta.is_public
+            {
                 return Err(e);
             }
             Ok((StatusCode::OK, Json(notebook)))
@@ -221,6 +225,7 @@ pub async fn api_save_notebook_content(
         notebook_id,
         payload.title,
         blocks_to_insert,
+        payload.is_public,
     )
     .await
     {

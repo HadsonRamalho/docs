@@ -1,14 +1,14 @@
 "use client";
 
-import { getNotebook } from "@/lib/storage";
-import { Notebook } from "@/lib/types";
 import {
   createContext,
+  type ReactNode,
   useContext,
-  useState,
-  ReactNode,
   useEffect,
+  useState,
 } from "react";
+import { getCurrentNotebook } from "@/lib/api/notebook-service";
+import type { Notebook } from "@/lib/types";
 
 interface NotebookContextType {
   triggerSave: () => void;
@@ -23,6 +23,8 @@ interface NotebookContextType {
   addBlockSignal: number;
   notebook: Notebook | null;
   setNotebook: (n: Notebook) => void;
+  isPublic: boolean;
+  setVisibility: (v: boolean) => void;
 }
 
 const NotebookContext = createContext<NotebookContextType | undefined>(
@@ -42,14 +44,18 @@ export function NotebookProvider({
   const [isDragging, setIsDragging] = useState(false);
   const [addBlockSignal, setAddBlockSignal] = useState(0);
   const [notebook, setNotebook] = useState<Notebook | null>(null);
+  const [isPublic, setVisibility] = useState(false);
 
   const triggerSave = () => setSaveSignal((prev) => prev + 1);
   const triggerAddBlock = () => setAddBlockSignal((prev) => prev + 1);
 
   useEffect(() => {
     if (pageId) {
-      getNotebook(pageId).then((data) => {
-        if (data) setNotebook(data);
+      getCurrentNotebook(pageId).then((data) => {
+        if (data) {
+          setVisibility(data.isPublic);
+          setNotebook(data);
+        }
       });
     }
   }, [pageId]);
@@ -57,6 +63,8 @@ export function NotebookProvider({
   return (
     <NotebookContext.Provider
       value={{
+        setVisibility,
+        isPublic,
         triggerSave,
         saveSignal,
         isSaving,

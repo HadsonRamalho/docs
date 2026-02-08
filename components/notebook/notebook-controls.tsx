@@ -1,14 +1,46 @@
 "use client";
 
-import { Save, Loader2, Check } from "lucide-react";
+import { Check, Loader2, Save } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAuth } from "@/context/auth-context";
 import { useNotebook } from "./notebook-context";
 
 export function NotebookControls() {
-  const { triggerSave, isSaving, hasSaved } = useNotebook();
+  const { user } = useAuth();
+  const { triggerSave, isSaving, hasSaved, setVisibility, notebook, isPublic } =
+    useNotebook();
+
+  const isOwner = user && notebook && user.id === notebook.userId;
+
+  if (!isOwner) {
+    return null;
+  }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex w-full justify-between gap-2">
+      <Select
+        value={isPublic ? "true" : "false"}
+        onValueChange={(val) => setVisibility(val === "true")}
+      >
+        <SelectTrigger className="w-45">
+          <SelectValue placeholder="Visibilidade" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectItem value="false">Privado</SelectItem>
+            <SelectItem value="true">Público</SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
       <button
+        type="button"
         onClick={triggerSave}
         disabled={isSaving}
         className={`

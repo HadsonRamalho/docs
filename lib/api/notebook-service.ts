@@ -29,9 +29,11 @@ export async function saveNotebookData(
   id: string,
   title: string,
   blocks: Block[],
+  isPublic: boolean,
 ): Promise<void> {
   return api.put(`/notebook/${id}/content`, {
     title,
     blocks,
+    isPublic,
   });
 }

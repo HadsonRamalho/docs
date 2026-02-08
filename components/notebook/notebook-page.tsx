@@ -2,7 +2,9 @@
 
 import { Reorder } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
+import { useAuth } from "@/context/auth-context";
 import {
   getCurrentNotebookWithBlocks,
   saveNotebookData,
@@ -11,7 +13,6 @@ import type { Block, BlockMetadata, BlockType, Language } from "@/lib/types";
 import { useNotebook } from "./notebook-context";
 import { ReorderItem } from "./reorder/reorder-item";
 import { ReorderTools } from "./reorder/reorder-tools";
-import { toast } from "sonner";
 
 interface RustInteractivePageProps {
   pageId: string;
@@ -20,6 +21,7 @@ interface RustInteractivePageProps {
 export default function RustInteractivePage({
   pageId = "default",
 }: RustInteractivePageProps) {
+  const { user } = useAuth();
   const {
     saveSignal,
     notebook,
@@ -28,7 +30,9 @@ export default function RustInteractivePage({
     setHasSaved,
     isDragging,
     setIsDragging,
+    isPublic,
   } = useNotebook();
+  const isOwner = notebook?.userId === user?.id;
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [blocks, setBlocks] = useState<Block[]>([
     {
@@ -63,7 +67,7 @@ export default function RustInteractivePage({
   }, [blocks]);
 
   useEffect(() => {
-    if (saveSignal === 0) return;
+    if (saveSignal === 0 || !isOwner) return;
 
     const saveData = async () => {
       setIsSaving(true);
@@ -73,6 +77,7 @@ export default function RustInteractivePage({
           pageId,
           notebook?.title || "Sem título",
           blocksRef.current,
+          isPublic ?? false,
         );
 
         await new Promise((r) => setTimeout(r, 600));
@@ -90,15 +95,23 @@ export default function RustInteractivePage({
     };
 
     saveData();
-  }, [saveSignal, pageId, notebook?.title, setIsSaving, setHasSaved]);
+  }, [
+    saveSignal,
+    pageId,
+    notebook?.title,
+    isPublic,
+    setIsSaving,
+    setHasSaved,
+    isOwner,
+  ]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-        triggerSave();
-      }, 10000);
+      triggerSave();
+    }, 10000);
 
-      return () => clearInterval(interval);
-    }, [triggerSave]);
+    return () => clearInterval(interval);
+  }, [triggerSave]);
 
   const getFileName = (title: string) => {
     return title.replace(/[^a-zA-Z0-9]/g, "_");

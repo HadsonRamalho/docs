@@ -1,0 +1,2 @@
+-- Your SQL goes here
+ALTER TABLE notebooks ADD COLUMN is_public BOOLEAN NOT NULL DEFAULT FALSE;

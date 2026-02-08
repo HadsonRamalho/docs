@@ -43,6 +43,7 @@ diesel::table! {
         title -> Varchar,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
+        is_public -> Bool,
     }
 }
 
