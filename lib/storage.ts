@@ -1,6 +1,6 @@
 "use client";
 
-import type { Block, Notebook, NotebookMeta } from "./types";
+import type { Notebook, NotebookMeta } from "./types";
 
 const INDEX_KEY = "my-notebook-pages";
 const NOTEBOOK_PREFIX = "rust-notebook-";
@@ -32,38 +32,6 @@ export async function getNotebook(id: string): Promise<Notebook | null> {
     console.error("Erro ao ler notebook:", error);
     return null;
   }
-}
-
-export async function saveNotebook(
-  id: string,
-  blocks: Block[],
-  title: string,
-): Promise<void> {
-  const current = await getNotebook(id);
-  const now = Date.now();
-
-  const notebook: Notebook = {
-    id,
-    title,
-    createdAt: current?.createdAt || now,
-    updatedAt: now,
-    blocks: Array.isArray(blocks) ? blocks : [],
-  };
-
-  localStorage.setItem(`${NOTEBOOK_PREFIX}${id}`, JSON.stringify(notebook));
-
-  const index = await getAllNotebooks();
-  const existingIndex = index.findIndex((n) => n.id === id);
-
-  const meta: NotebookMeta = { id, title, createdAt: notebook.createdAt };
-
-  if (existingIndex >= 0) {
-    index[existingIndex] = meta;
-  } else {
-    index.push(meta);
-  }
-
-  localStorage.setItem(INDEX_KEY, JSON.stringify(index));
 }
 
 export async function deleteNotebook(id: string): Promise<void> {
