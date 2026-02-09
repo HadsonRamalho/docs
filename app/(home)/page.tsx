@@ -1,5 +1,5 @@
 import { HomeLayout } from "fumadocs-ui/layouts/home";
-import { Info, MoveRight, User } from "lucide-react";
+import { Info, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { baseOptions } from "@/lib/layout.shared";
