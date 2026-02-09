@@ -1,5 +1,5 @@
 import { HomeLayout } from "fumadocs-ui/layouts/home";
-import { MoveRight } from "lucide-react";
+import { Info, MoveRight, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { baseOptions } from "@/lib/layout.shared";
@@ -9,25 +9,27 @@ export default function HomePage() {
     <HomeLayout {...baseOptions()}>
       <main className="relative overflow-hidden">
         <section className="mx-auto max-w-7xl px-6 py-24 lg:py-32 text-center">
-          <div className="flex flex-row items-center justify-center -ml-20">
-            <Image src="/logo.png" alt="Logo" width={150} height={150} />
-            <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl mb-6">
+          <div className="flex flex-row items-center justify-center -ml-20 gap-4">
+            <Image src="/logo.png" alt="Logo" width={77} height={77} />
+            <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl">
               Docs
             </h1>
           </div>
           <div className="mt-12 flex flex-col sm:flex-row justify-center gap-4">
             <Link
-              href="/docs"
-              className="flex items-center justify-center rounded-xl border bg-fd-primary px-8 py-4 text-sm font-bold text-fd-primary-foreground shadow-lg transition-transform hover:-translate-y-1"
+              href="/login"
+              className="flex items-center justify-center rounded-xl border bg-fd-primary px-8 py-4 text-sm font-bold text-white shadow-lg transition-transform hover:-translate-y-1"
             >
-              Começar Agora <MoveRight className="ml-2 h-4 w-4" />
+              <User className="mr-2 h-4 w-4" />
+              Login
             </Link>
 
             <Link
-              href="/login"
-              className="flex items-center justify-center rounded-xl border bg-fd-primary px-8 py-4 text-sm font-bold text-fd-primary-foreground shadow-lg transition-transform hover:-translate-y-1"
+              href="/docs"
+              className="flex items-center justify-center rounded-xl border px-8 py-4 text-sm font-bold text-secondary shadow-lg transition-transform hover:-translate-y-1"
             >
-              Login <MoveRight className="ml-2 h-4 w-4" />
+              <Info className="mr-2 h-4 w-4" />
+              Saber mais
             </Link>
           </div>
         </section>

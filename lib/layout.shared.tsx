@@ -12,7 +12,7 @@ export function baseOptions(): BaseLayoutProps {
             href="/"
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <Image src="/logo.png" alt="Logo" width={40} height={40} />
+            <Image src="/logo.png" alt="Logo" width={34} height={34} />
             <span className="text-xl font-bold hidden md:block">Docs</span>
           </Link>
 
