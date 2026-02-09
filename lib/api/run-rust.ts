@@ -40,8 +40,9 @@ export async function RunRust({
 
       if (
         data.stderr.includes(
-          "Finished `dev` profile [unoptimized + debuginfo] ",
-        )
+          "Finished `dev` profile [unoptimized + debuginfo]",
+        ) ||
+        data.stderr.includes("Finished dev [unoptimized + debuginfo]")
       ) {
         setOutput("Bloco compilado!");
         setStatus("success");
