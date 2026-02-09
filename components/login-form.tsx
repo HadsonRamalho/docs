@@ -80,12 +80,12 @@ export function LoginForm({
         );
         break;
     }
+    toast.error(error);
   };
 
   useEffect(() => {
     if (authError) {
       handleAuthError(authError);
-      toast.error(error);
     }
   }, [authError]);
 
