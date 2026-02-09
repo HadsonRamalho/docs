@@ -55,6 +55,8 @@ pub enum BlockMetadata {
 pub struct CalloutProps {
     pub title: Option<String>,
     pub icon: Option<String>,
+    #[serde(rename = "type")]
+    pub callout_type: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
