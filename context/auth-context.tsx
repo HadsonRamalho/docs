@@ -9,6 +9,7 @@ import type { LoginUser, RegisterUser, User } from "@/lib/types/user-types";
 
 interface AuthContextType {
   user: User | null;
+  githubSignIn: (token: string) => void;
   isLoading: boolean;
   isAuthenticated: boolean;
   signIn: (data: LoginUser) => Promise<void>;
@@ -49,6 +50,20 @@ export function AuthProvider({
 
     loadUserFromSession();
   }, []);
+
+  const githubSignIn = async (token: string) => {
+    try {
+      setCookie("auth_token", token, { maxAge: 60 * 60 * 24 * 7 });
+
+      const profile = await api.get<User>("/user/me");
+
+      setUser(profile);
+      router.push("/docs");
+      router.refresh();
+    } catch (error) {
+      throw error;
+    }
+  };
 
   const signIn = async (data: LoginUser) => {
     try {
@@ -93,6 +108,7 @@ export function AuthProvider({
   return (
     <AuthContext.Provider
       value={{
+        githubSignIn,
         user,
         isLoading,
         register,

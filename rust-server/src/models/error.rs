@@ -54,6 +54,9 @@ pub enum ApiError {
 
     #[error("Missing frontend URL")]
     MissingFrontendUrl,
+
+    #[error("{0} is missing from env")]
+    MissingEnv(String),
 }
 
 impl IntoResponse for ApiError {

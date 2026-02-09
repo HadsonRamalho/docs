@@ -3,6 +3,7 @@
 import { Check, FileText, Pencil, Plus } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAuth } from "@/context/auth-context";
 import type { NotebookMeta } from "@/lib/types";
 import { DeletePageDialog } from "../delete-page-dialog";
 import { SidebarBackup } from "../sidebar-backup";
@@ -10,6 +11,7 @@ import { Button } from "../ui/button";
 import { useNotebookManager } from "./notebook-manager";
 
 export function UserSidebar() {
+  const { user } = useAuth();
   const { pages, createPage } = useNotebookManager();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempTitle, setTempTitle] = useState("");
@@ -29,6 +31,10 @@ export function UserSidebar() {
     }
     setEditingId(null);
   };
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-2 mb-4 pb-4 border-b border-white/10">

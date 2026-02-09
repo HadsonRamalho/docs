@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "@/context/auth-context";
 import {
   createNotebook,
   deleteNotebook,
@@ -32,9 +33,13 @@ export function NotebookManagerProvider({
   children: React.ReactNode;
 }) {
   const [pages, setPages] = useState<NotebookMeta[]>([]);
+  const { user } = useAuth();
   const router = useRouter();
 
   const refreshPages = async () => {
+    if (!user) {
+      return;
+    }
     const data = await getMyNotebooks();
     setPages(data);
   };
@@ -45,6 +50,9 @@ export function NotebookManagerProvider({
   }, []);
 
   const renamePage = async (id: string, newTitle: string) => {
+    if (!user) {
+      return;
+    }
     if (!newTitle.trim()) return;
 
     try {
@@ -63,6 +71,9 @@ export function NotebookManagerProvider({
   };
 
   const createPage = async () => {
+    if (!user) {
+      return;
+    }
     try {
       const newId = await createNotebook();
 
@@ -75,6 +86,9 @@ export function NotebookManagerProvider({
   };
 
   const deletePage = async (id: string) => {
+    if (!user) {
+      return;
+    }
     await deleteNotebook(id);
 
     await refreshPages();
@@ -83,6 +97,9 @@ export function NotebookManagerProvider({
   };
 
   const downloadBackup = async () => {
+    if (!user) {
+      return;
+    }
     const pages = await getMyNotebooks();
     const json = JSON.stringify(pages, null, 2);
     const blob = new Blob([json], { type: "application/json" });
@@ -98,6 +115,9 @@ export function NotebookManagerProvider({
   };
 
   const uploadBackup = async (file: File) => {
+    if (!user) {
+      return;
+    }
     return new Promise<void>((resolve, reject) => {
       const reader = new FileReader();
 

@@ -31,6 +31,7 @@ import { profileSchema } from "@/lib/schemas/user-schemas";
 import type { ProfileFormValues } from "@/lib/types/user-types";
 import { GithubIcon } from "./github-info";
 import { GoogleIcon } from "./icons/google-icon";
+import { BackButton } from "./interface/back-button";
 
 export function ProfileForm() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -85,13 +86,27 @@ export function ProfileForm() {
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-col space-y-2 text-center sm:text-left">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Meu Perfil</h2>
+          <p className="text-muted-foreground">
+            Gerencie suas informações pessoais e preferências.
+          </p>
+        </div>
+        <div className="flex items-start justify-start">
+          <BackButton />
+        </div>
+      </div>
+
+      <Separator />
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Informações Pessoais</CardTitle>
               <CardDescription>
-                Atualize sua foto e detalhes pessoais aqui.
+                Atualize seus detalhes pessoais aqui.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">

@@ -28,7 +28,9 @@ pub async fn api_register_user(
         return Err(ApiError::Request(errors.to_string()));
     }
 
-    user_input.password_hash = Some(password_hash(&user_input.password_hash.unwrap()));
+    if user_input.password_hash.is_some() && user_input.primary_provider == AuthProvider::Email {
+        user_input.password_hash = Some(password_hash(&user_input.password_hash.unwrap()));
+    }
 
     let conn = &mut get_conn(&pool)
         .await

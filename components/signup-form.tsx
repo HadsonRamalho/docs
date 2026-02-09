@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -27,6 +27,7 @@ import { useAuth } from "@/context/auth-context";
 import { signupSchema } from "@/lib/schemas/auth-schemas";
 import type { SignupFormValues } from "@/lib/types/auth-types";
 import { cn } from "@/lib/utils";
+import { BackButton } from "./interface/back-button";
 
 export function SignupForm({
   className,
@@ -51,7 +52,7 @@ export function SignupForm({
     setGlobalError("");
 
     try {
-      await register({...data, password_hash: data.password});
+      await register({ ...data, password_hash: data.password });
     } catch (err: any) {
       setGlobalError(err.message || "Erro ao criar conta. Tente novamente.");
     } finally {
@@ -64,16 +65,9 @@ export function SignupForm({
       <Card>
         <CardHeader className="text-center">
           <div className="relative flex items-center justify-center w-full mb-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              asChild
-              className="absolute left-0"
-            >
-              <Link href="/login" aria-label="Voltar para login">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
+            <div className="absolute left-0">
+              <BackButton showText={false} />
+            </div>
             <CardTitle className="text-xl">Crie sua conta</CardTitle>
           </div>
           <CardDescription>

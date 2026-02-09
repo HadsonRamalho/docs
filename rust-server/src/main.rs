@@ -25,6 +25,10 @@ pub struct CodeResponse {
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 4)]
 async fn main() {
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .expect("Falha ao instalar provedor de criptografia rustls");
+
     tokio::spawn(auto_delete_files());
 
     tracing_subscriber::registry()
