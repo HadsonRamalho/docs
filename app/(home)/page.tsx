@@ -26,7 +26,7 @@ export default function HomePage() {
 
             <Link
               href="/docs"
-              className="flex items-center justify-center rounded-xl border px-8 py-4 text-sm font-bold text-secondary shadow-lg transition-transform hover:-translate-y-1"
+              className="flex items-center justify-center rounded-xl border px-8 py-4 text-sm font-bold text-foreground shadow-lg transition-transform hover:-translate-y-1"
             >
               <Info className="mr-2 h-4 w-4" />
               Saber mais
