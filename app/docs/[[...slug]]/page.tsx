@@ -6,7 +6,7 @@ import {
   DocsDescription,
   DocsPage,
   DocsTitle,
-} from "@/components/layout/docs/page";
+} from "@/components/layout/notebook/page";
 import { NotebookProvider } from "@/components/notebook/notebook-context";
 import { NotebookControls } from "@/components/notebook/notebook-controls";
 import RustInteractivePage from "@/components/notebook/notebook-page";
@@ -39,7 +39,7 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
     const pageId = params.slug[0];
     return (
       <NotebookProvider pageId={pageId}>
-        <DocsPage>
+        <DocsPage toc={page?.data.toc}>
           <div className="mb-8">
             <NotebookTitle pageTitle={page?.data.title} pageId={pageId} />
             <p className="text-muted-foreground text-xs mt-1 font-mono">
@@ -64,7 +64,7 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
       const mode = env.get("NEXT_PUBLIC_MODE");
       if (mode === "NO_ENDPOINTS") {
         return (
-          <DocsPage>
+          <DocsPage toc={page.data.toc}>
             <DocsTitle>Conteúdo indisponível</DocsTitle>
             <DocsDescription className="mb-0">
               Os endpoints não estão disponíveis no momento, pois o MODE da API
@@ -78,7 +78,7 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
     const MDX = page.data.body;
 
     return (
-      <DocsPage>
+      <DocsPage toc={page.data.toc}>
         <DocsTitle>{page.data.title}</DocsTitle>
         <DocsDescription>{page.data.description}</DocsDescription>
         {lastModifiedTime && <UpdatedAt date={lastModifiedTime} />}
