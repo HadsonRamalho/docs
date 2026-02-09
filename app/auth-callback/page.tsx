@@ -2,10 +2,10 @@
 
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useAuth } from "@/context/auth-context";
 
-export default function AuthCallbackPage() {
+function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { githubSignIn } = useAuth();
@@ -32,5 +32,20 @@ export default function AuthCallbackPage() {
       <Loader2 className="size-10 animate-spin text-primary" />
       <p className="text-muted-foreground animate-pulse">Autenticando...</p>
     </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen w-full items-center justify-center flex-col gap-4">
+          <Loader2 className="size-10 animate-spin text-primary" />
+          <p className="text-muted-foreground animate-pulse">Carregando...</p>
+        </div>
+      }
+    >
+      <AuthContent />
+    </Suspense>
   );
 }
