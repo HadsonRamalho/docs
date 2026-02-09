@@ -76,9 +76,13 @@ pub async fn api_get_notebooks(
 
 pub async fn is_notebook_owner(
     mut conn: &mut AsyncPgConnection,
-    user_id: &Uuid,
+    user_id: Option<Uuid>,
     notebook_id: &Uuid,
 ) -> Result<(), ApiError> {
+    if user_id.is_none() {
+        return Err(ApiError::InvalidAuthorizationToken);
+    }
+    let user_id = user_id.unwrap();
     match models::notebook::find_notebook_by_id(&mut conn, &notebook_id).await {
         Ok(notebook) => {
             if notebook.user_id != user_id.clone() {
@@ -95,7 +99,10 @@ pub async fn api_get_single_notebook(
     Path(notebook_id): Path<Uuid>,
     headers: HeaderMap,
 ) -> Result<(StatusCode, Json<Notebook>), ApiError> {
-    let id = extract_claims_from_header(&headers).await?.1.id;
+    let id: Option<Uuid> = match extract_claims_from_header(&headers).await {
+        Ok(data) => Some(data.1.id),
+        Err(_) => None,
+    };
 
     let conn = &mut get_conn(&pool)
         .await
@@ -103,7 +110,10 @@ pub async fn api_get_single_notebook(
 
     match models::notebook::find_notebook_by_id(conn, &notebook_id).await {
         Ok(notebook) => {
-            if let Err(e) = is_notebook_owner(conn, &id, &notebook_id).await
+            if notebook.is_public {
+                return Ok((StatusCode::OK, Json(notebook)));
+            }
+            if let Err(e) = is_notebook_owner(conn, id, &notebook_id).await
                 && !notebook.is_public
             {
                 return Err(e);
@@ -127,7 +137,7 @@ pub async fn api_rename_notebook(
         .await
         .map_err(|e| ApiError::Database(e.to_string()))?;
 
-    if let Err(e) = is_notebook_owner(&mut conn, &id, &notebook_id).await {
+    if let Err(e) = is_notebook_owner(&mut conn, Some(id), &notebook_id).await {
         return Err(e);
     }
 
@@ -149,7 +159,7 @@ pub async fn api_delete_notebook(
         .await
         .map_err(|e| ApiError::Database(e.to_string()))?;
 
-    if let Err(e) = is_notebook_owner(&mut conn, &id, &notebook_id).await {
+    if let Err(e) = is_notebook_owner(&mut conn, Some(id), &notebook_id).await {
         return Err(e);
     }
 
@@ -164,7 +174,10 @@ pub async fn api_get_single_notebook_with_blocks(
     Path(notebook_id): Path<Uuid>,
     headers: HeaderMap,
 ) -> Result<(StatusCode, Json<NotebookResponse>), ApiError> {
-    let id = extract_claims_from_header(&headers).await?.1.id;
+    let id: Option<Uuid> = match extract_claims_from_header(&headers).await {
+        Ok(data) => Some(data.1.id),
+        Err(_) => None,
+    };
 
     let conn = &mut get_conn(&pool)
         .await
@@ -172,7 +185,10 @@ pub async fn api_get_single_notebook_with_blocks(
 
     match models::notebook::get_notebook_with_blocks(conn, &notebook_id).await {
         Ok(notebook) => {
-            if let Err(e) = is_notebook_owner(conn, &id, &notebook_id).await
+            if notebook.meta.is_public {
+                return Ok((StatusCode::OK, Json(notebook)));
+            }
+            if let Err(e) = is_notebook_owner(conn, id, &notebook_id).await
                 && !notebook.meta.is_public
             {
                 return Err(e);
@@ -196,7 +212,7 @@ pub async fn api_save_notebook_content(
         .await
         .map_err(|e| ApiError::Database(e.to_string()))?;
 
-    if let Err(e) = is_notebook_owner(&mut conn, &id, &notebook_id).await {
+    if let Err(e) = is_notebook_owner(&mut conn, Some(id), &notebook_id).await {
         return Err(e);
     }
 
