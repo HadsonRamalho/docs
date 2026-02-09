@@ -8,6 +8,11 @@ interface RunRustProps {
   code: string;
 }
 
+interface RustApiResponse {
+  stdout?: string;
+  stderr?: string;
+}
+
 export async function RunRust({
   setOutput,
   setIsRunning,
@@ -18,15 +23,9 @@ export async function RunRust({
   setStatus("idle");
   setOutput("");
   try {
-    const data: any = await api.post("/run", {
+    const data: RustApiResponse = await api.post("/run", {
       code,
     });
-    /*
-    const response = await fetch(`${API_URL}/run`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    }); */
     if (data.stderr) {
       setStatus("error");
       setOutput(data.stderr);
