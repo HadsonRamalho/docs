@@ -67,7 +67,7 @@ export default function RustInteractivePage({
   }, [blocks]);
 
   useEffect(() => {
-    if (saveSignal === 0 || !isOwner) return;
+    if (saveSignal === 0 || !isOwner || !user) return;
 
     const saveData = async () => {
       setIsSaving(true);
@@ -103,6 +103,7 @@ export default function RustInteractivePage({
     setIsSaving,
     setHasSaved,
     isOwner,
+    user,
   ]);
 
   useEffect(() => {
