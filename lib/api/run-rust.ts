@@ -1,4 +1,4 @@
-import { RunStatus } from "../types";
+import type { RunStatus } from "../types";
 import { api } from "./base";
 
 interface RunRustProps {
@@ -19,7 +19,7 @@ export async function RunRust({
   setOutput("");
   try {
     const data: any = await api.post("/run", {
-      code
+      code,
     });
     /*
     const response = await fetch(`${API_URL}/run`, {
