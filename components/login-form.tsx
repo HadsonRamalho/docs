@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-context";
+import { BASE_URL } from "@/lib/api/base";
 import { loginSchema } from "@/lib/schemas/auth-schemas";
 import type { LoginFormValues } from "@/lib/types/auth-types";
 import { cn } from "@/lib/utils";
@@ -43,8 +44,8 @@ export function LoginForm({
   const authError = searchParams.get("auth_error");
 
   const handleGithubLogin = () => {
-    window.location.href =
-      "https://6hpqpw43-3099.brs.devtunnels.ms/api/user/login/github";
+    const redirectUrl = `${BASE_URL}/user/login/github`;
+    window.location.href = redirectUrl;
   };
 
   const handleAuthError = (e: string) => {
