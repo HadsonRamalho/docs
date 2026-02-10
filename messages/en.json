@@ -86,6 +86,39 @@
       "default": "Error creating account. Please try again."
     }
   },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your account preferences and appearance.",
+    "save_button": "Save changes",
+    "success_message": "Settings updated successfully!",
+    "sections": {
+      "general": "General",
+      "editor": "Editor & Appearance"
+    },
+    "fields": {
+      "username": {
+        "label": "Username"
+      },
+      "email": {
+        "label": "Email"
+      },
+      "autosave": {
+        "label": "Autosave",
+        "description": "Automatically saves your content locally as you type.",
+        "options": {
+          "off": "Disabled"
+        }
+      },
+      "theme": {
+        "label": "Theme",
+        "options": {
+          "light": "Light",
+          "dark": "Dark",
+          "system": "System"
+        }
+      }
+    }
+  },
   "toc": {
     "title": "On this page"
   }
