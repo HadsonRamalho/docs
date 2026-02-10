@@ -2,6 +2,7 @@
 
 import { LogOut, Settings, User as UserIcon } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export function UserNav() {
   const { user, isLoading, signOut } = useAuth();
+  const t = useTranslations("homepage");
 
   if (isLoading) {
     return <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />;
@@ -25,7 +27,7 @@ export function UserNav() {
   if (!user) {
     return (
       <Button asChild variant="secondary" size="sm" className="px-4">
-        <Link href="/login">Entrar</Link>
+        <Link href="/login">{t("nav.login")}</Link>
       </Button>
     );
   }
@@ -61,13 +63,13 @@ export function UserNav() {
           <DropdownMenuItem asChild>
             <Link href="/profile">
               <UserIcon className="mr-2 h-4 w-4" />
-              <span>Perfil</span>
+              <span>{t("profile")}</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/settings">
               <Settings className="mr-2 h-4 w-4" />
-              <span>Configurações</span>
+              <span>{t("settings")}</span>
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
@@ -77,7 +79,7 @@ export function UserNav() {
           className="text-red-500 focus:text-red-500"
         >
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Sair</span>
+          <span>{t("logout")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

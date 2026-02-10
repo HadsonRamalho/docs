@@ -1,0 +1,89 @@
+{
+  "loading": {
+    "loading": "Loading..."
+  },
+  "docs": {
+    "docs": "Docs"
+  },
+  "homepage": {
+    "nav": {
+      "docs": "Docs",
+      "login": "Login",
+      "profile": "Profile",
+      "settings": "Settings",
+      "logout": "Logout"
+    },
+    "hero": {
+      "title": "Docs",
+      "subtitle": "Login"
+    },
+    "about": {
+      "title": "About",
+      "shortcuts_title": "Useful Shortcuts",
+      "shortcuts_desc": "Direct links to the most common documentation pages."
+    },
+    "items": {
+      "home": "Home",
+      "juri": "Integration Project Jury 2026"
+    },
+    "contribute": {
+      "title": "Pull Requests are welcome.",
+      "description": "Found something outdated? Our documentation is also code. Contribute to the official repository.",
+      "button": "View repository on GitHub"
+    }
+  },
+  "login": {
+    "title": "Welcome",
+    "description": "Log in with your GitHub or Google account",
+    "github_button": "Login with GitHub",
+    "divider": "Or continue with",
+    "email_label": "Email",
+    "email_placeholder": "Your email",
+    "password_label": "Password",
+    "password_placeholder": "Your password",
+    "forgot_password": "Forgot password?",
+    "submit_button": "Login",
+    "no_account": "Don't have an account?",
+    "signup_link": "Sign up",
+    "terms": "By clicking continue, you agree to our <link1>Terms of Service</link1> and <link2>Privacy Policy</link2>.",
+    "errors": {
+      "title": "Error",
+      "default": "Failed to log in. Please check your credentials.",
+      "token_failed": "Failed to validate your GitHub token. Try again.",
+      "github_response_failed": "Failed to communicate with GitHub. Try again.",
+      "github_response_error": "Error validating GitHub response. Try again.",
+      "github_data_error": "Error validating data sent by GitHub. Try again.",
+      "github_emails_not_found": "We couldn't find any emails linked to your GitHub. Try again or sign up using another method.",
+      "wrong_login_method": "Login error. Try again with a different authentication method.",
+      "generic_github_error": "We couldn't communicate with GitHub. Try again."
+    }
+  },
+  "signup": {
+    "title": "Create an account",
+    "description": "Enter your details below to get started",
+    "fields": {
+      "name": "Full Name",
+      "namePlaceholder": "John Doe",
+      "email": "Email",
+      "emailPlaceholder": "m@example.com",
+      "password": "Password",
+      "confirmPassword": "Confirm Password"
+    },
+    "hints": {
+      "passwordLength": "Password must be at least 8 characters."
+    },
+    "buttons": {
+      "submit": "Create Account",
+      "loading": "Creating..."
+    },
+    "footer": {
+      "hasAccount": "Already have an account?",
+      "loginLink": "Login",
+      "terms": "By clicking continue, you agree to our <link1>Terms of Service</link1> and <link2>Privacy Policy</link2>."
+    },
+    "errors": {
+      "title": "Error",
+      "default": "Error creating account. Please try again."
+    }
+  }
+}

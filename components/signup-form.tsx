@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -33,6 +34,7 @@ export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const t = useTranslations("signup");
   const { register } = useAuth();
   const [globalError, setGlobalError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -54,7 +56,7 @@ export function SignupForm({
     try {
       await register({ ...data, password_hash: data.password });
     } catch (err: any) {
-      setGlobalError(err.message || "Erro ao criar conta. Tente novamente.");
+      setGlobalError(err.message || t("errors.default"));
     } finally {
       setIsLoading(false);
     }
@@ -68,18 +70,16 @@ export function SignupForm({
             <div className="absolute left-0">
               <BackButton showText={false} />
             </div>
-            <CardTitle className="text-xl">Crie sua conta</CardTitle>
+            <CardTitle className="text-xl">{t("title")}</CardTitle>
           </div>
-          <CardDescription>
-            Preencha os dados abaixo para começar
-          </CardDescription>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-6">
             {globalError && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Erro</AlertTitle>
+                <AlertTitle>{t("errors.title")}</AlertTitle>
                 <AlertDescription>{globalError}</AlertDescription>
               </Alert>
             )}
@@ -94,10 +94,10 @@ export function SignupForm({
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome Completo</FormLabel>
+                      <FormLabel>{t("fields.name")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="João da Silva"
+                          placeholder={t("fields.namePlaceholder")}
                           disabled={isLoading}
                           {...field}
                         />
@@ -112,11 +112,11 @@ export function SignupForm({
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t("fields.email")}</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="m@exemplo.com"
+                          placeholder={t("fields.emailPlaceholder")}
                           disabled={isLoading}
                           {...field}
                         />
@@ -132,7 +132,7 @@ export function SignupForm({
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Senha</FormLabel>
+                        <FormLabel>{t("fields.password")}</FormLabel>
                         <FormControl>
                           <Input
                             type="password"
@@ -150,7 +150,7 @@ export function SignupForm({
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Confirmar Senha</FormLabel>
+                        <FormLabel>{t("fields.confirmPassword")}</FormLabel>
                         <FormControl>
                           <Input
                             type="password"
@@ -165,22 +165,22 @@ export function SignupForm({
                 </div>
 
                 <div className="text-[0.8rem] text-muted-foreground">
-                  A senha deve ter no mínimo 8 caracteres.
+                  {t("hints.passwordLength")}
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Criar Conta
+                  {t("buttons.submit")}
                 </Button>
               </form>
             </Form>
 
             <div className="text-center text-sm">
-              Já tem uma conta?{" "}
+              {t("footer.hasAccount")}{" "}
               <Link href="/login" className="underline underline-offset-4">
-                Entrar
+                {t("footer.loginLink")}
               </Link>
             </div>
           </div>
@@ -188,9 +188,10 @@ export function SignupForm({
       </Card>
 
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary">
-        Ao clicar em continuar, você concorda com nossos{" "}
-        <a href="/">Termos de Serviço</a> e{" "}
-        <a href="/">Política de Privacidade</a>.
+        {t.rich("footer.terms", {
+          link1: (chunks) => <a href="/terms">{chunks}</a>,
+          link2: (chunks) => <a href="/privacy">{chunks}</a>,
+        })}
       </div>
     </div>
   );

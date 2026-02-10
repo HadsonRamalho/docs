@@ -7,6 +7,10 @@ export const source = loader({
   baseUrl: "/docs",
   source: docs.toFumadocsSource(),
   plugins: [lucideIconsPlugin()],
+  i18n: {
+    defaultLanguage: "pt-br",
+    languages: ["pt-br", "en"],
+  },
 });
 
 export function getPageImage(page: InferPageType<typeof source>) {

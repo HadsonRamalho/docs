@@ -2,9 +2,12 @@ import { HomeLayout } from "fumadocs-ui/layouts/home";
 import { Info, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { baseOptions } from "@/lib/layout.shared";
 
 export default function HomePage() {
+  const t = useTranslations("homepage");
+
   return (
     <HomeLayout {...baseOptions()}>
       <main className="relative overflow-hidden">
@@ -12,7 +15,7 @@ export default function HomePage() {
           <div className="flex flex-row items-center justify-center md:-ml-20 gap-4">
             <Image src="/logo.png" alt="Logo" width={77} height={77} />
             <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl">
-              Docs
+              {t("nav.docs")}
             </h1>
           </div>
           <div className="mt-12 flex flex-col sm:flex-row justify-center gap-4">
@@ -21,7 +24,7 @@ export default function HomePage() {
               className="flex items-center justify-center rounded-xl border bg-fd-primary px-8 py-4 text-sm font-bold text-white shadow-lg transition-transform hover:-translate-y-1"
             >
               <User className="mr-2 h-4 w-4" />
-              Login
+              {t("nav.login")}
             </Link>
 
             <Link
@@ -29,7 +32,7 @@ export default function HomePage() {
               className="flex items-center justify-center rounded-xl border px-8 py-4 text-sm font-bold text-foreground shadow-lg transition-transform hover:-translate-y-1"
             >
               <Info className="mr-2 h-4 w-4" />
-              Saber mais
+              {t("about.title")}
             </Link>
           </div>
         </section>
@@ -39,10 +42,10 @@ export default function HomePage() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-12">
               <div className="max-w-md">
                 <h2 className="text-3xl font-bold mb-4 italic">
-                  Atalhos Úteis
+                  {t("about.shortcuts_title")}
                 </h2>
                 <p className="text-muted-foreground">
-                  Links diretos para as páginas mais comuns das documentações.
+                  {t("about.shortcuts_desc")}
                 </p>
               </div>
 
@@ -56,7 +59,7 @@ export default function HomePage() {
                     <span className="text-fd-primary mr-3 text-lg font-mono">
                       {s.prefix}
                     </span>
-                    {s.title}
+                    {t(s.title)}
                   </Link>
                 ))}
               </div>
@@ -66,17 +69,16 @@ export default function HomePage() {
 
         <section className="mx-auto max-w-7xl px-6 py-24 text-center">
           <h2 className="text-4xl font-bold mb-6 tracking-tight">
-            Pull Requests são bem-vindos.
+            {t("contribute.title")}
           </h2>
           <p className="text-muted-foreground mb-2 max-w-lg mx-auto">
-            Encontrou algo desatualizado por aqui? Nossa documentação também é
-            código. Contribua no repositório oficial.
+            {t("contribute.description")}
           </p>
           <Link
             href="https://github.com/HadsonRamalho/docs"
             className="underline decoration-fd-primary underline-offset-4 font-semibold hover:text-fd-primary transition-colors"
           >
-            Ver repositório no GitHub
+            {t("contribute.button")}
           </Link>
         </section>
       </main>
@@ -85,10 +87,10 @@ export default function HomePage() {
 }
 
 const shortcuts = [
-  { prefix: "01", title: "Página inicial", href: "/docs" },
+  { prefix: "01", title: "items.home", href: "/docs" },
   {
     prefix: "02",
-    title: "Bancas do Projeto Integrador 2026",
+    title: "items.juri",
     href: "/docs/bancas-integrador",
   },
 ];

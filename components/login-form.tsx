@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -38,6 +39,7 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const { signIn } = useAuth();
+  const t = useTranslations("login");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const searchParams = useSearchParams();
@@ -49,38 +51,13 @@ export function LoginForm({
   };
 
   const handleAuthError = (e: string) => {
-    switch (e) {
-      case "token_failed":
-        setError("Falha ao validar seu token do GitHub. Tente novamente.");
-        break;
-      case "github_response_failed":
-        setError("Falha ao se comunicar com o GitHub. Tente novamente.");
-        break;
-      case "github_response_error":
-        setError("Erro ao validar resposta do GitHub. Tente novamente.");
-        break;
-      case "github_data_error":
-        setError(
-          "Erro ao validar dados enviados pelo GitHub. Tente novamente.",
-        );
-        break;
-      case "github_emails_not_found":
-        setError(
-          "Não encontramos seus e-mails vinculados ao GitHub. Tente novamente ou cadastre-se por outro meio.",
-        );
-        break;
-      case "wrong_login_method":
-        setError(
-          "Erro ao realizar login. Tente novamente com outro método de autenticação.",
-        );
-        break;
-      default:
-        setError(
-          "Não conseguimos nos comunicar com o GitHub. Tente novamente.",
-        );
-        break;
-    }
-    toast.error(error);
+    const errorKey = `errors.${e}`;
+    const message = t(errorKey, {
+      defaultValue: t("login.errors.generic_github_error"),
+    });
+
+    setError(message);
+    toast.error(message);
   };
 
   useEffect(() => {
@@ -104,9 +81,7 @@ export function LoginForm({
     try {
       await signIn(data);
     } catch (err: any) {
-      setError(
-        err.message || "Falha ao realizar login. Verifique suas credenciais.",
-      );
+      setError(err.message || t("errors.default"));
     } finally {
       setIsLoading(false);
     }
@@ -120,11 +95,9 @@ export function LoginForm({
             <div className="absolute left-0">
               <BackButton showText={false} />
             </div>
-            <CardTitle className="text-xl">Bem-vindo</CardTitle>
+            <CardTitle className="text-xl">{t("title")}</CardTitle>
           </div>
-          <CardDescription>
-            Faça login com sua conta GitHub ou Google
-          </CardDescription>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-6">
@@ -136,7 +109,7 @@ export function LoginForm({
                 onClick={handleGithubLogin}
               >
                 <GithubIcon />
-                Login com GitHub
+                {t("github_button")}
               </Button>
               {/*
                 <Button variant="outline" type="button" disabled={isLoading}>
@@ -151,7 +124,7 @@ export function LoginForm({
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-card px-2 text-muted-foreground">
-                  Ou continue com
+                  {t("divider")}
                 </span>
               </div>
             </div>
@@ -177,7 +150,7 @@ export function LoginForm({
                       <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Seu e-mail"
+                          placeholder={t("email_placeholder")}
                           type="email"
                           disabled={isLoading}
                           {...field}
@@ -194,18 +167,18 @@ export function LoginForm({
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center">
-                        <FormLabel>Senha</FormLabel>
+                        <FormLabel>{t("password_label")}</FormLabel>
                         <a
                           href="/"
                           className="ml-auto text-sm underline-offset-4 hover:underline"
                         >
-                          Esqueceu a senha?
+                          {t("forgot_password")}
                         </a>
                       </div>
                       <FormControl>
                         <Input
                           type="password"
-                          placeholder="Sua senha"
+                          placeholder={t("password_label")}
                           disabled={isLoading}
                           {...field}
                         />
@@ -223,15 +196,15 @@ export function LoginForm({
                   {isLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Login
+                  {t("submit_button")}
                 </Button>
               </form>
             </Form>
 
             <div className="text-center text-sm">
-              Não tem uma conta?{" "}
+              {t("no_account")}{" "}
               <a href="/signup" className="underline underline-offset-4">
-                Cadastre-se
+                {t("signup_link")}
               </a>
             </div>
           </div>
@@ -239,9 +212,10 @@ export function LoginForm({
       </Card>
 
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary">
-        Ao clicar em continuar, você concorda com nossos{" "}
-        <a href="/">Termos de Serviço</a> e{" "}
-        <a href="/">Política de Privacidade</a>.
+        {t.rich("terms", {
+          link1: (chunks) => <a href="/terms">{chunks}</a>,
+          link2: (chunks) => <a href="/privacy">{chunks}</a>,
+        })}
       </div>
     </div>
   );
