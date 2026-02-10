@@ -13,7 +13,12 @@ export function extractTOCFromBlocks(blocks: Block[]): TOCItemType[] {
   const items: TOCItemType[] = [];
 
   blocks.forEach((block) => {
-    if (block.type === "text") {
+    if (
+      block.type === "text" ||
+      (block.type === "component" &&
+        block.metadata?.type &&
+        ["card", "banner"].includes(block.metadata?.type))
+    ) {
       const regex = /^(#{1,6})\s+(.+)$/gm;
       let match;
 
