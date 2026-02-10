@@ -63,13 +63,13 @@ export function UserNav() {
           <DropdownMenuItem asChild>
             <Link href="/profile">
               <UserIcon className="mr-2 h-4 w-4" />
-              <span>{t("profile")}</span>
+              <span>{t("nav.profile")}</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/settings">
               <Settings className="mr-2 h-4 w-4" />
-              <span>{t("settings")}</span>
+              <span>{t("nav.settings")}</span>
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
@@ -79,7 +79,7 @@ export function UserNav() {
           className="text-red-500 focus:text-red-500"
         >
           <LogOut className="mr-2 h-4 w-4" />
-          <span>{t("logout")}</span>
+          <span>{t("nav.logout")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,6 +1,7 @@
 "use client";
 
 import * as Base from "fumadocs-core/toc";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import type { Block } from "@/lib/types";
 import { cn, extractTOCFromBlocks } from "@/lib/utils";
@@ -11,6 +12,8 @@ interface InlineTOCProps {
 }
 
 export function InlineTOC({ tocItems, blocks }: InlineTOCProps) {
+  const t = useTranslations("toc");
+
   const [items, setItems] = useState<Base.TOCItemType[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -80,13 +83,12 @@ export function InlineTOC({ tocItems, blocks }: InlineTOCProps) {
         className="flex flex-col max-h-[80vh] overflow-y-auto pr-2 top-24 relative"
       >
         <p className="text-sm font-medium text-muted-foreground mb-4 pl-4">
-          Nesta página
+          {t("title")}
         </p>
 
         <Base.ScrollProvider containerRef={containerRef}>
           <div className="flex flex-col relative ml-4">
             <div className="absolute left-0 top-0 bottom-0 w-px bg-border/40" />
-
             <div
               className="absolute left-0 w-0.5 bg-fd-primary rounded-sm transition-all duration-300 ease-out"
               style={{
