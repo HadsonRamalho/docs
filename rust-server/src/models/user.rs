@@ -116,6 +116,19 @@ pub struct UpdateUser {
     pub email: String,
 }
 
+#[derive(Deserialize, Validate)]
+pub struct UpdateUserPassword {
+    #[validate(length(min = 1, message = "The current password is required"))]
+    #[serde(rename = "currentPassword")]
+    pub current_password: String,
+    #[validate(length(min = 1, message = "The new password is required"))]
+    #[serde(rename = "newPassword")]
+    pub new_password: String,
+    #[validate(length(min = 1, message = "The confirmation password is required"))]
+    #[serde(rename = "confirmPassword")]
+    pub confirm_password: String,
+}
+
 impl Sanitize for UpdateUser {
     fn sanitize(&mut self) {
         self.email = self.email.trim().to_lowercase();
@@ -141,10 +154,10 @@ pub async fn find_user_by_email(conn: &mut AsyncPgConnection, param: &str) -> Re
     }
 }
 
-pub async fn find_user_by_id(conn: &mut AsyncPgConnection, param: &Uuid) -> Result<User, String> {
+pub async fn find_user_by_id(conn: &mut AsyncPgConnection, param: &Uuid) -> Result<User, ApiError> {
     match users.filter(id.eq(param)).get_result(conn).await {
         Ok(user) => Ok(user),
-        Err(e) => Err(e.to_string()),
+        Err(e) => Err(ApiError::Database(e.to_string())),
     }
 }
 
@@ -188,6 +201,22 @@ pub async fn update_user_provider(
             primary_provider.eq(provider),
             avatar_url.eq(avatar),
         ))
+        .execute(conn)
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(e) => Err(ApiError::Database(e.to_string())),
+    }
+}
+
+pub async fn update_user_password(
+    conn: &mut AsyncPgConnection,
+    id_param: &Uuid,
+    new_password: String,
+) -> Result<(), ApiError> {
+    match diesel::update(users)
+        .filter(id.eq(id_param))
+        .set(password_hash.eq(new_password))
         .execute(conn)
         .await
     {

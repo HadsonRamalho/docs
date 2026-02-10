@@ -249,3 +249,50 @@ pub async fn api_save_notebook_content(
         Err(e) => Err(ApiError::Database(e)),
     }
 }
+pub async fn api_clone_notebook(
+    State(pool): State<Pool<AsyncPgConnection>>,
+    Path(notebook_id): Path<Uuid>,
+    headers: HeaderMap,
+) -> Result<(StatusCode, Json<Uuid>), ApiError> {
+    let id = extract_claims_from_header(&headers).await?.1.id;
+
+    let conn = &mut get_conn(&pool)
+        .await
+        .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
+
+    let target_notebook = match models::notebook::find_notebook_by_id(conn, &notebook_id).await {
+        Ok(notebook) => {
+            if let Err(e) = is_notebook_owner(conn, Some(id), &notebook_id).await
+                && !notebook.is_public
+            {
+                return Err(e);
+            }
+            notebook
+        }
+        Err(e) => return Err(ApiError::Database(e)),
+    };
+
+    let new_notebook_id = Uuid::new_v4();
+    let new_notebook_title = format!("Cópia de \"{}\"", target_notebook.title);
+
+    let new_notebook = NewNotebook {
+        id: new_notebook_id.clone(),
+        user_id: id,
+        title: "Nova Página".to_string(),
+    };
+
+    match models::notebook::create_notebook(conn, &new_notebook).await {
+        Ok(_) => {}
+        Err(e) => return Err(ApiError::Database(e)),
+    }
+
+    let _ = models::notebook::clone_notebook(
+        conn,
+        &target_notebook.id,
+        &new_notebook_id,
+        &new_notebook_title,
+    )
+    .await?;
+
+    Ok((StatusCode::CREATED, Json(new_notebook_id)))
+}

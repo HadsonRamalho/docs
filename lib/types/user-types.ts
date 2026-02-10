@@ -1,5 +1,8 @@
 import type z from "zod";
-import type { profileSchema } from "../schemas/user-schemas";
+import type {
+  profilePasswordSchema,
+  profileSchema,
+} from "../schemas/user-schemas";
 
 export type UserRole = "Admin" | "User";
 
@@ -53,3 +56,5 @@ export interface NewUserInternal {
 }
 
 export type ProfileFormValues = z.infer<typeof profileSchema>;
+
+export type ProfileSecurityFormValues = z.infer<typeof profilePasswordSchema>;

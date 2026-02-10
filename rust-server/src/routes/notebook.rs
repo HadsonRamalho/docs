@@ -3,8 +3,9 @@ use diesel_async::{AsyncPgConnection, pooled_connection::deadpool::Pool};
 use utoipa_axum::router::OpenApiRouter;
 
 use crate::controllers::notebook::{
-    api_create_notebook, api_delete_notebook, api_get_notebooks, api_get_single_notebook,
-    api_get_single_notebook_with_blocks, api_rename_notebook, api_save_notebook_content,
+    api_clone_notebook, api_create_notebook, api_delete_notebook, api_get_notebooks,
+    api_get_single_notebook, api_get_single_notebook_with_blocks, api_rename_notebook,
+    api_save_notebook_content,
 };
 
 pub async fn notebook_routes() -> OpenApiRouter<Pool<AsyncPgConnection>> {
@@ -15,6 +16,7 @@ pub async fn notebook_routes() -> OpenApiRouter<Pool<AsyncPgConnection>> {
         .route("/{id}", get(api_get_single_notebook))
         .route("/{id}/full", get(api_get_single_notebook_with_blocks))
         .route("/{id}/content", put(api_save_notebook_content))
+        .route("/{id}/clone", post(api_clone_notebook))
         .route("/all", get(api_get_notebooks));
 
     routes

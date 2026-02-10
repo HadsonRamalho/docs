@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Loader2, Save } from "lucide-react";
+import { Check, Copy, Loader2, Save } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -10,37 +10,64 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/context/auth-context";
+import { Button } from "../ui/button";
 import { useNotebook } from "./notebook-context";
 
 export function NotebookControls() {
   const { user } = useAuth();
-  const { triggerSave, isSaving, hasSaved, setVisibility, notebook, isPublic } =
-    useNotebook();
+  const {
+    triggerSave,
+    isSaving,
+    hasSaved,
+    setVisibility,
+    notebook,
+    isPublic,
+    triggerClone,
+    isCloning,
+  } = useNotebook();
 
   const isOwner = user && notebook && user.id === notebook.userId;
 
   if (!isOwner) {
-    return null;
+    return (
+      <div className="flex w-full justify-between gap-2">
+        <Button onClick={triggerClone}>
+          <Copy />
+          Fazer uma cópia
+        </Button>
+      </div>
+    );
   }
 
   return (
     <div className="flex w-full justify-between gap-2">
-      <Select
-        value={isPublic ? "true" : "false"}
-        onValueChange={(val) => setVisibility(val === "true")}
-      >
-        <SelectTrigger className="w-45">
-          <SelectValue placeholder="Visibilidade" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectItem value="false">Privado</SelectItem>
-            <SelectItem value="true">Público</SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <button
-        type="button"
+      <div className="flex gap-2 items-center">
+        <Select
+          value={isPublic ? "true" : "false"}
+          onValueChange={(val) => setVisibility(val === "true")}
+        >
+          <SelectTrigger className="w-45">
+            <SelectValue placeholder="Visibilidade" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="false">Privado</SelectItem>
+              <SelectItem value="true">Público</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        <Button onClick={triggerClone} disabled={isCloning} className="w-40">
+          {isCloning ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <>
+              <Copy />
+              Fazer uma cópia
+            </>
+          )}
+        </Button>
+      </div>
+      <Button
         onClick={triggerSave}
         disabled={isSaving}
         className={`
@@ -60,7 +87,7 @@ export function NotebookControls() {
           <Save className="size-3.5" />
         )}
         {isSaving ? "Salvando..." : hasSaved ? "Salvo!" : "Salvar"}
-      </button>
+      </Button>
     </div>
   );
 }

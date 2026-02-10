@@ -5,6 +5,7 @@ import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "@/context/auth-context";
 import {
+  cloneNotebook,
   createNotebook,
   deleteNotebook,
   getMyNotebooks,
@@ -21,6 +22,7 @@ interface NotebookManagerType {
   downloadBackup: () => Promise<void>;
   uploadBackup: (file: File) => Promise<void>;
   renamePage: (id: string, newTitle: string) => Promise<void>;
+  clone: (id: string) => Promise<void>;
 }
 
 const NotebookManagerContext = createContext<NotebookManagerType | undefined>(
@@ -83,6 +85,17 @@ export function NotebookManagerProvider({
     } catch (error) {
       console.error("Falha ao criar o notebook: ", error);
     }
+  };
+
+  const clone = async (id: string) => {
+    if (!user) {
+      return;
+    }
+    const newId = await cloneNotebook(id);
+
+    await refreshPages();
+
+    router.push(`/docs/${newId}`);
   };
 
   const deletePage = async (id: string) => {
@@ -151,6 +164,7 @@ export function NotebookManagerProvider({
         refreshPages,
         uploadBackup,
         downloadBackup,
+        clone,
       }}
     >
       {children}

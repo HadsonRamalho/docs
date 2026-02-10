@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Camera, Loader2, Lock, Save } from "lucide-react";
+import { AlertTriangle, Camera, Loader2, Lock, Save, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -34,6 +34,7 @@ import { GithubIcon } from "./github-info";
 import { GoogleIcon } from "./icons/google-icon";
 import { BackButton } from "./interface/back-button";
 import { DeleteAccountDialog } from "./interface/delete-account-dialog";
+import { ProfileSecurityForm } from "./interface/profile/profile-security-form";
 
 export function ProfileForm() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -111,7 +112,10 @@ export function ProfileForm() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Informações Pessoais</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <User className="size-5" />
+                Informações Pessoais
+              </CardTitle>
               <CardDescription>
                 Atualize seus detalhes pessoais aqui.
               </CardDescription>
@@ -224,9 +228,14 @@ export function ProfileForm() {
         </form>
       </Form>
 
+      {canEditEmail && <ProfileSecurityForm />}
+
       <Card className="border-destructive/50 bg-destructive/5">
         <CardHeader>
-          <CardTitle className="text-destructive">Zona de Perigo</CardTitle>
+          <CardTitle className="text-destructive flex items-center gap-2">
+            <AlertTriangle className="size-5" />
+            Zona de Perigo
+          </CardTitle>
           <CardDescription className="text-destructive/80">
             Ações irreversíveis relacionadas à sua conta.
           </CardDescription>

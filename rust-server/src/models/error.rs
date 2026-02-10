@@ -57,6 +57,9 @@ pub enum ApiError {
 
     #[error("{0} is missing from env")]
     MissingEnv(String),
+
+    #[error("The passwords do not match")]
+    PasswordsDoNotMatch,
 }
 
 impl IntoResponse for ApiError {
@@ -72,7 +75,8 @@ impl IntoResponse for ApiError {
 
             ApiError::InvalidAuthorizationToken
             | ApiError::InvalidPassword
-            | ApiError::InvalidCredentials => (StatusCode::UNAUTHORIZED, self.to_string()),
+            | ApiError::InvalidCredentials
+            | ApiError::PasswordsDoNotMatch => (StatusCode::UNAUTHORIZED, self.to_string()),
 
             ApiError::NotActiveUser => (
                 StatusCode::FORBIDDEN,
