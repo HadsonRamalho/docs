@@ -1,6 +1,7 @@
 "use client";
 import Editor from "@monaco-editor/react";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useState } from "react";
 import type { Block, RunStatus, TsMode } from "@/lib/types";
 import { EditorHeader } from "../default/editor-header";
@@ -20,6 +21,7 @@ export default function PythonSandbox({
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [status, setStatus] = useState<RunStatus>("idle");
+  const { theme } = useTheme();
 
   async function handleRun() {
     setIsRunning(true);
@@ -39,10 +41,10 @@ export default function PythonSandbox({
   return (
     <div className="rounded-lg p-2">
       <div
-        className={`flex flex-col gap-6 w-full mb-6 mt-2 ${isDragging ? "pointer-events-none" : ""}`}
+        className={`flex flex-col gap-6 w-full mb-6 mt-2 bg-card ${isDragging ? "pointer-events-none" : ""}`}
       >
-        <div className="flex flex-col rounded-xl border border-[#333] bg-[#1e1e1e] shadow-2xl overflow-hidden transition-all duration-300 hover:border-[#444]">
-          <div className="flex items-center justify-between bg-[#252525] px-4 py-2 border-b border-[#333]">
+        <div className="flex flex-col rounded-xl border dark:border-[#333] bg-card dark:bg-[#1e1e1e] shadow-2xl overflow-hidden transition-all duration-300 dark:hover:border-[#444]">
+          <div className="flex items-center justify-between bg-card dark:bg-[#252525] px-4 py-2 border-b dark:border-[#333]">
             <EditorHeader
               block={block}
               pageBlocks={[]}
@@ -70,7 +72,7 @@ export default function PythonSandbox({
               <Editor
                 height="280px"
                 defaultLanguage="python"
-                theme="vs-dark"
+                theme={theme === "dark" ? "vs-dark" : undefined}
                 value={block.content}
                 onChange={(v) => onCodeChange(v || "")}
                 options={{
@@ -86,8 +88,8 @@ export default function PythonSandbox({
           </div>
 
           {!isDragging && (
-            <div className="border-t border-[#333] bg-[#0f0f0f]">
-              <div className="flex items-center justify-between px-4 py-2 bg-[#1a1a1a] border-b border-[#333]">
+            <div className="border-t dark:border-[#333] dark:bg-[#0f0f0f]">
+              <div className="flex items-center justify-between px-4 py-2 dark:bg-[#1a1a1a] border-b dark:border-[#333]">
                 <span className="text-[10px] font-bold text-[#555] uppercase tracking-widest">
                   Console
                 </span>

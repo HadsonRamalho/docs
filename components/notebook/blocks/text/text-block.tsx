@@ -15,7 +15,7 @@ export function TextBlock({ content, onChange }: TextBlockProps) {
   if (isEditing) {
     return (
       <textarea
-        className="w-full bg-transparent text-gray-200 text-lg outline-none resize-none border-l-2 border-emerald-500 pl-4 py-2"
+        className="w-full bg-muted text-foreground text-lg outline-none resize-none border-l-2 border-emerald-500 pl-4 py-2"
         value={content}
         onBlur={() => setIsEditing(false)}
         onChange={(e) => onChange(e.target.value)}

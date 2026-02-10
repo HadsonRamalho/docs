@@ -2,11 +2,12 @@
 
 import Editor from "@monaco-editor/react";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useState } from "react";
+import { RunRust } from "@/lib/api/run-rust";
 import type { Block, RunStatus, TsMode } from "@/lib/types";
 import { EditorHeader } from "../default/editor-header";
 import { RunButton } from "../default/run-button";
-import { RunRust } from "@/lib/api/run-rust";
 
 interface RustNotebookProps {
   block: Block;
@@ -22,6 +23,7 @@ export function RustEditor({
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [status, setStatus] = useState<RunStatus>("idle");
+  const { theme } = useTheme();
 
   async function handleRun() {
     await RunRust({
@@ -65,7 +67,7 @@ export function RustEditor({
             <Editor
               height="280px"
               defaultLanguage="rust"
-              theme="vs-dark"
+              theme={theme === "dark" ? "vs-dark" : undefined}
               className="bg-card"
               value={block.content}
               onChange={(v) => onCodeChange(v || "")}
@@ -82,8 +84,8 @@ export function RustEditor({
         </div>
 
         {!isDragging && (
-          <div className="border-t border-[#333] bg-[#0f0f0f]">
-            <div className="flex items-center justify-between px-4 py-2 bg-[#1a1a1a] border-b border-[#333]">
+          <div className="border-t dark:border-[#333] dark:bg-[#0f0f0f]">
+            <div className="flex items-center justify-between px-4 py-2 dark:;bg-[#1a1a1a] border-b dark:border-[#333]">
               <span className="text-[10px] font-bold text-[#555] uppercase tracking-widest">
                 Console
               </span>
