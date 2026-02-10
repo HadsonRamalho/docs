@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Loader2, Save } from "lucide-react";
+import { Check, Copy, Loader2, Lock, Save, Users } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -40,23 +40,33 @@ export function NotebookControls() {
   }
 
   return (
-    <div className="flex w-full justify-between gap-2">
-      <div className="flex gap-2 items-center">
+    <div className="grid grid-cols-1 md:flex w-full justify-between gap-2">
+      <div className="grid grid-cols-1 w-full md:w-100 md:flex gap-2 items-center justify-center md:justify-start">
         <Select
           value={isPublic ? "true" : "false"}
           onValueChange={(val) => setVisibility(val === "true")}
         >
-          <SelectTrigger className="w-45">
+          <SelectTrigger className="w-full md:w-45">
             <SelectValue placeholder="Visibilidade" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="false">Privado</SelectItem>
-              <SelectItem value="true">Público</SelectItem>
+              <SelectItem value="false">
+                <Lock className="size-4" />
+                Privado
+              </SelectItem>
+              <SelectItem value="true">
+                <Users className="size-4" />
+                Público
+              </SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Button onClick={triggerClone} disabled={isCloning} className="w-40">
+        <Button
+          onClick={triggerClone}
+          disabled={isCloning}
+          className="w-full md:w-40"
+        >
           {isCloning ? (
             <Loader2 className="size-3.5 animate-spin" />
           ) : (
