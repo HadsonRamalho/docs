@@ -207,7 +207,7 @@ export function ProfileForm() {
                 />
               </div>
             </CardContent>
-            <CardFooter className="flex justify-end border-t px-6 py-4">
+            <CardFooter className="grid grid-cols-1 gap-4 md:flex justify-end border-t px-6 py-4">
               {user?.primary_provider !== "Github" && (
                 <Button onClick={handleLinkGithub} type="button">
                   <GithubIcon />
@@ -241,7 +241,7 @@ export function ProfileForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
+          <div className="grid grid-cols-1 gap-4 md:flex items-center justify-between">
             <div className="space-y-1">
               <p className="font-medium">Deletar Conta</p>
               <p className="text-sm text-muted-foreground">
