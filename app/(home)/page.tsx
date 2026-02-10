@@ -9,7 +9,7 @@ export default function HomePage() {
     <HomeLayout {...baseOptions()}>
       <main className="relative overflow-hidden">
         <section className="mx-auto max-w-7xl px-6 py-24 lg:py-32 text-center">
-          <div className="flex flex-row items-center justify-center -ml-20 gap-4">
+          <div className="flex flex-row items-center justify-center md:-ml-20 gap-4">
             <Image src="/logo.png" alt="Logo" width={77} height={77} />
             <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl">
               Docs
