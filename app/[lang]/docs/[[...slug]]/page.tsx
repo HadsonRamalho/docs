@@ -31,9 +31,10 @@ function UpdatedAt({ date }: UpdatedAtProps) {
   );
 }
 
-export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
+export default async function Page(
+  props: PageProps<"/[lang]/docs/[[...slug]]">,
+) {
   const params = await props.params;
-  console.log("Acessando Slug:", params.slug);
   const page = source.getPage(params.slug);
 
   if (params.slug && params.slug.length === 1) {
