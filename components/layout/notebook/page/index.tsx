@@ -1,8 +1,12 @@
+import type { AnchorProviderProps, TOCItemType } from "fumadocs-core/toc";
+import { I18nLabel } from "fumadocs-ui/contexts/i18n";
+import { Edit, Text } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "../../../../lib/cn";
+import { TOCProvider, TOCScrollArea } from "../../../toc";
+import * as TocClerk from "../../../toc/clerk";
+import * as TocDefault from "../../../toc/default";
 import { buttonVariants } from "../../../ui/button";
-import { Edit, Text } from "lucide-react";
-import { I18nLabel } from "fumadocs-ui/contexts/i18n";
 import {
   type BreadcrumbProps,
   type FooterProps,
@@ -12,10 +16,6 @@ import {
   PageTOCPopoverContent,
   PageTOCPopoverTrigger,
 } from "./client";
-import type { AnchorProviderProps, TOCItemType } from "fumadocs-core/toc";
-import * as TocDefault from "../../../toc/default";
-import * as TocClerk from "../../../toc/clerk";
-import { TOCProvider, TOCScrollArea } from "../../../toc";
 
 interface BreadcrumbOptions extends BreadcrumbProps {
   enabled: boolean;
@@ -261,4 +261,4 @@ export function DocsTitle({
   );
 }
 
-export { PageLastUpdate, PageBreadcrumb } from "./client";
+export { PageBreadcrumb, PageLastUpdate } from "./client";

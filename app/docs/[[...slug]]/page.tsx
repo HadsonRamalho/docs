@@ -1,6 +1,7 @@
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { InlineTOC } from "@/components/inline-toc";
 import {
   DocsBody,
   DocsDescription,
@@ -39,13 +40,13 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
     const pageId = params.slug[0];
     return (
       <NotebookProvider pageId={pageId}>
-        <DocsPage toc={page?.data.toc}>
-          <div className="mb-8">
+        <DocsPage className="flex flex-col max-w-none!">
+          <div className="flex flex-col mb-8 max-w-none!">
             <NotebookTitle pageTitle={page?.data.title} pageId={pageId} />
             <p className="text-muted-foreground text-xs mt-1 font-mono">
               ID: {pageId}
             </p>
-            <div className="flex mt-2 justify-end">
+            <div className="mt-2 md:w-330">
               <NotebookControls />
             </div>
           </div>
@@ -78,16 +79,23 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
     const MDX = page.data.body;
 
     return (
-      <DocsPage toc={page.data.toc}>
+      <DocsPage toc={undefined}>
         <DocsTitle>{page.data.title}</DocsTitle>
         <DocsDescription>{page.data.description}</DocsDescription>
         {lastModifiedTime && <UpdatedAt date={lastModifiedTime} />}
-        <DocsBody>
-          <MDX
-            components={getMDXComponents({
-              a: createRelativeLink(source, page),
-            })}
-          />
+        <DocsBody className="grid xl:grid-cols-[1fr_250px] gap-8 max-w-none! w-full">
+          <div className="min-w-0">
+            <MDX
+              components={getMDXComponents({
+                a: createRelativeLink(source, page),
+              })}
+            />
+          </div>
+          <aside className="hidden xl:block">
+            <div className="sticky top-24">
+              <InlineTOC tocItems={page.data.toc} />
+            </div>
+          </aside>
         </DocsBody>
       </DocsPage>
     );

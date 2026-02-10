@@ -10,6 +10,7 @@ import {
   saveNotebookData,
 } from "@/lib/api/notebook-service";
 import type { Block, BlockMetadata, BlockType, Language } from "@/lib/types";
+import { InlineTOC } from "../inline-toc";
 import { useNotebook } from "./notebook-context";
 import { ReorderItem } from "./reorder/reorder-item";
 import { ReorderTools } from "./reorder/reorder-tools";
@@ -205,12 +206,12 @@ export default function RustInteractivePage({
   };
 
   return (
-    <div className="mx-auto min-h-screen">
+    <div className="min-h-screen flex flex-row w-full">
       <Reorder.Group
         axis="y"
         values={blocks}
         onReorder={setBlocks}
-        className="space-y-4"
+        className="space-y-4 w-full"
       >
         {blocks.length > 0 &&
           blocks.map((block, index) => {
@@ -262,6 +263,11 @@ export default function RustInteractivePage({
             );
           })}
       </Reorder.Group>
+      <aside className="hidden xl:block w-70">
+        <div className="sticky top-24">
+          <InlineTOC blocks={blocks} />
+        </div>
+      </aside>
     </div>
   );
 }

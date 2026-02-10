@@ -281,7 +281,7 @@ export function DocsLayout(props: DocsLayoutProps) {
         navTransparentMode={nav.transparentMode}
       >
         <Sidebar defaultOpenLevel={defaultOpenLevel} prefetch={prefetch}>
-          <LayoutBody {...props.containerProps}>
+          <LayoutBody>
             {sidebar()}
             <DocsNavbar {...props} links={links} tabs={tabs} />
             {props.children}
