@@ -36,7 +36,7 @@ export default function RustInteractivePage({
   } = useNotebook();
   const isOwner = notebook?.userId === user?.id;
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [autoSaveInterval, setAutoSaveInterval] = useLocalStorage<number>(
+  const [autoSaveInterval, _setAutoSaveInterval] = useLocalStorage<number>(
     "editor-autosave-interval",
     10000,
   );
@@ -275,20 +275,6 @@ export default function RustInteractivePage({
         <div className="sticky top-24">
           <InlineTOC blocks={blocks} />
         </div>
-        <footer className="fixed bottom-4 right-4 p-2 border rounded shadow-lg flex items-center gap-2">
-          <span className="text-xs text-foreground">Auto-save:</span>
-          <select
-            value={autoSaveInterval}
-            onChange={(e) => setAutoSaveInterval(Number(e.target.value))}
-            className="border rounded p-1 text-xs"
-          >
-            <option value={0}>Desativado</option>
-            <option value={5000}>5 segundos</option>
-            <option value={10000}>10 segundos</option>
-            <option value={30000}>30 segundos</option>
-            <option value={60000}>1 minuto</option>
-          </select>
-        </footer>
       </aside>
     </div>
   );
