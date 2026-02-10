@@ -46,6 +46,6 @@ export const api = {
   delete: <T>(path: string, config?: FetchOptions) =>
     http<T>(path, { ...config, method: "DELETE" }),
 
-  patch: <T>(path: string, body: any, config?: FetchOptions) =>
+  patch: <T>(path: string, body?: any, config?: FetchOptions) =>
     http<T>(path, { ...config, method: "PATCH", body: JSON.stringify(body) }),
 };

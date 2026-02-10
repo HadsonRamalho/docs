@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Camera, Loader2, Lock, Save, Trash2 } from "lucide-react";
+import { Camera, Loader2, Lock, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -26,17 +26,24 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/context/auth-context";
+import { BASE_URL } from "@/lib/api/base";
 import { updateProfile } from "@/lib/api/user-service";
 import { profileSchema } from "@/lib/schemas/user-schemas";
 import type { ProfileFormValues } from "@/lib/types/user-types";
 import { GithubIcon } from "./github-info";
 import { GoogleIcon } from "./icons/google-icon";
 import { BackButton } from "./interface/back-button";
+import { DeleteAccountDialog } from "./interface/delete-account-dialog";
 
 export function ProfileForm() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const canEditEmail = user?.primary_provider === "Email";
+
+  const handleLinkGithub = () => {
+    const redirectUrl = `${BASE_URL}/user/link/github`;
+    window.location.href = redirectUrl;
+  };
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -197,6 +204,13 @@ export function ProfileForm() {
               </div>
             </CardContent>
             <CardFooter className="flex justify-end border-t px-6 py-4">
+              {user?.primary_provider !== "Github" && (
+                <Button onClick={handleLinkGithub} type="button">
+                  <GithubIcon />
+                  Vincular ao GitHub
+                </Button>
+              )}
+
               <Button
                 type="submit"
                 disabled={isSaving || !form.formState.isDirty}
@@ -225,10 +239,7 @@ export function ProfileForm() {
                 Isso excluirá permanentemente sua conta e todos os seus dados.
               </p>
             </div>
-            <Button variant="destructive">
-              <Trash2 className="mr-2 h-4 w-4" />
-              Deletar Conta
-            </Button>
+            <DeleteAccountDialog />
           </div>
         </CardContent>
       </Card>

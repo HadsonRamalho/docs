@@ -1,3 +1,4 @@
+use crate::schema::users::dsl::*;
 use crate::{controllers::utils::Sanitize, models::error::ApiError, schema::users};
 use chrono::{DateTime, Utc};
 use diesel::{
@@ -123,8 +124,6 @@ impl Sanitize for UpdateUser {
 }
 
 pub async fn register_user(conn: &mut AsyncPgConnection, user: &NewUser) -> Result<User, String> {
-    use crate::schema::users::dsl::*;
-
     match diesel::insert_into(users)
         .values(user)
         .get_result(conn)
@@ -136,8 +135,6 @@ pub async fn register_user(conn: &mut AsyncPgConnection, user: &NewUser) -> Resu
 }
 
 pub async fn find_user_by_email(conn: &mut AsyncPgConnection, param: &str) -> Result<User, String> {
-    use crate::schema::users::dsl::*;
-
     match users.filter(email.eq(param)).get_result(conn).await {
         Ok(user) => Ok(user),
         Err(e) => Err(e.to_string()),
@@ -145,8 +142,6 @@ pub async fn find_user_by_email(conn: &mut AsyncPgConnection, param: &str) -> Re
 }
 
 pub async fn find_user_by_id(conn: &mut AsyncPgConnection, param: &Uuid) -> Result<User, String> {
-    use crate::schema::users::dsl::*;
-
     match users.filter(id.eq(param)).get_result(conn).await {
         Ok(user) => Ok(user),
         Err(e) => Err(e.to_string()),
@@ -157,8 +152,6 @@ pub async fn find_user_by_public_id(
     conn: &mut AsyncPgConnection,
     param: i32,
 ) -> Result<User, String> {
-    use crate::schema::users::dsl::*;
-
     match users.filter(public_id.eq(param)).get_result(conn).await {
         Ok(user) => Ok(user),
         Err(e) => Err(e.to_string()),
@@ -170,11 +163,42 @@ pub async fn update_user_data(
     id_param: &Uuid,
     data: &UpdateUser,
 ) -> Result<(), ApiError> {
-    use crate::schema::users::dsl::*;
-
     match diesel::update(users)
         .filter(id.eq(id_param))
         .set((name.eq(&data.name), email.eq(&data.email)))
+        .execute(conn)
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(e) => Err(ApiError::Database(e.to_string())),
+    }
+}
+
+pub async fn update_user_provider(
+    conn: &mut AsyncPgConnection,
+    id_param: &Uuid,
+    provider: AuthProvider,
+    avatar: Option<String>,
+) -> Result<(), ApiError> {
+    let null_password: Option<String> = None;
+    match diesel::update(users)
+        .filter(id.eq(id_param))
+        .set((
+            password_hash.eq(null_password),
+            primary_provider.eq(provider),
+            avatar_url.eq(avatar),
+        ))
+        .execute(conn)
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(e) => Err(ApiError::Database(e.to_string())),
+    }
+}
+
+pub async fn delete_user(conn: &mut AsyncPgConnection, id_param: &Uuid) -> Result<(), ApiError> {
+    match diesel::delete(users)
+        .filter(id.eq(id_param))
         .execute(conn)
         .await
     {

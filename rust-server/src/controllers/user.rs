@@ -137,3 +137,18 @@ pub async fn api_get_logged_user(
 
     Ok(Json(user))
 }
+
+pub async fn api_delete_user(
+    State(pool): State<Pool<AsyncPgConnection>>,
+    headers: HeaderMap,
+) -> Result<StatusCode, ApiError> {
+    let id = extract_claims_from_header(&headers).await?.1.id;
+
+    let conn = &mut get_conn(&pool)
+        .await
+        .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
+
+    let _ = models::user::delete_user(conn, &id).await?;
+
+    Ok(StatusCode::OK)
+}

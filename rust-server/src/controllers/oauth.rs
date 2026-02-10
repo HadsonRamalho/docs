@@ -7,7 +7,7 @@ use crate::{
     models::{
         self,
         error::ApiError,
-        oauth::{AuthRequest, GithubEmail, GithubUser},
+        oauth::{AuthRequest, GithubEmail, GithubUser, GithubUserResponse},
         user::{AuthProvider, NewUser, UserAuthInfo},
     },
 };
@@ -48,7 +48,9 @@ macro_rules! oauth_client {
 }
 
 pub async fn api_github_login() -> Redirect {
-    let client = oauth_client!();
+    let api_url = get_var_from_env("API_URL").unwrap();
+    let redirect_url = format!("{}/api/user/auth/callback/github", api_url);
+    let client = oauth_client!().set_redirect_uri(RedirectUrl::new(redirect_url).unwrap());
 
     let (auth_url, _csrf_token) = client
         .authorize_url(CsrfToken::new_random)
@@ -58,12 +60,26 @@ pub async fn api_github_login() -> Redirect {
 
     Redirect::to(auth_url.as_str())
 }
-pub async fn api_github_callback(
-    State(pool): State<Pool<AsyncPgConnection>>,
-    Query(params): Query<AuthRequest>,
-) -> impl IntoResponse {
-    let base_redirect_url = get_var_from_env("FRONTEND_URL").unwrap();
 
+pub async fn api_link_github_init() -> impl IntoResponse {
+    let api_url = get_var_from_env("API_URL").unwrap();
+    let redirect_url = format!("{}/api/user/link/github/callback", api_url);
+    let client = oauth_client!().set_redirect_uri(RedirectUrl::new(redirect_url).unwrap());
+
+    let (auth_url, _csrf_token) = client
+        .authorize_url(CsrfToken::new_random)
+        .add_scope(Scope::new("read:user".to_string()))
+        .add_scope(Scope::new("user:email".to_string()))
+        .url();
+
+    Redirect::to(auth_url.as_str())
+}
+
+async fn get_github_user(
+    Query(params): Query<AuthRequest>,
+    http_client: &ReqwestClient,
+    base_redirect_url: &str,
+) -> Result<GithubUserResponse, String> {
     let client = oauth_client!();
 
     let token_result = client
@@ -76,15 +92,13 @@ pub async fn api_github_callback(
         Err(e) => {
             let e = format!("Erro ao validar o token: {}", e.to_string());
             error!(e);
-            return Redirect::to(&format!(
+            return Err(format!(
                 "{}/login?auth_error=token_failed",
                 base_redirect_url,
-            ))
-            .into_response();
+            ));
         }
     };
 
-    let http_client = ReqwestClient::new();
     let response = http_client
         .get("https://api.github.com/user")
         .header("User-Agent", "rust-notebook-app")
@@ -110,48 +124,117 @@ pub async fn api_github_callback(
 
         error!("Erro na API do GitHub: Status: {} | Body: {}", status, text);
 
-        return Redirect::to(&format!(
+        return Err(format!(
             "{}/login?auth_error=github_response_error",
             base_redirect_url,
-        ))
-        .into_response();
+        ));
     }
 
     let user_data = match response.json::<GithubUser>().await {
         Ok(user) => user,
         Err(e) => {
             error!("Erro ao decodificar JSON: {:?}", e);
-            return Redirect::to(&format!(
+            return Err(format!(
                 "{}/login?auth_error=github_data_error",
+                base_redirect_url
+            ));
+        }
+    };
+
+    Ok(GithubUserResponse {
+        user: user_data,
+        token,
+    })
+}
+
+pub async fn api_link_github_callback(
+    State(pool): State<Pool<AsyncPgConnection>>,
+    Query(params): Query<AuthRequest>,
+) -> impl IntoResponse {
+    let http_client = ReqwestClient::new();
+
+    let base_redirect_url = get_var_from_env("FRONTEND_URL").unwrap();
+
+    let user_data = match get_github_user(Query(params), &http_client, &base_redirect_url).await {
+        Ok(u) => u,
+        Err(e) => return Redirect::to(&e).into_response(),
+    };
+
+    let email = match get_user_github_email(&user_data, &http_client, &base_redirect_url).await {
+        Ok(email) => email,
+        Err(e) => return Redirect::to(&e).into_response(),
+    };
+
+    let conn = &mut get_conn(&pool)
+        .await
+        .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))
+        .unwrap();
+
+    let user = match models::user::find_user_by_email(conn, &email).await {
+        Ok(u) => u,
+        Err(e) => {
+            error!(e);
+            return Redirect::to(&format!(
+                "{}/login?auth_error=github_emails_not_found",
                 base_redirect_url,
             ))
             .into_response();
         }
     };
 
-    let mut conn = &mut get_conn(&pool)
-        .await
-        .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))
-        .unwrap();
+    match models::user::update_user_provider(
+        conn,
+        &user.id,
+        AuthProvider::Github,
+        Some(user_data.user.avatar_url),
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            let error = format!("{}", e.to_string());
+            error!(error);
+            return Redirect::to(&format!(
+                "{}/login?auth_error=github_emails_not_found",
+                base_redirect_url,
+            ))
+            .into_response();
+        }
+    }
 
-    let email = match user_data.email {
+    let base_redirect_url = get_var_from_env("FRONTEND_URL").unwrap();
+    let token = generate_jwt(UserAuthInfo::from(user)).unwrap();
+
+    Redirect::to(&format!(
+        "{}/auth-callback?token={}",
+        base_redirect_url, token
+    ))
+    .into_response()
+}
+
+async fn get_user_github_email(
+    data: &GithubUserResponse,
+    http_client: &ReqwestClient,
+    base_redirect_url: &str,
+) -> Result<String, String> {
+    let user_email = data.user.email.clone();
+    let email = match user_email {
         Some(e) => e,
         None => {
             let emails: Vec<GithubEmail> = http_client
                 .get("https://api.github.com/user/emails")
                 .header("User-Agent", "rust-notebook-app")
-                .bearer_auth(token.access_token().secret())
+                .bearer_auth(data.token.access_token().secret())
                 .send()
                 .await
                 .unwrap()
                 .json()
                 .await
                 .map_err(|_| {
-                    Redirect::to(&format!(
+                    format!(
                         "{}/login?auth_error=github_emails_not_found",
                         base_redirect_url,
-                    ))
-                    .into_response()
+                    )
                 })
                 .unwrap();
 
@@ -162,6 +245,34 @@ pub async fn api_github_callback(
                 .unwrap()
         }
     };
+
+    Ok(email)
+}
+
+pub async fn api_github_callback(
+    State(pool): State<Pool<AsyncPgConnection>>,
+    Query(params): Query<AuthRequest>,
+) -> impl IntoResponse {
+    let http_client = ReqwestClient::new();
+
+    let base_redirect_url = get_var_from_env("FRONTEND_URL").unwrap();
+
+    let user_data = match get_github_user(Query(params), &http_client, &base_redirect_url).await {
+        Ok(u) => u,
+        Err(e) => return Redirect::to(&e).into_response(),
+    };
+
+    let email = match get_user_github_email(&user_data, &http_client, &base_redirect_url).await {
+        Ok(email) => email,
+        Err(e) => return Redirect::to(&e).into_response(),
+    };
+
+    let user_data = user_data.user;
+
+    let mut conn = &mut get_conn(&pool)
+        .await
+        .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))
+        .unwrap();
 
     let user_exists = match models::user::find_user_by_email(&mut conn, &email).await {
         Ok(u) => Some(u),

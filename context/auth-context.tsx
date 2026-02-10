@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { api } from "@/lib/api/base";
+import { deleteAccount } from "@/lib/api/user-service";
 import type { LoginUser, RegisterUser, User } from "@/lib/types/user-types";
 
 interface AuthContextType {
@@ -15,6 +16,7 @@ interface AuthContextType {
   signIn: (data: LoginUser) => Promise<void>;
   signOut: () => void;
   register: (data: RegisterUser) => Promise<void>;
+  deleteProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -100,6 +102,18 @@ export function AuthProvider({
     }
   };
 
+  const deleteProfile = async () => {
+    try {
+      await deleteAccount();
+
+      deleteCookie("auth_token");
+      setUser(null);
+      router.push("/");
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const signOut = () => {
     deleteCookie("auth_token");
     setUser(null);
@@ -108,6 +122,7 @@ export function AuthProvider({
   return (
     <AuthContext.Provider
       value={{
+        deleteProfile,
         githubSignIn,
         user,
         isLoading,
