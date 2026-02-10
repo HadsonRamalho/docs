@@ -62,10 +62,8 @@ export function SettingsForm() {
     <div className="space-y-6">
       <div className="flex flex-col space-y-2 text-center sm:text-left">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Configurações</h2>
-          <p className="text-muted-foreground">
-            Gerencie suas preferências de salvamento automático e tema
-          </p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("title")}</h2>
+          <p className="text-muted-foreground">{t("description")}</p>
         </div>
         <div className="flex items-start justify-start">
           <BackButton />
