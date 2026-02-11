@@ -6,6 +6,8 @@ use dotenvy::dotenv;
 use hyper::{HeaderMap, StatusCode};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode};
 
+const JWT_EXP_HOURS: i64 = 24 * 7;
+
 pub async fn jwt_auth(req: Request<Body>, next: Next) -> Result<Response, ApiError> {
     let _ = extract_claims_from_header(req.headers()).await?;
     Ok(next.run(req).await)
@@ -91,7 +93,7 @@ pub fn get_jwt_secret_from_env() -> Result<String, ApiError> {
 
 pub fn generate_jwt(input: UserAuthInfo) -> Result<String, ApiError> {
     let expiration = chrono::Utc::now()
-        .checked_add_signed(chrono::Duration::hours(1))
+        .checked_add_signed(chrono::Duration::hours(JWT_EXP_HOURS))
         .expect("Invalid timestamp")
         .timestamp() as usize;
 
