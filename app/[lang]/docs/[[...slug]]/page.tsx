@@ -1,6 +1,7 @@
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { NextIntlClientProvider, useMessages } from "next-intl";
 import { InlineTOC } from "@/components/inline-toc";
 import {
   DocsBody,

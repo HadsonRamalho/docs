@@ -1,6 +1,28 @@
 {
+  "api_errors": {
+    "BAD_REQUEST": "Houve um erro ao processar sua requisição. Verifique os dados e tente novamente.",
+    "DATABASE_CONNECTION_ERROR": "Estamos enfrentando problemas para conectar ao banco de dados. Tente novamente mais tarde.",
+    "INVALID_AUTH_TOKEN": "Sua sessão é inválida ou expirou. Por favor, faça login novamente.",
+    "MULTIPLE_AUTH_ERRORS": "Ocorreram múltiplos erros de autorização. Por favor, faça login novamente.",
+    "DATABASE_ERROR": "Ocorreu um erro interno no banco de dados. Nossa equipe já foi notificada.",
+    "TOKEN_CREATION_FAILED": "Falha ao iniciar a sessão de forma segura. Por favor, tente fazer login novamente.",
+    "INVALID_DATA": "Alguns campos obrigatórios estão ausentes ou inválidos. Verifique o formulário.",
+    "INVALID_EMAIL": "O endereço de e-mail fornecido é inválido.",
+    "INVALID_CREDENTIALS": "E-mail ou senha inválidos.",
+    "WRONG_PROVIDER": "Esta conta está vinculada a outro serviço. Por favor, faça login com {provider}.",
+    "USER_NOT_ACTIVE": "Sua conta está inativa. Por favor, contate o suporte.",
+    "INVALID_PASSWORD": "A senha fornecida está incorreta.",
+    "MISSING_FRONTEND_URL": "Erro de configuração do sistema: URL do frontend ausente.",
+    "USER_NOT_FOUND": "Não encontramos nenhum usuário com este e-mail.",
+    "MISSING_ENV_VAR": "Erro de configuração interna: Falta a variável {env_var}.",
+    "PASSWORDS_DO_NOT_MATCH": "As senhas informadas não conferem.",
+    "UNKNOWN_ERROR": "Ocorreu um erro inesperado. Tente novamente."
+  },
   "loading": {
     "loading": "Carregando..."
+  },
+  "back_button": {
+    "back_button": "Voltar"
   },
   "docs": {
     "docs": "Docs"
@@ -86,6 +108,40 @@
       "default": "Erro ao criar conta. Tente novamente."
     }
   },
+  "profile": {
+    "title": "Meu Perfil",
+    "description": "Gerencie suas informações pessoais e preferências.",
+    "profile_card": {
+      "title": "Informações Pessoais",
+      "description": "Atualize seus detalhes pessoais aqui.",
+      "update_image": "Alterar foto",
+      "full_name": "Nome Completo",
+      "email": "E-mail",
+      "link_to_github": "Vincular ao GitHub",
+      "save": "Salvar Alterações",
+      "profile_updated": "Perfil atualizado!",
+      "profile_update_error": "Erro ao atualizar o perfil",
+      "linked_to": "Vinculado ao "
+    },
+    "security_card": {
+      "title": "Segurança",
+      "description": "Atualize sua senha e revise detalhes de login.",
+      "current_password": "Senha atual",
+      "new_password": "Nova Senha",
+      "confirm_password": "Confirme a Nova Senha",
+      "new_password_hint": "A senha deve ter pelo menos 8 caracteres",
+      "update_password": "Atualizar Senha",
+      "password_updated": "Senha atualizada",
+      "password_update_error": "Erro ao atualizar a senha"
+    },
+    "danger_card": {
+      "title": "Zona de Perigo",
+      "description": "Ações irreversíveis relacionadas à sua conta.",
+      "delete_account": "Deletar Conta",
+      "delete_account_description": "Isso excluirá permanentemente sua conta e todos os seus dados.",
+      "delete_account_button": "Deletar Conta"
+    }
+  },
   "settings": {
     "title": "Configurações",
     "description": "Gerencie suas preferências de conta e aparência.",
@@ -112,6 +168,25 @@
         }
       }
     }
+  },
+  "notebook_controls": {
+    "clone": "Fazer uma cópia",
+    "visibility": "Visibilidade",
+    "private": "Privado",
+    "public": "Público",
+    "save": "Salvar",
+    "saving": "Salvando...",
+    "saved": "Salvo!"
+  },
+  "sidebar": {
+    "my_notebook": "Meu Caderno",
+    "no_pages": "Nenhuma página criada",
+    "new_page": "Nova página",
+    "backup_title": "Configurações e backup",
+    "manage_data": "Gerenciar dados",
+    "download_all": "Exportar Tudo (.json)",
+    "import": "Importar Backup",
+    "confirm_import": "Isso também substituirá todas as suas páginas duplicadas pelo backup. Deseja continuar?"
   },
   "toc": {
     "title": "Nesta página"

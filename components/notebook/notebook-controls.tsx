@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, Copy, Loader2, Lock, Save, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Select,
   SelectContent,
@@ -25,15 +26,20 @@ export function NotebookControls() {
     triggerClone,
     isCloning,
   } = useNotebook();
+  const t = useTranslations("notebook_controls");
 
   const isOwner = user && notebook && user.id === notebook.userId;
+
+  if (!user) {
+    return null;
+  }
 
   if (!isOwner) {
     return (
       <div className="flex w-full justify-between gap-2">
         <Button onClick={triggerClone}>
           <Copy />
-          Fazer uma cópia
+          {t("clone")}
         </Button>
       </div>
     );
@@ -47,17 +53,17 @@ export function NotebookControls() {
           onValueChange={(val) => setVisibility(val === "true")}
         >
           <SelectTrigger className="w-full md:w-45">
-            <SelectValue placeholder="Visibilidade" />
+            <SelectValue placeholder={t("visibility")} />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
               <SelectItem value="false">
                 <Lock className="size-4" />
-                Privado
+                {t("private")}
               </SelectItem>
               <SelectItem value="true">
                 <Users className="size-4" />
-                Público
+                {t("public")}
               </SelectItem>
             </SelectGroup>
           </SelectContent>
@@ -72,7 +78,7 @@ export function NotebookControls() {
           ) : (
             <>
               <Copy />
-              Fazer uma cópia
+              {t("clone")}
             </>
           )}
         </Button>
@@ -81,7 +87,7 @@ export function NotebookControls() {
         onClick={triggerSave}
         disabled={isSaving}
         className={`
-          flex items-center gap-2 px-4 py-2 rounded-md text-xs font-bold transition-all border
+          flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all border
           ${
             hasSaved
               ? "bg-emerald-500 border-green-500/50 text-white"
@@ -96,7 +102,7 @@ export function NotebookControls() {
         ) : (
           <Save className="size-3.5" />
         )}
-        {isSaving ? "Salvando..." : hasSaved ? "Salvo!" : "Salvar"}
+        {isSaving ? t("saving") : hasSaved ? t("saved") : t("save")}
       </Button>
     </div>
   );

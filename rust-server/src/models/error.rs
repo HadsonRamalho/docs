@@ -62,8 +62,43 @@ pub enum ApiError {
     PasswordsDoNotMatch,
 }
 
+impl ApiError {
+    fn error_code(&self) -> &'static str {
+        match self {
+            ApiError::Request(_) => "BAD_REQUEST",
+            ApiError::DatabaseConnection(_) => "DATABASE_CONNECTION_ERROR",
+            ApiError::InvalidAuthorizationToken => "INVALID_AUTH_TOKEN",
+            ApiError::MultipleAuthorizationErrors(_) => "MULTIPLE_AUTH_ERRORS",
+            ApiError::Database(_) => "DATABASE_ERROR",
+            ApiError::CreateToken(_) => "TOKEN_CREATION_FAILED",
+            ApiError::InvalidData => "INVALID_DATA",
+            ApiError::InvalidEmail => "INVALID_EMAIL",
+            ApiError::InvalidCredentials => "INVALID_CREDENTIALS",
+            ApiError::WrongProvider(_) => "WRONG_PROVIDER",
+            ApiError::NotActiveUser => "USER_NOT_ACTIVE",
+            ApiError::InvalidPassword => "INVALID_PASSWORD",
+            ApiError::FrontendUrl | ApiError::MissingFrontendUrl => "MISSING_FRONTEND_URL",
+            ApiError::UserNotFound => "USER_NOT_FOUND",
+            ApiError::MissingEnv(_) => "MISSING_ENV_VAR",
+            ApiError::PasswordsDoNotMatch => "PASSWORDS_DO_NOT_MATCH",
+        }
+    }
+
+    fn error_details(&self) -> serde_json::Value {
+        match self {
+            ApiError::WrongProvider(provider) => json!({ "provider": provider }),
+            ApiError::MissingEnv(env) => json!({ "env_var": env }),
+            ApiError::Request(detail) => json!({ "detail": detail }),
+            _ => json!({}),
+        }
+    }
+}
+
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
+        let details = self.error_details();
+        let error_code = self.error_code();
+
         let (status, message) = match self {
             ApiError::Database(_) | ApiError::DatabaseConnection(_) | ApiError::CreateToken(_) => {
                 (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
@@ -94,6 +129,12 @@ impl IntoResponse for ApiError {
             ),
         };
 
-        (status, Json(json!({ "error": message }))).into_response()
+        let body = json!({
+            "code": error_code,
+            "message": message,
+            "details": details
+        });
+
+        (status, Json(body)).into_response()
     }
 }

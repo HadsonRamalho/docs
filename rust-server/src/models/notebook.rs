@@ -1,7 +1,8 @@
 use crate::{models::error::ApiError, schema::blocks::dsl as blocks_dsl};
 use chrono::{DateTime, Utc};
 use diesel::{
-    BelongingToDsl, ExpressionMethods, QueryDsl, Selectable,
+    BelongingToDsl, BoolExpressionMethods, ExpressionMethods, JoinOnDsl, PgTextExpressionMethods,
+    QueryDsl, Selectable,
     prelude::{Associations, Identifiable, Insertable, Queryable},
 };
 use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
@@ -162,6 +163,18 @@ pub struct BlockRequest {
     pub content: String,
     pub language: Option<Language>,
     pub metadata: Option<BlockMetadata>,
+}
+
+#[derive(Deserialize)]
+pub struct SearchQuery {
+    pub q: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SearchResult {
+    pub id: Uuid,
+    pub title: String,
+    pub content: String,
 }
 
 pub async fn create_notebook(
@@ -436,4 +449,35 @@ pub async fn clone_notebook(
         Ok(_) => Ok(()),
         Err(e) => Err(ApiError::Database(e.to_string())),
     }
+}
+
+pub async fn search_user_blocks(
+    conn: &mut AsyncPgConnection,
+    current_user_id: uuid::Uuid,
+    search_term: &str,
+) -> Result<Vec<SearchResult>, ApiError> {
+    use crate::schema::blocks::dsl as b;
+    use crate::schema::notebooks::dsl as n;
+
+    let results_tuples: Vec<(uuid::Uuid, String, String)> = b::blocks
+        .inner_join(n::notebooks.on(b::notebook_id.eq(n::id)))
+        .filter(
+            n::user_id.eq(current_user_id).and(
+                b::title
+                    .ilike(&search_term)
+                    .or(b::content.ilike(&search_term)),
+            ),
+        )
+        .select((n::id, n::title, b::content))
+        .limit(10)
+        .load(conn)
+        .await
+        .map_err(|e| ApiError::Database(e.to_string()))?;
+
+    let final_results = results_tuples
+        .into_iter()
+        .map(|(id, title, content)| SearchResult { id, title, content })
+        .collect::<Vec<SearchResult>>();
+
+    Ok(final_results)
 }

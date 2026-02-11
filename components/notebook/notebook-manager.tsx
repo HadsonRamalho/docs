@@ -1,9 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "@/context/auth-context";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import {
   cloneNotebook,
   createNotebook,
@@ -34,6 +36,7 @@ export function NotebookManagerProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations("api_errors");
   const [pages, setPages] = useState<NotebookMeta[]>([]);
   const { user } = useAuth();
   const router = useRouter();
@@ -67,8 +70,8 @@ export function NotebookManagerProvider({
       );
 
       await refreshPages();
-    } catch (error) {
-      console.error("Erro ao renomear notebook:", error);
+    } catch (err) {
+      handleApiError({ err, t });
     }
   };
 
@@ -82,31 +85,39 @@ export function NotebookManagerProvider({
       await refreshPages();
 
       router.push(`/docs/${newId}`);
-    } catch (error) {
-      console.error("Falha ao criar o notebook: ", error);
+    } catch (err) {
+      handleApiError({ err, t });
     }
   };
 
   const clone = async (id: string) => {
-    if (!user) {
-      return;
+    try {
+      if (!user) {
+        return;
+      }
+      const newId = await cloneNotebook(id);
+
+      await refreshPages();
+
+      router.push(`/docs/${newId}`);
+    } catch (err) {
+      handleApiError({ err, t });
     }
-    const newId = await cloneNotebook(id);
-
-    await refreshPages();
-
-    router.push(`/docs/${newId}`);
   };
 
   const deletePage = async (id: string) => {
-    if (!user) {
-      return;
+    try {
+      if (!user) {
+        return;
+      }
+      await deleteNotebook(id);
+
+      await refreshPages();
+
+      router.push("/docs");
+    } catch (err) {
+      handleApiError({ err, t });
     }
-    await deleteNotebook(id);
-
-    await refreshPages();
-
-    router.push("/docs");
   };
 
   const downloadBackup = async () => {

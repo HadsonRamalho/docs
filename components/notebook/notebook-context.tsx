@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   createContext,
   type ReactNode,
@@ -7,7 +8,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { toast } from "sonner";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import { getCurrentNotebook } from "@/lib/api/notebook-service";
 import type { Notebook } from "@/lib/types";
 import { useNotebookManager } from "./notebook-manager";
@@ -43,6 +44,7 @@ export function NotebookProvider({
   children: ReactNode;
   pageId: string | null;
 }) {
+  const t = useTranslations("api_errors");
   const [saveSignal, setSaveSignal] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [hasSaved, setHasSaved] = useState(false);
@@ -66,8 +68,8 @@ export function NotebookProvider({
       if (id) {
         await clone(id);
       }
-    } catch (error) {
-      toast.error(`${error}`);
+    } catch (err) {
+      handleApiError({ err, t });
     } finally {
       setIsCloning(false);
     }

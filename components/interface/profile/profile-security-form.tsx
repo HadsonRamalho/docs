@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Lock, Save } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -28,6 +29,8 @@ import { profilePasswordSchema } from "@/lib/schemas/user-schemas";
 import type { ProfileSecurityFormValues } from "@/lib/types/user-types";
 
 export function ProfileSecurityForm() {
+  const t = useTranslations("profile");
+
   const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<ProfileSecurityFormValues>({
@@ -45,9 +48,9 @@ export function ProfileSecurityForm() {
     try {
       await updatePassword(data);
 
-      toast.success("Senha atualizada com sucesso!");
+      toast.success(t("security_card.password_updated"));
     } catch (error: any) {
-      toast.error(error.message || "Erro ao atualizar senha.");
+      toast.error(error.message || t("security_card.password_update_error"));
     } finally {
       setIsSaving(false);
     }
@@ -60,11 +63,9 @@ export function ProfileSecurityForm() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Lock className="size-5" />
-              Segurança
+              {t("security_card.title")}
             </CardTitle>
-            <CardDescription>
-              Atualize sua senha e revise detalhes de login.
-            </CardDescription>
+            <CardDescription>{t("security_card.description")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid gap-4">
@@ -73,11 +74,11 @@ export function ProfileSecurityForm() {
                 name="currentPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Senha Atual</FormLabel>
+                    <FormLabel>{t("security_card.current_password")}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Sua senha atual"
+                        placeholder={t("security_card.current_password")}
                         {...field}
                       />
                     </FormControl>
@@ -91,11 +92,11 @@ export function ProfileSecurityForm() {
                 name="newPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nova Senha</FormLabel>
+                    <FormLabel>{t("security_card.new_password")}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Sua nova senha"
+                        placeholder={t("security_card.new_password")}
                         {...field}
                       />
                     </FormControl>
@@ -109,11 +110,11 @@ export function ProfileSecurityForm() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirme a Nova Senha</FormLabel>
+                    <FormLabel>{t("security_card.confirm_password")}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Confirme a nova senha"
+                        placeholder={t("security_card.confirm_password")}
                         {...field}
                       />
                     </FormControl>
@@ -130,7 +131,7 @@ export function ProfileSecurityForm() {
             >
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {!isSaving && <Save className="mr-2 h-4 w-4" />}
-              Atualizar Senha
+              {t("security_card.update_password")}
             </Button>
           </CardFooter>
         </Card>

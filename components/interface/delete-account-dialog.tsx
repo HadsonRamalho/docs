@@ -1,7 +1,7 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +17,8 @@ import { useAuth } from "@/context/auth-context";
 import { Button } from "../ui/button";
 
 export function DeleteAccountDialog() {
+  const t = useTranslations("profile");
+
   const { deleteProfile } = useAuth();
 
   const handleDelete = async (e: React.MouseEvent) => {
@@ -33,7 +35,7 @@ export function DeleteAccountDialog() {
           className="group-hover:opacity-100 hover:cursor-pointer p-1.5  hover:text-red-300 hover:bg-red-500/10 rounded transition-all"
         >
           <Trash2 className="mr-2 h-4 w-4" />
-          Deletar Conta
+          {t("danger_card.delete_account_button")}
         </Button>
       </AlertDialogTrigger>
 

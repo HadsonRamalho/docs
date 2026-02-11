@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, Camera, Loader2, Lock, Save, User } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -37,6 +38,8 @@ import { DeleteAccountDialog } from "./interface/delete-account-dialog";
 import { ProfileSecurityForm } from "./interface/profile/profile-security-form";
 
 export function ProfileForm() {
+  const t = useTranslations("profile");
+
   const { user, isLoading: isAuthLoading } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const canEditEmail = user?.primary_provider === "Email";
@@ -69,9 +72,9 @@ export function ProfileForm() {
     try {
       await updateProfile(data);
 
-      toast.success("Perfil atualizado com sucesso!");
+      toast.success(t("profile_card.profile_updated"));
     } catch (error: any) {
-      toast.error(error.message || "Erro ao atualizar perfil.");
+      toast.error(error.message || t("profile_card.profile_update_error"));
     } finally {
       setIsSaving(false);
     }
@@ -96,10 +99,8 @@ export function ProfileForm() {
     <div className="space-y-6">
       <div className="flex flex-col space-y-2 text-center sm:text-left">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Meu Perfil</h2>
-          <p className="text-muted-foreground">
-            Gerencie suas informações pessoais e preferências.
-          </p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("title")}</h2>
+          <p className="text-muted-foreground">{t("description")}</p>
         </div>
         <div className="flex items-start justify-start">
           <BackButton />
@@ -114,11 +115,9 @@ export function ProfileForm() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="size-5" />
-                Informações Pessoais
+                {t("profile_card.title")}
               </CardTitle>
-              <CardDescription>
-                Atualize seus detalhes pessoais aqui.
-              </CardDescription>
+              <CardDescription>{t("profile_card.description")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex flex-col items-center gap-4 sm:flex-row">
@@ -142,7 +141,7 @@ export function ProfileForm() {
                     className="mt-2"
                     type="button"
                   >
-                    Alterar foto
+                    {t("profile_card.update_image")}
                   </Button>
                 </div>
               </div>
@@ -155,9 +154,12 @@ export function ProfileForm() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome Completo</FormLabel>
+                      <FormLabel>{t("profile_card.full_name")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Seu nome" {...field} />
+                        <Input
+                          placeholder={t("profile_card.full_name")}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -170,7 +172,7 @@ export function ProfileForm() {
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center justify-between">
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>{t("profile_card.email")}</FormLabel>
                         {!canEditEmail && (
                           <span className="text-xs font-medium text-muted-foreground bg-secondary px-2 py-0.5 rounded-full flex items-center gap-1">
                             {user?.primary_provider === "Google" && (
@@ -179,7 +181,8 @@ export function ProfileForm() {
                             {user?.primary_provider === "Github" && (
                               <GithubIcon />
                             )}
-                            Vinculado ao {user?.primary_provider}
+                            {t("profile_card.linked_to")}
+                            {user?.primary_provider}
                           </span>
                         )}
                       </div>
@@ -187,7 +190,7 @@ export function ProfileForm() {
                       <FormControl>
                         <div className="relative">
                           <Input
-                            placeholder="seu@email.com"
+                            placeholder={t("profile_card.email")}
                             {...field}
                             disabled={!canEditEmail}
                             className={
@@ -211,7 +214,7 @@ export function ProfileForm() {
               {user?.primary_provider !== "Github" && (
                 <Button onClick={handleLinkGithub} type="button">
                   <GithubIcon />
-                  Vincular ao GitHub
+                  {t("profile_card.link_to_github")}
                 </Button>
               )}
 
@@ -221,7 +224,7 @@ export function ProfileForm() {
               >
                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {!isSaving && <Save className="mr-2 h-4 w-4" />}
-                Salvar Alterações
+                {t("profile_card.save")}
               </Button>
             </CardFooter>
           </Card>
@@ -234,18 +237,18 @@ export function ProfileForm() {
         <CardHeader>
           <CardTitle className="text-destructive flex items-center gap-2">
             <AlertTriangle className="size-5" />
-            Zona de Perigo
+            {t("danger_card.title")}
           </CardTitle>
           <CardDescription className="text-destructive/80">
-            Ações irreversíveis relacionadas à sua conta.
+            {t("danger_card.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-4 md:flex items-center justify-between">
             <div className="space-y-1">
-              <p className="font-medium">Deletar Conta</p>
+              <p className="font-medium">{t("danger_card.delete_account")}</p>
               <p className="text-sm text-muted-foreground">
-                Isso excluirá permanentemente sua conta e todos os seus dados.
+                {t("danger_card.delete_account_description")}
               </p>
             </div>
             <DeleteAccountDialog />

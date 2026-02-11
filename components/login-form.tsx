@@ -27,6 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-context";
 import { BASE_URL } from "@/lib/api/base";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import { loginSchema } from "@/lib/schemas/auth-schemas";
 import type { LoginFormValues } from "@/lib/types/auth-types";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,7 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const { signIn } = useAuth();
   const t = useTranslations("login");
+  const a = useTranslations("api_errors");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const searchParams = useSearchParams();
@@ -81,7 +83,7 @@ export function LoginForm({
     try {
       await signIn(data);
     } catch (err: any) {
-      setError(err.message || t("errors.default"));
+      handleApiError({ err, t: a, setError });
     } finally {
       setIsLoading(false);
     }

@@ -2,9 +2,11 @@
 
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { api } from "@/lib/api/base";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import { deleteAccount } from "@/lib/api/user-service";
 import type { LoginUser, RegisterUser, User } from "@/lib/types/user-types";
 
@@ -26,6 +28,7 @@ export function AuthProvider({
 }: {
   children: React.ReactNode;
 }): React.ReactNode {
+  const t = useTranslations("api_errors");
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -35,6 +38,7 @@ export function AuthProvider({
       const token = getCookie("auth_token");
 
       if (!token) {
+        console.error("Token não encontrado nos cookies");
         setIsLoading(false);
         return;
       }
@@ -42,8 +46,8 @@ export function AuthProvider({
       try {
         const profile = await api.get<User>("/user/me");
         setUser(profile);
-      } catch (error) {
-        console.error("Sessão expirada ou inválida", error);
+      } catch (err) {
+        handleApiError({ err, t });
         signOut();
       } finally {
         setIsLoading(false);

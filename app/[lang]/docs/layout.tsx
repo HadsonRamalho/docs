@@ -1,8 +1,4 @@
-import {
-  NextIntlClientProvider,
-  useMessages,
-  useTranslations,
-} from "next-intl";
+import { NextIntlClientProvider, useMessages } from "next-intl";
 import { DocsLayout } from "@/components/layout/docs";
 import { NotebookProvider } from "@/components/notebook/notebook-context";
 import { NotebookManagerProvider } from "@/components/notebook/notebook-manager";
@@ -12,7 +8,6 @@ import { baseOptions } from "@/lib/layout.shared";
 import { source } from "@/lib/source";
 
 export default function Layout({ children }: LayoutProps<"/[lang]/docs">) {
-  const t = useTranslations("homepage");
   const messages = useMessages();
 
   const mode = env.get("NEXT_PUBLIC_MODE");
@@ -32,25 +27,21 @@ export default function Layout({ children }: LayoutProps<"/[lang]/docs">) {
   };
 
   return (
-    <NotebookManagerProvider>
-      <NotebookProvider pageId={null}>
-        <DocsLayout
-          tree={filteredTree}
-          {...baseOptions()}
-          sidebar={{
-            defaultOpenLevel: 1,
-            banner: (
-              <NextIntlClientProvider messages={messages}>
-                <UserSidebar />
-              </NextIntlClientProvider>
-            ),
-          }}
-        >
-          <NextIntlClientProvider messages={messages}>
+    <NextIntlClientProvider messages={messages}>
+      <NotebookManagerProvider>
+        <NotebookProvider pageId={null}>
+          <DocsLayout
+            tree={filteredTree}
+            {...baseOptions()}
+            sidebar={{
+              defaultOpenLevel: 1,
+              banner: <UserSidebar />,
+            }}
+          >
             {children}
-          </NextIntlClientProvider>
-        </DocsLayout>
-      </NotebookProvider>
-    </NotebookManagerProvider>
+          </DocsLayout>
+        </NotebookProvider>
+      </NotebookManagerProvider>
+    </NextIntlClientProvider>
   );
 }

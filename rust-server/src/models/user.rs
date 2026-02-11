@@ -49,6 +49,7 @@ pub struct User {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
+#[derive(Clone)]
 pub struct UserAuthInfo {
     pub id: Uuid,
     pub public_id: i32,

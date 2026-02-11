@@ -1,6 +1,28 @@
 {
+  "api_errors": {
+    "BAD_REQUEST": "There was an error processing your request. Please check the data and try again.",
+    "DATABASE_CONNECTION_ERROR": "We are experiencing issues connecting to our database. Please try again later.",
+    "INVALID_AUTH_TOKEN": "Your session is invalid or has expired. Please log in again.",
+    "MULTIPLE_AUTH_ERRORS": "Multiple authorization errors occurred. Please verify your credentials.",
+    "DATABASE_ERROR": "An internal database error occurred. Our team has been notified.",
+    "TOKEN_CREATION_FAILED": "Failed to create an authentication token. Please try logging in again.",
+    "INVALID_DATA": "Some required fields are missing or invalid. Please check your form.",
+    "INVALID_EMAIL": "The email address provided is invalid.",
+    "INVALID_CREDENTIALS": "Invalid email or password.",
+    "WRONG_PROVIDER": "This account is linked to another service. Please log in with {provider}.",
+    "USER_NOT_ACTIVE": "Your account is inactive. Please contact support.",
+    "INVALID_PASSWORD": "The password provided is incorrect.",
+    "MISSING_FRONTEND_URL": "System configuration error: Frontend URL is missing.",
+    "USER_NOT_FOUND": "We couldn't find a user with this email.",
+    "MISSING_ENV_VAR": "System configuration error: Missing environment variable {env_var}.",
+    "PASSWORDS_DO_NOT_MATCH": "The provided passwords do not match.",
+    "UNKNOWN_ERROR": "An unexpected error occurred. Please try again."
+  },
   "loading": {
     "loading": "Loading..."
+  },
+  "back_button": {
+    "back_button": "Back"
   },
   "docs": {
     "docs": "Docs"
@@ -86,6 +108,40 @@
       "default": "Error creating account. Please try again."
     }
   },
+  "profile": {
+    "title": "My Profile",
+    "description": "Manage your personal information and preferences.",
+    "profile_card": {
+      "title": "Personal Information",
+      "description": "Update your personal details here.",
+      "update_image": "Change photo",
+      "full_name": "Full Name",
+      "email": "Email",
+      "link_to_github": "Link to GitHub",
+      "save": "Save Changes",
+      "profile_updated": "Profile updated!",
+      "profile_update_error": "Error updating profile",
+      "linked_to": "Linked to "
+    },
+    "security_card": {
+      "title": "Security",
+      "description": "Update your password and review login details.",
+      "current_password": "Current password",
+      "new_password": "New Password",
+      "confirm_password": "Confirm New Password",
+      "new_password_hint": "Password must be at least 8 characters long",
+      "update_password": "Update Password",
+      "password_updated": "Password updated",
+      "password_update_error": "Error updating password"
+    },
+    "danger_card": {
+      "title": "Danger Zone",
+      "description": "Irreversible actions related to your account.",
+      "delete_account": "Delete Account",
+      "delete_account_description": "This will permanently delete your account and all your data.",
+      "delete_account_button": "Delete Account"
+    }
+  },
   "settings": {
     "title": "Settings",
     "description": "Manage your account preferences and appearance.",
@@ -118,6 +174,25 @@
         }
       }
     }
+  },
+  "notebook_controls": {
+    "clone": "Make a copy",
+    "visibility": "Visibility",
+    "private": "Private",
+    "public": "Public",
+    "save": "Save",
+    "saving": "Saving...",
+    "saved": "Saved!"
+  },
+  "sidebar": {
+    "my_notebook": "My Notebook",
+    "no_pages": "No pages created",
+    "new_page": "New page",
+    "backup_title": "Settings and backup",
+    "manage_data": "Manage data",
+    "download_all": "Export All (.json)",
+    "import": "Import Backup",
+    "confirm_import": "This will also overwrite all your duplicate pages with the backup. Do you want to continue?"
   },
   "toc": {
     "title": "On this page"

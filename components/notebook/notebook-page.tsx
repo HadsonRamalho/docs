@@ -1,11 +1,12 @@
 "use client";
 
 import { Reorder } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { useAuth } from "@/context/auth-context";
 import { useLocalStorage } from "@/hooks/use-local-storate";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import {
   getCurrentNotebookWithBlocks,
   saveNotebookData,
@@ -23,6 +24,7 @@ interface RustInteractivePageProps {
 export default function RustInteractivePage({
   pageId = "default",
 }: RustInteractivePageProps) {
+  const t = useTranslations("api_errors");
   const { user } = useAuth();
   const {
     saveSignal,
@@ -91,10 +93,8 @@ export default function RustInteractivePage({
         setIsSaving(false);
         setHasSaved(true);
         setTimeout(() => setHasSaved(false), 2000);
-      } catch (error) {
-        const errorMessage = `Falha ao salvar: ${error}`;
-        console.error(errorMessage);
-        toast.error(errorMessage);
+      } catch (err) {
+        handleApiError({ err, t });
 
         setIsSaving(false);
       }
@@ -110,6 +110,7 @@ export default function RustInteractivePage({
     setHasSaved,
     isOwner,
     user,
+    t,
   ]);
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{Path, Query, State},
 };
 use diesel_async::{AsyncPgConnection, pooled_connection::deadpool::Pool};
 use hyper::{HeaderMap, StatusCode};
@@ -12,8 +12,8 @@ use crate::{
         self,
         error::ApiError,
         notebook::{
-            NewBlock, NewNotebook, Notebook, NotebookResponse, SyncNotebookRequest,
-            UpdateNotebookTitle, delete_notebook, update_notebook_title,
+            NewBlock, NewNotebook, Notebook, NotebookResponse, SearchQuery, SearchResult,
+            SyncNotebookRequest, UpdateNotebookTitle, delete_notebook, update_notebook_title,
         },
     },
 };
@@ -295,4 +295,27 @@ pub async fn api_clone_notebook(
     .await?;
 
     Ok((StatusCode::CREATED, Json(new_notebook_id)))
+}
+
+pub async fn api_search_notebooks(
+    State(pool): State<Pool<AsyncPgConnection>>,
+    Query(params): Query<SearchQuery>,
+    headers: HeaderMap,
+) -> Result<(StatusCode, Json<Vec<SearchResult>>), ApiError> {
+    let id = extract_claims_from_header(&headers).await?.1.id;
+
+    if params.q.trim().is_empty() {
+        return Ok((StatusCode::OK, Json(Vec::<SearchResult>::new())));
+    }
+
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|e| ApiError::DatabaseConnection(e.to_string()))?;
+
+    let search_term = format!("%{}%", params.q);
+
+    let results = models::notebook::search_user_blocks(&mut conn, id, &search_term).await?;
+
+    Ok((StatusCode::OK, Json(results)))
 }
