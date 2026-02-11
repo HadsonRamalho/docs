@@ -1,22 +1,211 @@
 ---
-title: Bem-vindo(a)! 
+title: O que são as Docs?
+description: Guia de uso, limitações e exemplos da plataforma.
 ---
 
----
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { RustEditorMDX } from "../../components/notebook/blocks/rust/rust-editor-mdx";
+import { TsxEditorMDX } from "../../components/notebook/blocks/tsx/tsx-editor-mdx";
+import { PythonEditorMDX } from "../../components/notebook/blocks/python/python-editor-mdx";
+import { Banner } from "../../components/banner";
+import { GithubRepoMDX } from "../../components/github-info-mdx";
 
-## Primeiros Passos
-Toda a estrutura de arquivos reside em `/content/docs`. Para criar uma nova página, basta adicionar um arquivo `.mdx` seguindo os padrões.
+<Banner variant="normal" className="relative">
+  ## O que são as Docs?
+</Banner>
 
----
+Basicamente, é uma ferramenta de escrita de texto, com alguns fru-frus a mais.
 
-## O que vem a seguir?
-Explore os links abaixo para entender as ferramentas que sustentam as documentações:
+É inspirada no Jupyter Notebook (que permite escrever código e texto).
+
+<Banner variant="normal" className="relative">
+  ## Limitações atuais
+</Banner>
+
+1. O compartilhamento de páginas ainda não está totalmente pronto:
+    1. Quero permitir uma espécie de histórico, pro usuário conseguir navegar entre as páginas recentes.
+
+2. [X] As únicas funções relacionadas ao usuário são as de cadastro, login e atualização de nome.
+3. Alguns botões podem te levar pra uma página que ainda não existe, ou para uma página de onde você não consegue voltar ;) .
+4. Alguns pontos de autenticação ainda serão melhorados/corrigidos.
+5. [X] Ainda não implementei login com o GitHub :P .
+6. [X] Ainda não é possível criar tabelas (nem com markdown, nem com componentes de UI).
+7. [X] Os metadados do componente de UI Callout não estão sendo salvos.
+8. [X] Os componentes de UI Banner, Card e repositório do GitHub não são adequados pro tema claro.
+9. [X] A edição de markdown fica com aparência estranha no tema claro.
+10. [X] Todos os componentes de edição de texto ficam estranhos no tema claro.
+11. [X] Ainda não é possível copiar páginas que foram compartilhadas.
+12. [X] O componente de link para repositório do GitHub não está responsivo.
+13. [X] O título na página inicial não está centralizado.
+14. [X] Ainda não é possível adicionar notas de rodapé [^1].
+15. [X] Ainda não é possível adicionar lista de tarefa.
+16. [X] Ainda não é possível adicionar links diretamente.
+
+[^1]: Essa é uma nota de rodapé!
+
+<Banner variant="normal" className="relative">
+  ## O que funciona no momento
+</Banner>
+
+1. Cadastro e login de usuário
+2. Sincronização automática das páginas (salvando a cada 10s)
+3. Renomear páginas.
+4. Executar código de outras páginas, desde que estejam na mesma aba do navegador e que todos os blocos relacionados tenham sido compilados.
+5. Compartilhar uma página, desde que ela esteja pública (dá pra editar a configuração no topo da página).
+6. Reordenar blocos.
+7. Utilizar componentes de UI (callout, card, banner e link para repositório do github).
+
+<Banner variant="normal" className="relative">
+  ## Exemplos de uso
+</Banner>
+
+## Rust
+
+1. Compile esse bloco primeiro:
+
+Obs.: Se aparecer uma mensagem de falha, mas a mensagem possuir algo como `Finished dev [unoptimized + debuginfo]`, então estará tudo certo e você pode seguir pro próximo passo :)
+
+<RustEditorMDX
+  title="file.rs"
+  initialCode={`//#[mod=qualquer_nome]\npub fn dizer_ola() -> String{\n    "Olá! Essa mensagem veio do bloco QUALQUER_NOME.RS. :)".to_string()\n}`}
+/>
+
+2. Agora compile esse bloco:
+
+<RustEditorMDX
+  title="file.rs"
+  initialCode={`pub mod qualquer_nome;\n\nfn main() {\n   println!("{}", qualquer_nome::dizer_ola());\n}`}
+/>
+
+## React/TypeScript
+
+Você pode editar código abaixo.
+Ele poderia ser importado em outro bloco, por meio de um import:
+`import RelogioDigital from './Componente_13'`.
+
+Isso não foi feito nesse exemplo por questões de renderização da página.
+
+<TsxEditorMDX
+  title="Componente_13"
+  initialCode={`import React, { useState, useEffect } from 'react';\n\n\nconst estiloHora: React.CSSProperties = {\n  fontSize: '2rem',\n  fontWeight: 'bold',\n  color: '#169e69'\n};\n\nconst estiloContainer: React.CSSProperties = {\n  padding: '20px',\n  textAlign: 'center',\n  fontFamily: 'sans-serif'\n};\n\nconst RelogioDigital: React.FC = () => {\n  const [hora, setHora] = useState(new Date());\n\n  useEffect(() => {\n    const timer = setInterval(() => {\n      setHora(new Date());\n    }, 1000);\n\n    return () => clearInterval(timer);\n  }, []);\n\n  const horaFormatada = hora.toLocaleTimeString('pt-BR');\n\n  return (\n    <div style={estiloContainer}>\n      <h2>Hora Atual</h2>\n      <p style={estiloHora}>{horaFormatada}</p>\n    </div>\n  );\n};\n\nexport default RelogioDigital;`}
+/>
+
+## Python
+
+1. Compile o código abaixo:
+
+<PythonEditorMDX
+  title="script.py"
+  initialCode={`def ola():\n    print("Olá! Essa mensagem veio de outro bloco")`}
+/>
+
+2. Agora compile esse bloco:
+
+<PythonEditorMDX
+  title="script.py"
+  initialCode={`ola()`}
+/>
+
+## Interface
+
+### Callout
+
+<Callout>
+  Callout de informação
+</Callout>
+
+<Callout type="warn">
+  Callout de aviso
+</Callout>
+
+<Callout type="error">
+  Callout de erro
+</Callout>
+
+### Card
 
 <Cards>
-    <Card title="Documentação Fumadocs" href="https://fumadocs.dev"
-      description="Entenda como usar componentes MDX e busca avançada." />
-    <Card title="Repositório desta documentação" href="https://github.com/HadsonRamalho/docs"
-      description="Acesse o código-fonte deste projeto no GitHub." />
+  <Card title="Card simples" />
 </Cards>
 
----
+### Banner
+
+<Banner variant="rainbow" className="relative">
+  Banner colorido
+</Banner>
+
+<Banner variant="normal" className="relative">
+  Banner normal
+</Banner>
+
+### Repositório
+
+<GithubRepoMDX owner="HadsonRamalho" repo="docs" />
+
+### Markdown
+
+*Esse conteúdo foi retirado do MarkdownLivePreview*
+
+# Markdown syntax guide
+
+## Headers
+
+# This is a Heading h1
+## This is a Heading h2
+###### This is a Heading h6
+
+## Emphasis
+
+*This text will be italic* _This will also be italic_
+
+**This text will be bold** __This will also be bold__
+
+_You **can** combine them_
+
+## Lists
+
+### Unordered
+
+* Item 1
+* Item 2
+* Item 2a
+* Item 2b
+    * Item 3a
+    * Item 3b
+
+### Ordered
+
+1. Item 1
+2. Item 2
+3. Item 3
+    1. Item 3a
+    2. Item 3b
+
+## Images
+![Logo](https://6hpqpw43-3000.brs.devtunnels.ms/logo.png)
+
+
+## Links
+
+You may be using [Markdown Live Preview](https://markdownlivepreview.com/).
+
+## Blockquotes
+
+> Markdown is a lightweight markup language with plain-text-formatting syntax, created in 2004 by John Gruber with Aaron Swartz.
+>
+>> Markdown is often used to format readme files, for writing messages in online discussion forums, and to create rich text using a plain text editor.
+
+## Tables
+
+| Left columns  | Right columns |
+| ------------- |:-------------:|
+| left foo      | right foo     |
+| left bar      | right bar     |
+| left baz      | right baz     |
+
+## Blocks of code
+
+```javascript
+let message = 'Hello world';
+alert(message);

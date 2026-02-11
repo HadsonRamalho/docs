@@ -1,7 +1,6 @@
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { NextIntlClientProvider, useMessages } from "next-intl";
 import { InlineTOC } from "@/components/inline-toc";
 import {
   DocsBody,
@@ -37,29 +36,6 @@ export default async function Page(
 ) {
   const params = await props.params;
   const page = source.getPage(params.slug);
-
-  if (params.slug && params.slug.length === 1) {
-    const pageId = params.slug[0];
-    return (
-      <NotebookProvider pageId={pageId}>
-        <DocsPage className="flex flex-col max-w-none!">
-          <div className="flex flex-col mb-8 max-w-none!">
-            <NotebookTitle pageTitle={page?.data.title} pageId={pageId} />
-            <p className="text-muted-foreground text-xs mt-1 font-mono">
-              ID: {pageId}
-            </p>
-            <div className="mt-2 md:w-330">
-              <NotebookControls />
-            </div>
-          </div>
-
-          <DocsBody>
-            <RustInteractivePage pageId={pageId} />
-          </DocsBody>
-        </DocsPage>
-      </NotebookProvider>
-    );
-  }
 
   if (page) {
     const lastModifiedTime = page.data.lastModified;
@@ -100,6 +76,29 @@ export default async function Page(
           </aside>
         </DocsBody>
       </DocsPage>
+    );
+  }
+
+  if (params.slug && params.slug.length === 1) {
+    const pageId = params.slug[0];
+    return (
+      <NotebookProvider pageId={pageId}>
+        <DocsPage className="flex flex-col max-w-none!">
+          <div className="flex flex-col mb-8 max-w-none!">
+            <NotebookTitle pageId={pageId} />
+            <p className="text-muted-foreground text-xs mt-1 font-mono">
+              ID: {pageId}
+            </p>
+            <div className="mt-2 md:w-330">
+              <NotebookControls />
+            </div>
+          </div>
+
+          <DocsBody>
+            <RustInteractivePage pageId={pageId} />
+          </DocsBody>
+        </DocsPage>
+      </NotebookProvider>
     );
   }
 

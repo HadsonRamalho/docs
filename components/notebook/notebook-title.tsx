@@ -7,11 +7,10 @@ import { getCurrentNotebook } from "@/lib/api/notebook-service";
 import { useNotebookManager } from "./notebook-manager";
 
 interface NotebookTitleProps {
-  pageTitle: string | undefined;
   pageId: string;
 }
 
-export function NotebookTitle({ pageTitle, pageId }: NotebookTitleProps) {
+export function NotebookTitle({ pageId }: NotebookTitleProps) {
   const t = useTranslations("api_errors");
   const { renamePage } = useNotebookManager();
   const [isEditing, setIsEditing] = useState(false);
@@ -77,10 +76,10 @@ export function NotebookTitle({ pageTitle, pageId }: NotebookTitleProps) {
     <h1
       className="text-3xl font-bold cursor-text hover:bg-white/5 rounded px-1 transition-colors"
       onClick={() => {
-        !pageTitle && setIsEditing(true);
+        setIsEditing(true);
       }}
     >
-      {title || pageTitle || "..."}
+      {title || "..."}
     </h1>
   );
 }
