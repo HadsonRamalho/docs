@@ -9,6 +9,7 @@ import {
   SandpackProvider,
 } from "@codesandbox/sandpack-react";
 import Script from "next/script";
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { RunTsxInSandbox } from "@/lib/api";
 import type { Block, TsMode } from "@/lib/types";
@@ -74,6 +75,7 @@ export function TsxEditor({
   const [mode, setMode] = useState<TsMode>("advanced");
   const [sandboxUrl, setSandboxUrl] = useState<string | null>(null);
   const [babelReady, setBabelReady] = useState(false);
+  const { theme } = useTheme();
 
   const loadBabel = () => {
     if ((window as any).Babel) {
@@ -136,7 +138,7 @@ export function TsxEditor({
         onLoad={() => setBabelReady(true)}
       />
       <SandpackProvider
-        theme="dark"
+        theme={theme === "dark" ? "dark" : undefined}
         template="react-ts"
         files={editorFiles}
         options={editorOptions}
@@ -155,7 +157,7 @@ export function TsxEditor({
           />
         </div>
 
-        <div className="flex flex-col rounded-lg overflow-hidden bg-card">
+        <div className="flex flex-col overflow-hidden bg-card">
           <SandpackLayout>
             <SandpackCodeEditor
               showTabs

@@ -145,6 +145,17 @@ pub fn get_database_url_from_env() -> Result<String, (StatusCode, Json<String>)>
     }
 }
 
+pub fn get_var_from_env(var: &str) -> Result<String, ApiError> {
+    dotenv().ok();
+
+    match env::var(var) {
+        Ok(secret) => Ok(secret),
+        Err(_) => {
+            return Err(ApiError::MissingEnv(var.to_string()));
+        }
+    }
+}
+
 pub fn get_frontend_url_from_env() -> Result<String, (StatusCode, Json<String>)> {
     dotenv().ok();
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { Download, Settings, Upload } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRef } from "react";
 import {
   DropdownMenu,
@@ -13,6 +14,7 @@ import {
 import { useNotebookManager } from "./notebook/notebook-manager";
 
 export function SidebarBackup() {
+  const t = useTranslations("sidebar");
   const { downloadBackup, uploadBackup } = useNotebookManager();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -45,7 +47,7 @@ export function SidebarBackup() {
           <button
             type="button"
             className="p-1 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors"
-            title="Configurações e Backup"
+            title={t("backup_title")}
           >
             <Settings size={14} />
           </button>
@@ -55,7 +57,7 @@ export function SidebarBackup() {
           align="start"
           className="w-56 bg-[#1e1e1e] border-[#333] text-gray-200"
         >
-          <DropdownMenuLabel>Gerenciar Dados</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("manage_data")}</DropdownMenuLabel>
           <DropdownMenuSeparator className="bg-[#333]" />
 
           <DropdownMenuItem
@@ -63,7 +65,7 @@ export function SidebarBackup() {
             className="cursor-pointer hover:bg-[#333] focus:bg-[#333]"
           >
             <Download className="mr-2 h-4 w-4" />
-            <span>Exportar Tudo (.json)</span>
+            <span>{t("download_all")}</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem
@@ -71,7 +73,7 @@ export function SidebarBackup() {
             className="cursor-pointer hover:bg-[#333] focus:bg-[#333] text-emerald-400 focus:text-emerald-400"
           >
             <Upload className="mr-2 h-4 w-4" />
-            <span>Importar Backup</span>
+            <span>{t("import")}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

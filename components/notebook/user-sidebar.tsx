@@ -2,7 +2,9 @@
 
 import { Check, FileText, Pencil, Plus } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { useAuth } from "@/context/auth-context";
 import type { NotebookMeta } from "@/lib/types";
 import { DeletePageDialog } from "../delete-page-dialog";
 import { SidebarBackup } from "../sidebar-backup";
@@ -10,6 +12,8 @@ import { Button } from "../ui/button";
 import { useNotebookManager } from "./notebook-manager";
 
 export function UserSidebar() {
+  const t = useTranslations("sidebar");
+  const { user } = useAuth();
   const { pages, createPage } = useNotebookManager();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempTitle, setTempTitle] = useState("");
@@ -30,10 +34,14 @@ export function UserSidebar() {
     setEditingId(null);
   };
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="flex flex-col gap-2 mb-4 pb-4 border-b border-white/10">
       <div className="flex items-center justify-between px-2">
-        <span className="text-xs font-bold uppercase">Meu Caderno</span>
+        <span className="text-xs font-bold uppercase">{t("my_notebook")}</span>
         <div className="flex items-center gap-1">
           <SidebarBackup />
 
@@ -43,7 +51,7 @@ export function UserSidebar() {
             type="button"
             onClick={createPage}
             className="p-1 hover:bg-white/10 rounded transition-colors text-gray-400 hover:text-white"
-            title="Nova Página"
+            title={t("new_page")}
           >
             <Plus size={14} />
           </button>
@@ -53,7 +61,7 @@ export function UserSidebar() {
       <div className="flex flex-col gap-2 p-2">
         {pages.length === 0 && (
           <span className="px-2 text-xs text-muted-foreground italic">
-            Nenhuma página criada
+            {t("no_pages")}
           </span>
         )}
 

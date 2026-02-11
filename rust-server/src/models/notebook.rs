@@ -1,7 +1,8 @@
-use crate::schema::blocks::dsl as blocks_dsl;
+use crate::{models::error::ApiError, schema::blocks::dsl as blocks_dsl};
 use chrono::{DateTime, Utc};
 use diesel::{
-    BelongingToDsl, ExpressionMethods, QueryDsl, Selectable,
+    BelongingToDsl, BoolExpressionMethods, ExpressionMethods, JoinOnDsl, PgTextExpressionMethods,
+    QueryDsl, Selectable,
     prelude::{Associations, Identifiable, Insertable, Queryable},
 };
 use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
@@ -55,6 +56,8 @@ pub enum BlockMetadata {
 pub struct CalloutProps {
     pub title: Option<String>,
     pub icon: Option<String>,
+    #[serde(rename = "type")]
+    pub callout_type: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -85,7 +88,7 @@ pub struct Notebook {
     pub is_public: bool,
 }
 
-#[derive(Queryable, Selectable, Identifiable, Associations, Serialize, Debug)]
+#[derive(Queryable, Selectable, Identifiable, Associations, Serialize, Debug, Insertable)]
 #[diesel(belongs_to(Notebook))]
 #[diesel(table_name = crate::schema::blocks)]
 pub struct Block {
@@ -160,6 +163,18 @@ pub struct BlockRequest {
     pub content: String,
     pub language: Option<Language>,
     pub metadata: Option<BlockMetadata>,
+}
+
+#[derive(Deserialize)]
+pub struct SearchQuery {
+    pub q: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SearchResult {
+    pub id: Uuid,
+    pub title: String,
+    pub content: String,
 }
 
 pub async fn create_notebook(
@@ -363,4 +378,106 @@ pub async fn get_notebook_with_blocks(
         meta: notebook,
         blocks: api_blocks,
     })
+}
+
+pub async fn clone_notebook(
+    conn: &mut AsyncPgConnection,
+    target_notebook_id: &Uuid,
+    new_notebook_id: &Uuid,
+    new_notebook_title: &str,
+) -> Result<(), ApiError> {
+    use crate::schema::notebooks::dsl::*;
+
+    let target_notebook: Notebook = match notebooks
+        .filter(id.eq(target_notebook_id))
+        .get_result(conn)
+        .await
+    {
+        Ok(n) => n,
+        Err(e) => return Err(ApiError::Database(e.to_string())),
+    };
+
+    let db_blocks: Vec<Block> = match Block::belonging_to(&target_notebook)
+        .order(blocks::position.asc())
+        .load::<Block>(conn)
+        .await
+    {
+        Ok(b) => b,
+        Err(e) => return Err(ApiError::Database(e.to_string())),
+    };
+
+    let result = conn
+        .transaction::<_, diesel::result::Error, _>(|conn| {
+            Box::pin(async move {
+                diesel::update(notebooks.filter(id.eq(new_notebook_id)))
+                    .set((
+                        title.eq(new_notebook_title),
+                        updated_at.eq(chrono::Utc::now()),
+                        is_public.eq(target_notebook.is_public),
+                    ))
+                    .execute(conn)
+                    .await?;
+
+                diesel::delete(
+                    blocks_dsl::blocks.filter(blocks_dsl::notebook_id.eq(new_notebook_id)),
+                )
+                .execute(conn)
+                .await?;
+
+                if !db_blocks.is_empty() {
+                    let mut new_db_blocks = vec![];
+
+                    for block in db_blocks {
+                        let mut block = block;
+                        block.id = Uuid::new_v4();
+                        block.notebook_id = new_notebook_id.clone();
+                        new_db_blocks.push(block);
+                    }
+
+                    diesel::insert_into(blocks_dsl::blocks)
+                        .values(&new_db_blocks)
+                        .execute(conn)
+                        .await?;
+                }
+
+                Ok(())
+            })
+        })
+        .await;
+
+    match result {
+        Ok(_) => Ok(()),
+        Err(e) => Err(ApiError::Database(e.to_string())),
+    }
+}
+
+pub async fn search_user_blocks(
+    conn: &mut AsyncPgConnection,
+    current_user_id: uuid::Uuid,
+    search_term: &str,
+) -> Result<Vec<SearchResult>, ApiError> {
+    use crate::schema::blocks::dsl as b;
+    use crate::schema::notebooks::dsl as n;
+
+    let results_tuples: Vec<(uuid::Uuid, String, String)> = b::blocks
+        .inner_join(n::notebooks.on(b::notebook_id.eq(n::id)))
+        .filter(
+            n::user_id.eq(current_user_id).and(
+                b::title
+                    .ilike(&search_term)
+                    .or(b::content.ilike(&search_term)),
+            ),
+        )
+        .select((n::id, n::title, b::content))
+        .limit(10)
+        .load(conn)
+        .await
+        .map_err(|e| ApiError::Database(e.to_string()))?;
+
+    let final_results = results_tuples
+        .into_iter()
+        .map(|(id, title, content)| SearchResult { id, title, content })
+        .collect::<Vec<SearchResult>>();
+
+    Ok(final_results)
 }

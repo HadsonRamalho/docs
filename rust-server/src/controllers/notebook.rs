@@ -1,6 +1,6 @@
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{Path, Query, State},
 };
 use diesel_async::{AsyncPgConnection, pooled_connection::deadpool::Pool};
 use hyper::{HeaderMap, StatusCode};
@@ -12,8 +12,8 @@ use crate::{
         self,
         error::ApiError,
         notebook::{
-            NewBlock, NewNotebook, Notebook, NotebookResponse, SyncNotebookRequest,
-            UpdateNotebookTitle, delete_notebook, update_notebook_title,
+            NewBlock, NewNotebook, Notebook, NotebookResponse, SearchQuery, SearchResult,
+            SyncNotebookRequest, UpdateNotebookTitle, delete_notebook, update_notebook_title,
         },
     },
 };
@@ -76,9 +76,13 @@ pub async fn api_get_notebooks(
 
 pub async fn is_notebook_owner(
     mut conn: &mut AsyncPgConnection,
-    user_id: &Uuid,
+    user_id: Option<Uuid>,
     notebook_id: &Uuid,
 ) -> Result<(), ApiError> {
+    if user_id.is_none() {
+        return Err(ApiError::InvalidAuthorizationToken);
+    }
+    let user_id = user_id.unwrap();
     match models::notebook::find_notebook_by_id(&mut conn, &notebook_id).await {
         Ok(notebook) => {
             if notebook.user_id != user_id.clone() {
@@ -95,7 +99,10 @@ pub async fn api_get_single_notebook(
     Path(notebook_id): Path<Uuid>,
     headers: HeaderMap,
 ) -> Result<(StatusCode, Json<Notebook>), ApiError> {
-    let id = extract_claims_from_header(&headers).await?.1.id;
+    let id: Option<Uuid> = match extract_claims_from_header(&headers).await {
+        Ok(data) => Some(data.1.id),
+        Err(_) => None,
+    };
 
     let conn = &mut get_conn(&pool)
         .await
@@ -103,7 +110,10 @@ pub async fn api_get_single_notebook(
 
     match models::notebook::find_notebook_by_id(conn, &notebook_id).await {
         Ok(notebook) => {
-            if let Err(e) = is_notebook_owner(conn, &id, &notebook_id).await
+            if notebook.is_public {
+                return Ok((StatusCode::OK, Json(notebook)));
+            }
+            if let Err(e) = is_notebook_owner(conn, id, &notebook_id).await
                 && !notebook.is_public
             {
                 return Err(e);
@@ -127,7 +137,7 @@ pub async fn api_rename_notebook(
         .await
         .map_err(|e| ApiError::Database(e.to_string()))?;
 
-    if let Err(e) = is_notebook_owner(&mut conn, &id, &notebook_id).await {
+    if let Err(e) = is_notebook_owner(&mut conn, Some(id), &notebook_id).await {
         return Err(e);
     }
 
@@ -149,7 +159,7 @@ pub async fn api_delete_notebook(
         .await
         .map_err(|e| ApiError::Database(e.to_string()))?;
 
-    if let Err(e) = is_notebook_owner(&mut conn, &id, &notebook_id).await {
+    if let Err(e) = is_notebook_owner(&mut conn, Some(id), &notebook_id).await {
         return Err(e);
     }
 
@@ -164,7 +174,10 @@ pub async fn api_get_single_notebook_with_blocks(
     Path(notebook_id): Path<Uuid>,
     headers: HeaderMap,
 ) -> Result<(StatusCode, Json<NotebookResponse>), ApiError> {
-    let id = extract_claims_from_header(&headers).await?.1.id;
+    let id: Option<Uuid> = match extract_claims_from_header(&headers).await {
+        Ok(data) => Some(data.1.id),
+        Err(_) => None,
+    };
 
     let conn = &mut get_conn(&pool)
         .await
@@ -172,7 +185,10 @@ pub async fn api_get_single_notebook_with_blocks(
 
     match models::notebook::get_notebook_with_blocks(conn, &notebook_id).await {
         Ok(notebook) => {
-            if let Err(e) = is_notebook_owner(conn, &id, &notebook_id).await
+            if notebook.meta.is_public {
+                return Ok((StatusCode::OK, Json(notebook)));
+            }
+            if let Err(e) = is_notebook_owner(conn, id, &notebook_id).await
                 && !notebook.meta.is_public
             {
                 return Err(e);
@@ -196,7 +212,7 @@ pub async fn api_save_notebook_content(
         .await
         .map_err(|e| ApiError::Database(e.to_string()))?;
 
-    if let Err(e) = is_notebook_owner(&mut conn, &id, &notebook_id).await {
+    if let Err(e) = is_notebook_owner(&mut conn, Some(id), &notebook_id).await {
         return Err(e);
     }
 
@@ -232,4 +248,74 @@ pub async fn api_save_notebook_content(
         Ok(_) => Ok(StatusCode::OK),
         Err(e) => Err(ApiError::Database(e)),
     }
+}
+pub async fn api_clone_notebook(
+    State(pool): State<Pool<AsyncPgConnection>>,
+    Path(notebook_id): Path<Uuid>,
+    headers: HeaderMap,
+) -> Result<(StatusCode, Json<Uuid>), ApiError> {
+    let id = extract_claims_from_header(&headers).await?.1.id;
+
+    let conn = &mut get_conn(&pool)
+        .await
+        .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
+
+    let target_notebook = match models::notebook::find_notebook_by_id(conn, &notebook_id).await {
+        Ok(notebook) => {
+            if let Err(e) = is_notebook_owner(conn, Some(id), &notebook_id).await
+                && !notebook.is_public
+            {
+                return Err(e);
+            }
+            notebook
+        }
+        Err(e) => return Err(ApiError::Database(e)),
+    };
+
+    let new_notebook_id = Uuid::new_v4();
+    let new_notebook_title = format!("Cópia de \"{}\"", target_notebook.title);
+
+    let new_notebook = NewNotebook {
+        id: new_notebook_id.clone(),
+        user_id: id,
+        title: "Nova Página".to_string(),
+    };
+
+    match models::notebook::create_notebook(conn, &new_notebook).await {
+        Ok(_) => {}
+        Err(e) => return Err(ApiError::Database(e)),
+    }
+
+    let _ = models::notebook::clone_notebook(
+        conn,
+        &target_notebook.id,
+        &new_notebook_id,
+        &new_notebook_title,
+    )
+    .await?;
+
+    Ok((StatusCode::CREATED, Json(new_notebook_id)))
+}
+
+pub async fn api_search_notebooks(
+    State(pool): State<Pool<AsyncPgConnection>>,
+    Query(params): Query<SearchQuery>,
+    headers: HeaderMap,
+) -> Result<(StatusCode, Json<Vec<SearchResult>>), ApiError> {
+    let id = extract_claims_from_header(&headers).await?.1.id;
+
+    if params.q.trim().is_empty() {
+        return Ok((StatusCode::OK, Json(Vec::<SearchResult>::new())));
+    }
+
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|e| ApiError::DatabaseConnection(e.to_string()))?;
+
+    let search_term = format!("%{}%", params.q);
+
+    let results = models::notebook::search_user_blocks(&mut conn, id, &search_term).await?;
+
+    Ok((StatusCode::OK, Json(results)))
 }

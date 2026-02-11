@@ -1,6 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import { getCurrentNotebook } from "@/lib/api/notebook-service";
 import { useNotebookManager } from "./notebook-manager";
 
@@ -10,6 +12,7 @@ interface NotebookTitleProps {
 }
 
 export function NotebookTitle({ pageTitle, pageId }: NotebookTitleProps) {
+  const t = useTranslations("api_errors");
   const { renamePage } = useNotebookManager();
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState<string | undefined>(undefined);
@@ -23,8 +26,8 @@ export function NotebookTitle({ pageTitle, pageId }: NotebookTitleProps) {
         const notebook = await getCurrentNotebook(pageId);
         setOriginalTitle(notebook.title);
         setTitle(notebook.title);
-      } catch (error) {
-        console.error("Falha ao carregar o notebook.");
+      } catch (err) {
+        handleApiError({ err, t });
         setTitle("...");
       }
     };

@@ -1,12 +1,14 @@
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { NextIntlClientProvider, useMessages } from "next-intl";
+import { InlineTOC } from "@/components/inline-toc";
 import {
   DocsBody,
   DocsDescription,
   DocsPage,
   DocsTitle,
-} from "@/components/layout/docs/page";
+} from "@/components/layout/notebook/page";
 import { NotebookProvider } from "@/components/notebook/notebook-context";
 import { NotebookControls } from "@/components/notebook/notebook-controls";
 import RustInteractivePage from "@/components/notebook/notebook-page";
@@ -30,22 +32,23 @@ function UpdatedAt({ date }: UpdatedAtProps) {
   );
 }
 
-export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
+export default async function Page(
+  props: PageProps<"/[lang]/docs/[[...slug]]">,
+) {
   const params = await props.params;
-  console.log("Acessando Slug:", params.slug);
   const page = source.getPage(params.slug);
 
   if (params.slug && params.slug.length === 1) {
     const pageId = params.slug[0];
     return (
       <NotebookProvider pageId={pageId}>
-        <DocsPage>
-          <div className="mb-8">
+        <DocsPage className="flex flex-col max-w-none!">
+          <div className="flex flex-col mb-8 max-w-none!">
             <NotebookTitle pageTitle={page?.data.title} pageId={pageId} />
             <p className="text-muted-foreground text-xs mt-1 font-mono">
               ID: {pageId}
             </p>
-            <div className="flex mt-2 justify-end">
+            <div className="mt-2 md:w-330">
               <NotebookControls />
             </div>
           </div>
@@ -64,7 +67,7 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
       const mode = env.get("NEXT_PUBLIC_MODE");
       if (mode === "NO_ENDPOINTS") {
         return (
-          <DocsPage>
+          <DocsPage toc={page.data.toc}>
             <DocsTitle>Conteúdo indisponível</DocsTitle>
             <DocsDescription className="mb-0">
               Os endpoints não estão disponíveis no momento, pois o MODE da API
@@ -78,16 +81,23 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
     const MDX = page.data.body;
 
     return (
-      <DocsPage>
+      <DocsPage toc={undefined}>
         <DocsTitle>{page.data.title}</DocsTitle>
         <DocsDescription>{page.data.description}</DocsDescription>
         {lastModifiedTime && <UpdatedAt date={lastModifiedTime} />}
-        <DocsBody>
-          <MDX
-            components={getMDXComponents({
-              a: createRelativeLink(source, page),
-            })}
-          />
+        <DocsBody className="grid xl:grid-cols-[1fr_250px] gap-8 max-w-none! w-full">
+          <div className="min-w-0">
+            <MDX
+              components={getMDXComponents({
+                a: createRelativeLink(source, page),
+              })}
+            />
+          </div>
+          <aside className="hidden xl:block">
+            <div className="sticky top-24">
+              <InlineTOC tocItems={page.data.toc} />
+            </div>
+          </aside>
         </DocsBody>
       </DocsPage>
     );

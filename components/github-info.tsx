@@ -1,28 +1,16 @@
 "use client";
 
-import { BlockMetadata } from "@/lib/types";
-import { cn } from "../lib/cn";
 import {
-  Star,
-  Loader2,
   AlertCircle,
-  X,
   Check,
+  Loader2,
   SettingsIcon,
+  Star,
+  X,
 } from "lucide-react";
 import { type AnchorHTMLAttributes, useEffect, useState } from "react";
-
-async function fetchGithubStats(owner: string, repo: string) {
-  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Erro ${response.status}`);
-  }
-
-  const data = await response.json();
-  return { stars: data.stargazers_count };
-}
+import type { BlockMetadata } from "@/lib/types";
+import { cn } from "../lib/cn";
 
 export function GithubInfo({
   repo,
@@ -71,17 +59,17 @@ export function GithubInfo({
   if (isEditing) {
     return (
       <div className="flex flex-col gap-2 p-3 rounded-xl border border-indigo-500/50 bg-indigo-500/5 shadow-lg">
-        <div className="flex gap-2 items-center justify-center">
+        <div className="md:flex gap-2 items-center justify-center">
           <span className="text-sm">Usuário:</span>
           <input
-            className="bg-black/40 border border-white/10 rounded px-2 py-1 text-sm w-full outline-none focus:border-indigo-500"
+            className="bg-muted border rounded px-2 py-1 text-sm w-full outline-none border-indigo-500"
             placeholder="Owner (ex: facebook)"
             value={tempOwner}
             onChange={(e) => setTempOwner(e.target.value)}
           />
           <span className="text-sm">Repositório:</span>
           <input
-            className="bg-black/40 border border-white/10 rounded px-2 py-1 text-sm w-full outline-none focus:border-indigo-500"
+            className="bg-muted border rounded px-2 py-1 text-sm w-full outline-none border-indigo-500"
             placeholder="Repo (ex: react)"
             value={tempRepo}
             onChange={(e) => setTempRepo(e.target.value)}
@@ -89,14 +77,16 @@ export function GithubInfo({
         </div>
         <div className="flex justify-end gap-1">
           <button
+            type="button"
             onClick={() => setIsEditing(false)}
-            className="p-1 hover:bg-white/10 rounded text-gray-400"
+            className="p-1 hover:bg-white/10 rounded text-gray-400 hover:cursor-pointer"
           >
             <X size={14} />
           </button>
           <button
+            type="button"
             onClick={handleSave}
-            className="p-1 bg-indigo-600 hover:bg-indigo-500 rounded text-white"
+            className="p-1 bg-indigo-600 hover:bg-indigo-500 rounded text-white hover:cursor-pointer"
           >
             <Check size={14} />
           </button>
@@ -123,24 +113,18 @@ export function GithubInfo({
       target="_blank"
       {...props}
       className={cn(
-        "flex flex-col gap-1.5 p-3 rounded-xl border border-white/10 bg-white/5 text-sm transition-all lg:flex-row lg:items-center hover:bg-white/10",
+        "flex flex-col gap-1.5 p-3 rounded-xl border border-white/10 bg-secondary text-sm transition-all lg:flex-row lg:items-center hover:bg-gray-500/40",
         className,
       )}
     >
       <div className="flex items-center gap-2 truncate flex-1">
-        <svg
-          fill="currentColor"
-          viewBox="0 0 24 24"
-          className="size-4 text-indigo-400"
-        >
-          <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
-        </svg>
+        <GithubIcon />
         <span className="font-medium">
-          {owner}/<span className="text-white">{repo}</span>
+          {owner}/<span className="text-foreground">{repo}</span>
         </span>
       </div>
 
-      <div className="flex items-center gap-1.5 text-xs text-gray-400 bg-black/20 px-2 py-0.5 rounded-full">
+      <div className="flex items-center gap-1.5 text-xs text-gray-400 bg-black/5 px-2 py-0.5 rounded-full">
         {loading ? (
           <Loader2 className="size-3 animate-spin" />
         ) : (
@@ -151,11 +135,12 @@ export function GithubInfo({
         )}
       </div>
       <button
+        type="button"
         onClick={(e) => {
           e.preventDefault();
           setIsEditing(true);
         }}
-        className="absolute -top-2 -right-2 p-1.5 bg-[#1a1a1a] border border-white/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:text-indigo-400"
+        className="absolute hover:cursor-pointer -top-2 -right-2 p-2 bg-muted border border-gray-500/20 dark:border-white/10 rounded-full group-hover:opacity-100 transition-opacity hover:text-indigo-400"
       >
         <SettingsIcon size={12} />
       </button>

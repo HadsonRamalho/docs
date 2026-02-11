@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, Loader2, Save } from "lucide-react";
+import { Check, Copy, Loader2, Lock, Save, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Select,
   SelectContent,
@@ -10,41 +11,83 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/context/auth-context";
+import { Button } from "../ui/button";
 import { useNotebook } from "./notebook-context";
 
 export function NotebookControls() {
   const { user } = useAuth();
-  const { triggerSave, isSaving, hasSaved, setVisibility, notebook, isPublic } =
-    useNotebook();
+  const {
+    triggerSave,
+    isSaving,
+    hasSaved,
+    setVisibility,
+    notebook,
+    isPublic,
+    triggerClone,
+    isCloning,
+  } = useNotebook();
+  const t = useTranslations("notebook_controls");
 
   const isOwner = user && notebook && user.id === notebook.userId;
 
-  if (!isOwner) {
+  if (!user) {
     return null;
   }
 
+  if (!isOwner) {
+    return (
+      <div className="flex w-full justify-between gap-2">
+        <Button onClick={triggerClone}>
+          <Copy />
+          {t("clone")}
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex w-full justify-between gap-2">
-      <Select
-        value={isPublic ? "true" : "false"}
-        onValueChange={(val) => setVisibility(val === "true")}
-      >
-        <SelectTrigger className="w-45">
-          <SelectValue placeholder="Visibilidade" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectItem value="false">Privado</SelectItem>
-            <SelectItem value="true">Público</SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <button
-        type="button"
+    <div className="grid grid-cols-1 md:flex w-full justify-between gap-2">
+      <div className="grid grid-cols-1 w-full md:w-100 md:flex gap-2 items-center justify-center md:justify-start">
+        <Select
+          value={isPublic ? "true" : "false"}
+          onValueChange={(val) => setVisibility(val === "true")}
+        >
+          <SelectTrigger className="w-full md:w-45">
+            <SelectValue placeholder={t("visibility")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="false">
+                <Lock className="size-4" />
+                {t("private")}
+              </SelectItem>
+              <SelectItem value="true">
+                <Users className="size-4" />
+                {t("public")}
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        <Button
+          onClick={triggerClone}
+          disabled={isCloning}
+          className="w-full md:w-40"
+        >
+          {isCloning ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <>
+              <Copy />
+              {t("clone")}
+            </>
+          )}
+        </Button>
+      </div>
+      <Button
         onClick={triggerSave}
         disabled={isSaving}
         className={`
-          flex items-center gap-2 px-4 py-2 rounded-md text-xs font-bold transition-all border
+          flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all border
           ${
             hasSaved
               ? "bg-emerald-500 border-green-500/50 text-white"
@@ -59,8 +102,8 @@ export function NotebookControls() {
         ) : (
           <Save className="size-3.5" />
         )}
-        {isSaving ? "Salvando..." : hasSaved ? "Salvo!" : "Salvar"}
-      </button>
+        {isSaving ? t("saving") : hasSaved ? t("saved") : t("save")}
+      </Button>
     </div>
   );
 }

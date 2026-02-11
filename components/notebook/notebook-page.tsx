@@ -1,15 +1,18 @@
 "use client";
 
 import { Reorder } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { useAuth } from "@/context/auth-context";
+import { useLocalStorage } from "@/hooks/use-local-storate";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import {
   getCurrentNotebookWithBlocks,
   saveNotebookData,
 } from "@/lib/api/notebook-service";
 import type { Block, BlockMetadata, BlockType, Language } from "@/lib/types";
+import { InlineTOC } from "../inline-toc";
 import { useNotebook } from "./notebook-context";
 import { ReorderItem } from "./reorder/reorder-item";
 import { ReorderTools } from "./reorder/reorder-tools";
@@ -21,6 +24,7 @@ interface RustInteractivePageProps {
 export default function RustInteractivePage({
   pageId = "default",
 }: RustInteractivePageProps) {
+  const t = useTranslations("api_errors");
   const { user } = useAuth();
   const {
     saveSignal,
@@ -34,6 +38,10 @@ export default function RustInteractivePage({
   } = useNotebook();
   const isOwner = notebook?.userId === user?.id;
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [autoSaveInterval, _setAutoSaveInterval] = useLocalStorage<number>(
+    "editor-autosave-interval",
+    10000,
+  );
   const [blocks, setBlocks] = useState<Block[]>([
     {
       title: "Bloco de Texto",
@@ -67,7 +75,7 @@ export default function RustInteractivePage({
   }, [blocks]);
 
   useEffect(() => {
-    if (saveSignal === 0 || !isOwner) return;
+    if (saveSignal === 0 || !isOwner || !user) return;
 
     const saveData = async () => {
       setIsSaving(true);
@@ -85,10 +93,8 @@ export default function RustInteractivePage({
         setIsSaving(false);
         setHasSaved(true);
         setTimeout(() => setHasSaved(false), 2000);
-      } catch (error) {
-        const errorMessage = `Falha ao salvar: ${error}`;
-        console.error(errorMessage);
-        toast.error(errorMessage);
+      } catch (err) {
+        handleApiError({ err, t });
 
         setIsSaving(false);
       }
@@ -103,15 +109,20 @@ export default function RustInteractivePage({
     setIsSaving,
     setHasSaved,
     isOwner,
+    user,
+    t,
   ]);
 
   useEffect(() => {
+    if (!autoSaveInterval || autoSaveInterval <= 0) return;
+
     const interval = setInterval(() => {
       triggerSave();
-    }, 10000);
+      console.log("Auto-save disparado!");
+    }, autoSaveInterval);
 
     return () => clearInterval(interval);
-  }, [triggerSave]);
+  }, [triggerSave, autoSaveInterval]);
 
   const getFileName = (title: string) => {
     return title.replace(/[^a-zA-Z0-9]/g, "_");
@@ -204,12 +215,12 @@ export default function RustInteractivePage({
   };
 
   return (
-    <div className="mx-auto min-h-screen">
+    <div className="min-h-screen flex flex-row w-full">
       <Reorder.Group
         axis="y"
         values={blocks}
         onReorder={setBlocks}
-        className="space-y-4"
+        className="space-y-4 w-full"
       >
         {blocks.length > 0 &&
           blocks.map((block, index) => {
@@ -261,6 +272,11 @@ export default function RustInteractivePage({
             );
           })}
       </Reorder.Group>
+      <aside className="hidden xl:block w-70">
+        <div className="sticky top-24">
+          <InlineTOC blocks={blocks} />
+        </div>
+      </aside>
     </div>
   );
 }

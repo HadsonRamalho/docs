@@ -1,3 +1,4 @@
+use crate::schema::users::dsl::*;
 use crate::{controllers::utils::Sanitize, models::error::ApiError, schema::users};
 use chrono::{DateTime, Utc};
 use diesel::{
@@ -48,6 +49,7 @@ pub struct User {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
+#[derive(Clone)]
 pub struct UserAuthInfo {
     pub id: Uuid,
     pub public_id: i32,
@@ -115,6 +117,19 @@ pub struct UpdateUser {
     pub email: String,
 }
 
+#[derive(Deserialize, Validate)]
+pub struct UpdateUserPassword {
+    #[validate(length(min = 1, message = "The current password is required"))]
+    #[serde(rename = "currentPassword")]
+    pub current_password: String,
+    #[validate(length(min = 1, message = "The new password is required"))]
+    #[serde(rename = "newPassword")]
+    pub new_password: String,
+    #[validate(length(min = 1, message = "The confirmation password is required"))]
+    #[serde(rename = "confirmPassword")]
+    pub confirm_password: String,
+}
+
 impl Sanitize for UpdateUser {
     fn sanitize(&mut self) {
         self.email = self.email.trim().to_lowercase();
@@ -123,8 +138,6 @@ impl Sanitize for UpdateUser {
 }
 
 pub async fn register_user(conn: &mut AsyncPgConnection, user: &NewUser) -> Result<User, String> {
-    use crate::schema::users::dsl::*;
-
     match diesel::insert_into(users)
         .values(user)
         .get_result(conn)
@@ -136,20 +149,16 @@ pub async fn register_user(conn: &mut AsyncPgConnection, user: &NewUser) -> Resu
 }
 
 pub async fn find_user_by_email(conn: &mut AsyncPgConnection, param: &str) -> Result<User, String> {
-    use crate::schema::users::dsl::*;
-
     match users.filter(email.eq(param)).get_result(conn).await {
         Ok(user) => Ok(user),
         Err(e) => Err(e.to_string()),
     }
 }
 
-pub async fn find_user_by_id(conn: &mut AsyncPgConnection, param: &Uuid) -> Result<User, String> {
-    use crate::schema::users::dsl::*;
-
+pub async fn find_user_by_id(conn: &mut AsyncPgConnection, param: &Uuid) -> Result<User, ApiError> {
     match users.filter(id.eq(param)).get_result(conn).await {
         Ok(user) => Ok(user),
-        Err(e) => Err(e.to_string()),
+        Err(e) => Err(ApiError::Database(e.to_string())),
     }
 }
 
@@ -157,8 +166,6 @@ pub async fn find_user_by_public_id(
     conn: &mut AsyncPgConnection,
     param: i32,
 ) -> Result<User, String> {
-    use crate::schema::users::dsl::*;
-
     match users.filter(public_id.eq(param)).get_result(conn).await {
         Ok(user) => Ok(user),
         Err(e) => Err(e.to_string()),
@@ -170,11 +177,58 @@ pub async fn update_user_data(
     id_param: &Uuid,
     data: &UpdateUser,
 ) -> Result<(), ApiError> {
-    use crate::schema::users::dsl::*;
-
     match diesel::update(users)
         .filter(id.eq(id_param))
         .set((name.eq(&data.name), email.eq(&data.email)))
+        .execute(conn)
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(e) => Err(ApiError::Database(e.to_string())),
+    }
+}
+
+pub async fn update_user_provider(
+    conn: &mut AsyncPgConnection,
+    id_param: &Uuid,
+    provider: AuthProvider,
+    avatar: Option<String>,
+) -> Result<(), ApiError> {
+    let null_password: Option<String> = None;
+    match diesel::update(users)
+        .filter(id.eq(id_param))
+        .set((
+            password_hash.eq(null_password),
+            primary_provider.eq(provider),
+            avatar_url.eq(avatar),
+        ))
+        .execute(conn)
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(e) => Err(ApiError::Database(e.to_string())),
+    }
+}
+
+pub async fn update_user_password(
+    conn: &mut AsyncPgConnection,
+    id_param: &Uuid,
+    new_password: String,
+) -> Result<(), ApiError> {
+    match diesel::update(users)
+        .filter(id.eq(id_param))
+        .set(password_hash.eq(new_password))
+        .execute(conn)
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(e) => Err(ApiError::Database(e.to_string())),
+    }
+}
+
+pub async fn delete_user(conn: &mut AsyncPgConnection, id_param: &Uuid) -> Result<(), ApiError> {
+    match diesel::delete(users)
+        .filter(id.eq(id_param))
         .execute(conn)
         .await
     {

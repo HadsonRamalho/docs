@@ -1,9 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "@/context/auth-context";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import {
+  cloneNotebook,
   createNotebook,
   deleteNotebook,
   getMyNotebooks,
@@ -20,6 +24,7 @@ interface NotebookManagerType {
   downloadBackup: () => Promise<void>;
   uploadBackup: (file: File) => Promise<void>;
   renamePage: (id: string, newTitle: string) => Promise<void>;
+  clone: (id: string) => Promise<void>;
 }
 
 const NotebookManagerContext = createContext<NotebookManagerType | undefined>(
@@ -31,10 +36,15 @@ export function NotebookManagerProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations("api_errors");
   const [pages, setPages] = useState<NotebookMeta[]>([]);
+  const { user } = useAuth();
   const router = useRouter();
 
   const refreshPages = async () => {
+    if (!user) {
+      return;
+    }
     const data = await getMyNotebooks();
     setPages(data);
   };
@@ -45,6 +55,9 @@ export function NotebookManagerProvider({
   }, []);
 
   const renamePage = async (id: string, newTitle: string) => {
+    if (!user) {
+      return;
+    }
     if (!newTitle.trim()) return;
 
     try {
@@ -57,32 +70,60 @@ export function NotebookManagerProvider({
       );
 
       await refreshPages();
-    } catch (error) {
-      console.error("Erro ao renomear notebook:", error);
+    } catch (err) {
+      handleApiError({ err, t });
     }
   };
 
   const createPage = async () => {
+    if (!user) {
+      return;
+    }
     try {
       const newId = await createNotebook();
 
       await refreshPages();
 
       router.push(`/docs/${newId}`);
-    } catch (error) {
-      console.error("Falha ao criar o notebook: ", error);
+    } catch (err) {
+      handleApiError({ err, t });
+    }
+  };
+
+  const clone = async (id: string) => {
+    try {
+      if (!user) {
+        return;
+      }
+      const newId = await cloneNotebook(id);
+
+      await refreshPages();
+
+      router.push(`/docs/${newId}`);
+    } catch (err) {
+      handleApiError({ err, t });
     }
   };
 
   const deletePage = async (id: string) => {
-    await deleteNotebook(id);
+    try {
+      if (!user) {
+        return;
+      }
+      await deleteNotebook(id);
 
-    await refreshPages();
+      await refreshPages();
 
-    router.push("/docs");
+      router.push("/docs");
+    } catch (err) {
+      handleApiError({ err, t });
+    }
   };
 
   const downloadBackup = async () => {
+    if (!user) {
+      return;
+    }
     const pages = await getMyNotebooks();
     const json = JSON.stringify(pages, null, 2);
     const blob = new Blob([json], { type: "application/json" });
@@ -98,6 +139,9 @@ export function NotebookManagerProvider({
   };
 
   const uploadBackup = async (file: File) => {
+    if (!user) {
+      return;
+    }
     return new Promise<void>((resolve, reject) => {
       const reader = new FileReader();
 
@@ -131,6 +175,7 @@ export function NotebookManagerProvider({
         refreshPages,
         uploadBackup,
         downloadBackup,
+        clone,
       }}
     >
       {children}

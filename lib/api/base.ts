@@ -1,9 +1,25 @@
 import { getCookie } from "cookies-next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API || "http://localhost:3099";
+export const BASE_URL = process.env.NEXT_PUBLIC_API || "http://localhost:3099";
 
 interface FetchOptions extends RequestInit {
   headers?: Record<string, string>;
+}
+
+export class ApiClientError extends Error {
+  code: string;
+  details: Record<string, any>;
+
+  constructor(
+    message: string,
+    code: string,
+    details: Record<string, any> = {},
+  ) {
+    super(message);
+    this.name = "ApiClientError";
+    this.code = code;
+    this.details = details;
+  }
 }
 
 async function http<T>(path: string, config?: FetchOptions): Promise<T> {
@@ -23,9 +39,12 @@ async function http<T>(path: string, config?: FetchOptions): Promise<T> {
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));
+    const code = errorBody.code || "UNKNOWN_ERROR";
+    const details = errorBody.details || {};
     const errorMessage =
-      errorBody.error || errorBody.message || "Erro na requisição";
-    throw new Error(errorMessage);
+      errorBody.message || errorBody.error || "Erro na requisição";
+
+    throw new ApiClientError(errorMessage, code, details);
   }
 
   const text = await response.text();
@@ -46,6 +65,6 @@ export const api = {
   delete: <T>(path: string, config?: FetchOptions) =>
     http<T>(path, { ...config, method: "DELETE" }),
 
-  patch: <T>(path: string, body: any, config?: FetchOptions) =>
+  patch: <T>(path: string, body?: any, config?: FetchOptions) =>
     http<T>(path, { ...config, method: "PATCH", body: JSON.stringify(body) }),
 };

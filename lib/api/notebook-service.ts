@@ -25,6 +25,10 @@ export async function deleteNotebook(id: string) {
   return api.delete(`/notebook/${id}`);
 }
 
+export async function cloneNotebook(id: string) {
+  return api.post<string>(`/notebook/${id}/clone`);
+}
+
 export async function saveNotebookData(
   id: string,
   title: string,

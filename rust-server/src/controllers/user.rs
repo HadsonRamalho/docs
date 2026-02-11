@@ -12,7 +12,9 @@ use crate::{
     models::{
         self,
         error::ApiError,
-        user::{AuthProvider, LoginUser, NewUser, UpdateUser, User, UserAuthInfo},
+        user::{
+            AuthProvider, LoginUser, NewUser, UpdateUser, UpdateUserPassword, User, UserAuthInfo,
+        },
     },
 };
 
@@ -28,7 +30,9 @@ pub async fn api_register_user(
         return Err(ApiError::Request(errors.to_string()));
     }
 
-    user_input.password_hash = Some(password_hash(&user_input.password_hash.unwrap()));
+    if user_input.password_hash.is_some() && user_input.primary_provider == AuthProvider::Email {
+        user_input.password_hash = Some(password_hash(&user_input.password_hash.unwrap()));
+    }
 
     let conn = &mut get_conn(&pool)
         .await
@@ -134,4 +138,63 @@ pub async fn api_get_logged_user(
         .map_err(|_| ApiError::UserNotFound)?;
 
     Ok(Json(user))
+}
+
+pub async fn api_delete_user(
+    State(pool): State<Pool<AsyncPgConnection>>,
+    headers: HeaderMap,
+) -> Result<StatusCode, ApiError> {
+    let id = extract_claims_from_header(&headers).await?.1.id;
+
+    let conn = &mut get_conn(&pool)
+        .await
+        .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
+
+    let _ = models::user::delete_user(conn, &id).await?;
+
+    Ok(StatusCode::OK)
+}
+
+pub async fn api_update_user_password(
+    State(pool): State<Pool<AsyncPgConnection>>,
+    headers: HeaderMap,
+    input: Json<UpdateUserPassword>,
+) -> Result<StatusCode, ApiError> {
+    let user_input = input.0;
+
+    if let Err(errors) = user_input.validate() {
+        return Err(ApiError::Request(errors.to_string()));
+    }
+
+    if user_input.confirm_password != user_input.new_password {
+        return Err(ApiError::PasswordsDoNotMatch);
+    }
+
+    let id = extract_claims_from_header(&headers).await?.1.id;
+
+    let conn = &mut get_conn(&pool)
+        .await
+        .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
+
+    let user = models::user::find_user_by_id(conn, &id).await?;
+
+    if user.primary_provider != AuthProvider::Email {
+        return Err(ApiError::WrongProvider("E-mail".to_string()));
+    }
+
+    let is_current_password_valid = match &user.password_hash {
+        Some(hash) => verify(&user_input.current_password, hash),
+        None => false,
+    };
+
+    if !is_current_password_valid {
+        return Err(ApiError::InvalidPassword);
+    }
+
+    let password_hash = password_hash(&user_input.new_password);
+
+    match models::user::update_user_password(conn, &id, password_hash).await {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(e) => Err(e),
+    }
 }

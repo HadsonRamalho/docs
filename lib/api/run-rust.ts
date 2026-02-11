@@ -1,4 +1,4 @@
-import { RunStatus } from "../types";
+import type { RunStatus } from "../types";
 import { api } from "./base";
 
 interface RunRustProps {
@@ -6,6 +6,11 @@ interface RunRustProps {
   setStatus: (s: RunStatus) => void;
   setIsRunning: (r: boolean) => void;
   code: string;
+}
+
+interface RustApiResponse {
+  stdout?: string;
+  stderr?: string;
 }
 
 export async function RunRust({
@@ -18,15 +23,9 @@ export async function RunRust({
   setStatus("idle");
   setOutput("");
   try {
-    const data: any = await api.post("/run", {
-      code
+    const data: RustApiResponse = await api.post("/run", {
+      code,
     });
-    /*
-    const response = await fetch(`${API_URL}/run`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    }); */
     if (data.stderr) {
       setStatus("error");
       setOutput(data.stderr);
@@ -41,8 +40,9 @@ export async function RunRust({
 
       if (
         data.stderr.includes(
-          "Finished `dev` profile [unoptimized + debuginfo] ",
-        )
+          "Finished `dev` profile [unoptimized + debuginfo]",
+        ) ||
+        data.stderr.includes("Finished dev [unoptimized + debuginfo]")
       ) {
         setOutput("Bloco compilado!");
         setStatus("success");

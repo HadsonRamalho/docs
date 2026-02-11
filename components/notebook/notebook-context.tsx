@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   createContext,
   type ReactNode,
@@ -7,8 +8,10 @@ import {
   useEffect,
   useState,
 } from "react";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import { getCurrentNotebook } from "@/lib/api/notebook-service";
 import type { Notebook } from "@/lib/types";
+import { useNotebookManager } from "./notebook-manager";
 
 interface NotebookContextType {
   triggerSave: () => void;
@@ -25,6 +28,9 @@ interface NotebookContextType {
   setNotebook: (n: Notebook) => void;
   isPublic: boolean;
   setVisibility: (v: boolean) => void;
+  setIsCloning: (c: boolean) => void;
+  isCloning: boolean;
+  triggerClone: () => Promise<void>;
 }
 
 const NotebookContext = createContext<NotebookContextType | undefined>(
@@ -38,6 +44,7 @@ export function NotebookProvider({
   children: ReactNode;
   pageId: string | null;
 }) {
+  const t = useTranslations("api_errors");
   const [saveSignal, setSaveSignal] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [hasSaved, setHasSaved] = useState(false);
@@ -45,9 +52,28 @@ export function NotebookProvider({
   const [addBlockSignal, setAddBlockSignal] = useState(0);
   const [notebook, setNotebook] = useState<Notebook | null>(null);
   const [isPublic, setVisibility] = useState(false);
+  const [isCloning, setIsCloning] = useState(false);
+  const { clone } = useNotebookManager();
 
   const triggerSave = () => setSaveSignal((prev) => prev + 1);
   const triggerAddBlock = () => setAddBlockSignal((prev) => prev + 1);
+
+  const triggerClone = async () => {
+    if (!notebook?.id && !pageId) {
+      return;
+    }
+    try {
+      setIsCloning(true);
+      const id = notebook?.id ?? pageId;
+      if (id) {
+        await clone(id);
+      }
+    } catch (err) {
+      handleApiError({ err, t });
+    } finally {
+      setIsCloning(false);
+    }
+  };
 
   useEffect(() => {
     if (pageId) {
@@ -69,6 +95,7 @@ export function NotebookProvider({
         saveSignal,
         isSaving,
         setIsSaving,
+        triggerClone,
         notebook,
         setNotebook,
         isDragging,
@@ -77,6 +104,8 @@ export function NotebookProvider({
         setHasSaved,
         triggerAddBlock,
         addBlockSignal,
+        setIsCloning,
+        isCloning,
       }}
     >
       {children}

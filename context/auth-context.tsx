@@ -2,18 +2,23 @@
 
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { api } from "@/lib/api/base";
+import { handleApiError } from "@/lib/api/handle-api-error";
+import { deleteAccount } from "@/lib/api/user-service";
 import type { LoginUser, RegisterUser, User } from "@/lib/types/user-types";
 
 interface AuthContextType {
   user: User | null;
+  githubSignIn: (token: string) => void;
   isLoading: boolean;
   isAuthenticated: boolean;
   signIn: (data: LoginUser) => Promise<void>;
   signOut: () => void;
   register: (data: RegisterUser) => Promise<void>;
+  deleteProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,6 +28,7 @@ export function AuthProvider({
 }: {
   children: React.ReactNode;
 }): React.ReactNode {
+  const t = useTranslations("api_errors");
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -32,6 +38,7 @@ export function AuthProvider({
       const token = getCookie("auth_token");
 
       if (!token) {
+        console.error("Token não encontrado nos cookies");
         setIsLoading(false);
         return;
       }
@@ -39,8 +46,8 @@ export function AuthProvider({
       try {
         const profile = await api.get<User>("/user/me");
         setUser(profile);
-      } catch (error) {
-        console.error("Sessão expirada ou inválida", error);
+      } catch (err) {
+        handleApiError({ err, t });
         signOut();
       } finally {
         setIsLoading(false);
@@ -49,6 +56,20 @@ export function AuthProvider({
 
     loadUserFromSession();
   }, []);
+
+  const githubSignIn = async (token: string) => {
+    try {
+      setCookie("auth_token", token, { maxAge: 60 * 60 * 24 * 7 });
+
+      const profile = await api.get<User>("/user/me");
+
+      setUser(profile);
+      router.push("/docs");
+      router.refresh();
+    } catch (error) {
+      throw error;
+    }
+  };
 
   const signIn = async (data: LoginUser) => {
     try {
@@ -85,6 +106,18 @@ export function AuthProvider({
     }
   };
 
+  const deleteProfile = async () => {
+    try {
+      await deleteAccount();
+
+      deleteCookie("auth_token");
+      setUser(null);
+      router.push("/");
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const signOut = () => {
     deleteCookie("auth_token");
     setUser(null);
@@ -93,6 +126,8 @@ export function AuthProvider({
   return (
     <AuthContext.Provider
       value={{
+        deleteProfile,
+        githubSignIn,
         user,
         isLoading,
         register,
