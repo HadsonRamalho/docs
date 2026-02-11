@@ -88,9 +88,4 @@ export default function HomePage() {
 
 const shortcuts = [
   { prefix: "01", title: "items.home", href: "/docs" },
-  {
-    prefix: "02",
-    title: "items.juri",
-    href: "/docs/bancas-integrador",
-  },
 ];
