@@ -426,6 +426,7 @@ pub async fn clone_notebook(
                         title.eq(new_notebook_title),
                         updated_at.eq(chrono::Utc::now()),
                         is_public.eq(target_notebook.is_public),
+                        document_data.eq(target_notebook.document_data),
                     ))
                     .execute(conn)
                     .await?;
