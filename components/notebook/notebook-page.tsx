@@ -1,9 +1,8 @@
 "use client";
 
 import { Reorder } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAutomergeSync } from "@/hooks/use-automerge-sync";
-import { useLocalStorage } from "@/hooks/use-local-storate";
 import type { BlockMetadata, BlockType, Language } from "@/lib/types";
 import { InlineTOC } from "../inline-toc";
 import { useNotebook } from "./notebook-context";
@@ -19,10 +18,6 @@ export default function RustInteractivePage({
 }: RustInteractivePageProps) {
   const { isDragging, setIsDragging } = useNotebook();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [autoSaveInterval, _setAutoSaveInterval] = useLocalStorage<number>(
-    "editor-autosave-interval",
-    10000,
-  );
 
   const {
     doc,
@@ -35,18 +30,6 @@ export default function RustInteractivePage({
   } = useAutomergeSync(pageId);
 
   const blocks = doc?.blocks || [];
-
-  console.log(doc?.id);
-
-  useEffect(() => {
-    if (!autoSaveInterval || autoSaveInterval <= 0) return;
-
-    const interval = setInterval(() => {
-      console.log("Auto-save disparado!");
-    }, autoSaveInterval);
-
-    return () => clearInterval(interval);
-  }, [autoSaveInterval]);
 
   const getFileName = (title: string) => {
     return title.replace(/[^a-zA-Z0-9]/g, "_");
@@ -74,10 +57,11 @@ export default function RustInteractivePage({
     language?: Language,
     metadata?: BlockMetadata,
   ) => {
-    const content = getInitialCode(language ?? "rust");
+    const content =
+      type === "code" ? getInitialCode(language ?? "rust") : "Escreva aqui";
     const title = getBlockTitle(type, language ?? "rust", blocks.length);
 
-    addBlockSync(index, type, content, language ?? "rust", title);
+    addBlockSync(index, type, content, language, title, metadata);
     setHoveredIndex(null);
   };
 

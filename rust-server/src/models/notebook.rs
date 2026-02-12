@@ -497,11 +497,31 @@ pub async fn load_notebook_data(
         .unwrap_or(None)
 }
 
-pub async fn save_notebook_data(conn: &mut AsyncPgConnection, notebook_id: Uuid, data: Vec<u8>) {
-    diesel::update(notebooks::table.find(notebook_id))
+pub async fn save_notebook_data(
+    conn: &mut AsyncPgConnection,
+    user_id_param: Uuid,
+    notebook_id_param: Uuid,
+    data: Vec<u8>,
+) {
+    use crate::schema::notebooks::dsl::*;
+
+    /*
+    let notebook: Notebook = notebooks
+        .filter(id.eq(notebook_id_param))
+        .get_result(conn)
+        .await
+        .unwrap();
+
+    if notebook.user_id != user_id_param && !notebook.is_public {
+        return;
+    }
+    */
+
+    diesel::update(notebooks)
+        .filter(id.eq(notebook_id_param))
         .set((
-            notebooks::document_data.eq(data),
-            notebooks::updated_at.eq(chrono::Utc::now().naive_utc()),
+            document_data.eq(data),
+            updated_at.eq(chrono::Utc::now().naive_utc()),
         ))
         .execute(conn)
         .await

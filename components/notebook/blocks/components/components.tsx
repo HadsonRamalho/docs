@@ -27,7 +27,7 @@ export function ComponentRenderer({
           <Callout type={block.metadata.props?.type || "info"}>
             <TextBlock
               content={block.content}
-              onChange={(newVal) => updateBlockAction(block.id, newVal)}
+              onChange={(newVal) => updateBlockAction(newVal, newVal)}
             />
           </Callout>
         </div>
@@ -40,7 +40,7 @@ export function ComponentRenderer({
           <Card title={block.metadata.props.title}>
             <TextBlock
               content={block.content}
-              onChange={(newVal) => updateBlockAction(block.id, newVal)}
+              onChange={(newVal) => updateBlockAction(newVal, newVal)}
             />
           </Card>
         </div>
@@ -68,7 +68,7 @@ export function ComponentRenderer({
           >
             <TextBlock
               content={block.content}
-              onChange={(newVal) => updateBlockAction(block.id, newVal)}
+              onChange={(newVal) => updateBlockAction(newVal, newVal)}
             />
           </Banner>
         </div>

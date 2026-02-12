@@ -1,9 +1,9 @@
 "use client";
 
 import { AlertCircle, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { RunRust } from "@/lib/api/run-rust";
-import type { Block, RunStatus, TsMode } from "@/lib/types";
+import type { Block, RunStatus } from "@/lib/types";
 import { BlockEditor } from "../block-editor";
 import { EditorHeader } from "../default/editor-header";
 import { RunButton } from "../default/run-button";
@@ -32,6 +32,13 @@ export function RustEditor({
     });
   }
 
+  const handleCodeChange = useCallback(
+    (v: string) => {
+      onCodeChange(v || "");
+    },
+    [onCodeChange],
+  );
+
   return (
     <div
       className={`flex flex-col gap-6 w-full mb-6 mt-2 ${
@@ -43,12 +50,12 @@ export function RustEditor({
           <EditorHeader
             block={block}
             pageBlocks={[]}
-            setBlocksAction={(_b: Block[]): void => {}}
+            setBlocksAction={() => {}}
             mode={"simple"}
             babelReady={false}
-            handleRunSimple={(): void => {}}
-            setMode={(_m: TsMode): void => {}}
-            setShowPreview={(_s: boolean): void => {}}
+            handleRunSimple={() => {}}
+            setMode={() => {}}
+            setShowPreview={() => {}}
             showPreview={false}
           />
           <RunButton
@@ -62,10 +69,12 @@ export function RustEditor({
           <BlockEditor
             content={block.content}
             language="rust"
-            onChange={onCodeChange}
+            onChange={handleCodeChange}
             readOnly={isDragging}
             minHeight="280px"
             className="border-none rounded-none"
+            onBlur={() => {}}
+            type="code"
           />
         </div>
 

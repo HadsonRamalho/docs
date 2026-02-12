@@ -2,6 +2,7 @@
 
 import { Reorder, useDragControls } from "framer-motion";
 import { GripVertical, Trash2 } from "lucide-react";
+import { useCallback } from "react";
 import type { Block, BlockMetadata } from "@/lib/types";
 import { ComponentRenderer } from "../blocks/components/components";
 import PythonSandbox from "../blocks/python/python-editor";
@@ -35,6 +36,13 @@ export function ReorderItem({
 }: ReorderItemProps) {
   const dragControls = useDragControls();
 
+  const handleUpdateContent = useCallback(
+    (val: string) => {
+      updateBlock(block.id, val);
+    },
+    [block.id, updateBlock],
+  );
+
   return (
     <Reorder.Item
       value={block}
@@ -53,13 +61,16 @@ export function ReorderItem({
           size={16}
           className="text-gray-600 cursor-grab active:cursor-grabbing"
         />
-        <button
-          type="button"
-          onClick={() => removeBlock(block.id)}
-          className="text-gray-600 hover:text-red-500"
-        >
-          <Trash2 size={14} />
-        </button>
+        {pageBlocks.length > 1 && (
+          <button
+            type="button"
+            disabled={pageBlocks.length === 1}
+            onClick={() => removeBlock(block.id)}
+            className="text-gray-600 hover:text-red-500"
+          >
+            <Trash2 size={14} />
+          </button>
+        )}
       </div>
 
       <div className="flex-1 min-w-0">
@@ -71,7 +82,7 @@ export function ReorderItem({
         ) : block.type === "component" ? (
           <ComponentRenderer
             block={block}
-            updateBlockAction={updateBlock}
+            updateBlockAction={handleUpdateContent}
             updateBlockMetadata={updateBlockMetadata}
           />
         ) : block.language === "typescript" ? (
@@ -80,11 +91,11 @@ export function ReorderItem({
             block={block}
             pageBlocks={pageBlocks}
             setBlocksAction={setBlocks}
-            updateBlockAction={updateBlock}
+            updateBlockAction={handleUpdateContent}
           />
         ) : block.language === "python" ? (
           <PythonSandbox
-            onCodeChange={(val: string) => updateBlock(block.id, val)}
+            onCodeChange={handleUpdateContent}
             block={block}
             isDragging={isDragging}
           />
@@ -92,7 +103,7 @@ export function ReorderItem({
           <RustEditor
             block={block}
             isDragging={isDragging}
-            onCodeChange={(val: string) => updateBlock(block.id, val)}
+            onCodeChange={handleUpdateContent}
           />
         )}
       </div>

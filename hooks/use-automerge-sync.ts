@@ -1,11 +1,21 @@
 import type * as AutomergeType from "@automerge/automerge";
+import { getCookie } from "cookies-next";
+import diff from "fast-diff";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import type { Block, Notebook } from "@/lib/types";
+import type {
+  Block,
+  BlockMetadata,
+  BlockType,
+  Language,
+  Notebook,
+} from "@/lib/types";
 
 export function useAutomergeSync(notebookId: string) {
   const [isConnected, setIsConnected] = useState(false);
   const automerge = useRef<typeof AutomergeType | null>(null);
+
+  const token = getCookie("auth_token");
 
   const [doc, setDoc] = useState<Notebook | null>(null);
 
@@ -32,8 +42,7 @@ export function useAutomergeSync(notebookId: string) {
               id: uuidv4(),
               type: "text",
               title: "Nota Inicial",
-              content: "# Bem vindo ao seu Notebook\nComece a editar...",
-              language: "rust", // valor padrão
+              content: "## Carregando...\nEstamos carregando o conteúdo...",
             },
           ];
         }
@@ -52,12 +61,14 @@ export function useAutomergeSync(notebookId: string) {
 
     if (socketRef.current?.readyState === WebSocket.OPEN) return;
 
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl =
-      process.env.NEXT_PUBLIC_WS_URL ||
-      `${protocol}//6hpqpw43-3099.brs.devtunnels.ms/api/notebook/ws/${notebookId}`;
+    //const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `wss:${process.env.NEXT_PUBLIC_WS_URL}/notebook/ws/${notebookId}`;
 
-    const socket = new WebSocket(wsUrl);
+    const socket = new WebSocket(wsUrl, [
+      "access_token",
+      token ? token.toString() : "",
+    ]);
+    //console.log("Token definido: ", token);
     socket.binaryType = "arraybuffer";
     socketRef.current = socket;
 
@@ -89,8 +100,6 @@ export function useAutomergeSync(notebookId: string) {
           socket.send(responseMessage);
         }
 
-        console.log(nextDoc.blocks);
-
         return nextDoc;
       });
     };
@@ -99,7 +108,7 @@ export function useAutomergeSync(notebookId: string) {
       socket.close();
       socketRef.current = null;
     };
-  }, [notebookId, !!doc]);
+  }, [notebookId, !!doc, token]);
 
   const updateDoc = useCallback((callback: (d: Notebook) => void) => {
     if (!automerge.current) return;
@@ -126,34 +135,65 @@ export function useAutomergeSync(notebookId: string) {
 
   const addBlockSync = (
     index: number,
-    type: "text" | "code" | "component",
+    type: BlockType,
     content = "",
-    language = "rust",
+    language?: Language,
     title = "",
-  ) => {
+    metadata?: BlockMetadata,
+  ) =>
     updateDoc((d) => {
       const newBlock: Block = {
         id: uuidv4(),
         title,
         type: type as any,
         content,
-        language: language as any,
+        ...(language !== undefined ? { language: language as any } : {}),
+        ...(metadata !== undefined ? { metadata } : {}),
       };
       d.blocks.splice(index + 1, 0, newBlock);
     });
-  };
 
   const updateBlockContent = (blockId: string, newContent: string) => {
     updateDoc((d) => {
-      const block = d.blocks.find((b) => b.id === blockId);
-      if (block) block.content = newContent;
+      const blockIndex = d.blocks.findIndex((b) => b.id === blockId);
+      if (blockIndex === -1) return;
+
+      const block = d.blocks[blockIndex];
+      const currentContent = block.content;
+
+      if (currentContent === newContent) return;
+
+      const diffs = diff(currentContent, newContent);
+
+      let index = 0;
+      const am = automerge.current;
+      if (!am) return;
+
+      const propPath = ["blocks", blockIndex, "content"];
+
+      diffs.forEach(([operation, text]) => {
+        if (operation === 0) {
+          index += text.length;
+        } else if (operation === -1) {
+          am.splice(d, propPath, index, text.length);
+        } else if (operation === 1) {
+          am.splice(d, propPath, index, 0, text);
+          index += text.length;
+        }
+      });
     });
   };
 
   const updateBlockMetadataSync = (blockId: string, meta: any) => {
     updateDoc((d) => {
       const block = d.blocks.find((b) => b.id === blockId);
-      if (block) block.metadata = meta;
+      if (block) {
+        if (meta === undefined) {
+          delete block.metadata;
+        } else {
+          block.metadata = meta;
+        }
+      }
     });
   };
 

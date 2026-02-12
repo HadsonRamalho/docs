@@ -9,6 +9,7 @@ use axum::{
 use bytes::Bytes;
 use diesel_async::{AsyncPgConnection, pooled_connection::deadpool::Pool};
 use futures::{SinkExt, stream::StreamExt};
+use hyper::HeaderMap;
 use std::sync::Arc;
 use tokio::sync::{RwLock, mpsc};
 use uuid::Uuid;
@@ -16,7 +17,10 @@ use uuid::Uuid;
 use automerge::sync::{Message as SyncMessage, State as SyncState, SyncDoc};
 
 use crate::{
-    controllers::sync::{ActiveNotebook, SyncRegistry},
+    controllers::{
+        jwt::extract_claims_from_header,
+        sync::{ActiveNotebook, SyncRegistry},
+    },
     models::{
         notebook::{load_notebook_data, save_notebook_data},
         state::AppState,
@@ -25,9 +29,12 @@ use crate::{
 
 pub async fn websocket_handler(
     ws: WebSocketUpgrade,
+    headers: HeaderMap,
     Path(notebook_id): Path<Uuid>,
     AxumState(state): AxumState<Arc<AppState>>,
 ) -> impl IntoResponse {
+    //let user_id = extract_claims_from_header(&headers).await.unwrap().1.id;
+
     let user_id = Uuid::new_v4();
 
     let pool = state.pool.clone();
@@ -109,7 +116,7 @@ async fn handle_socket(
         let pool_clone = pool.clone();
         tokio::spawn(async move {
             if let Ok(mut conn) = pool_clone.get().await {
-                save_notebook_data(&mut conn, notebook_id, data_to_save).await;
+                save_notebook_data(&mut conn, user_id, notebook_id, data_to_save).await;
             }
         });
         registry.remove(&notebook_id);

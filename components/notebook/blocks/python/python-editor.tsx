@@ -1,9 +1,8 @@
 "use client";
-import Editor from "@monaco-editor/react";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
-import { useTheme } from "next-themes";
-import { useState } from "react";
-import type { Block, RunStatus, TsMode } from "@/lib/types";
+import { useCallback, useState } from "react";
+import type { Block, RunStatus } from "@/lib/types";
+import { BlockEditor } from "../block-editor";
 import { EditorHeader } from "../default/editor-header";
 import { RunButton } from "../default/run-button";
 
@@ -21,7 +20,6 @@ export default function PythonSandbox({
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [status, setStatus] = useState<RunStatus>("idle");
-  const { theme } = useTheme();
 
   async function handleRun() {
     setIsRunning(true);
@@ -38,22 +36,31 @@ export default function PythonSandbox({
     setIsRunning(false);
   }
 
+  const handleCodeChange = useCallback(
+    (v: string) => {
+      onCodeChange(v || "");
+    },
+    [onCodeChange],
+  );
+
   return (
     <div className="rounded-lg p-2">
       <div
-        className={`flex flex-col gap-6 w-full mb-6 mt-2 bg-card ${isDragging ? "pointer-events-none" : ""}`}
+        className={`flex flex-col gap-6 w-full mb-6 mt-2 ${
+          isDragging ? "pointer-events-none opacity-50" : ""
+        }`}
       >
         <div className="flex flex-col rounded-xl border dark:border-[#333] bg-card dark:bg-[#1e1e1e] shadow-2xl overflow-hidden transition-all duration-300 dark:hover:border-[#444]">
           <div className="flex items-center justify-between bg-card dark:bg-[#252525] px-4 py-2 border-b dark:border-[#333]">
             <EditorHeader
               block={block}
               pageBlocks={[]}
-              setBlocksAction={(_b: Block[]): void => {}}
+              setBlocksAction={() => {}}
               mode={"simple"}
               babelReady={false}
-              handleRunSimple={(): void => {}}
-              setMode={(_m: TsMode): void => {}}
-              setShowPreview={(_s: boolean): void => {}}
+              handleRunSimple={() => {}}
+              setMode={() => {}}
+              setShowPreview={() => {}}
               showPreview={false}
             />
             <RunButton
@@ -64,27 +71,16 @@ export default function PythonSandbox({
           </div>
 
           <div className="relative group">
-            {isDragging ? (
-              <div className="h-100">
-                <p>Termine de editar antes de continuar escrevendo...</p>
-              </div>
-            ) : (
-              <Editor
-                height="280px"
-                defaultLanguage="python"
-                theme={theme === "dark" ? "vs-dark" : undefined}
-                value={block.content}
-                onChange={(v) => onCodeChange(v || "")}
-                options={{
-                  fontSize: 14,
-                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-                  minimap: { enabled: false },
-                  lineNumbers: "on",
-                  padding: { top: 16, bottom: 16 },
-                  scrollBeyondLastLine: false,
-                }}
-              />
-            )}
+            <BlockEditor
+              content={block.content}
+              language={"python"}
+              onChange={handleCodeChange}
+              readOnly={isDragging}
+              minHeight="280px"
+              className="border-none rounded-none"
+              onBlur={() => {}}
+              type="code"
+            />
           </div>
 
           {!isDragging && (
