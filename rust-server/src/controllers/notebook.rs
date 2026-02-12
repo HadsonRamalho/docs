@@ -15,7 +15,8 @@ use crate::{
         error::ApiError,
         notebook::{
             NewBlock, NewNotebook, Notebook, NotebookResponse, SearchQuery, SearchResult,
-            SyncNotebookRequest, UpdateNotebookTitle, delete_notebook, update_notebook_title,
+            SyncNotebookRequest, UpdateNotebookTitle, UpdateNotebookVisibility, delete_notebook,
+            update_notebook_title,
         },
         state::AppState,
     },
@@ -146,6 +147,32 @@ pub async fn api_rename_notebook(
     }
 
     match update_notebook_title(&mut conn, notebook_id, payload.title).await {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(e) => Err(ApiError::Database(e)),
+    }
+}
+
+pub async fn api_update_notebook_visibility(
+    State(state): State<Arc<AppState>>,
+    Path(notebook_id): Path<Uuid>,
+    headers: HeaderMap,
+    Json(payload): Json<UpdateNotebookVisibility>,
+) -> Result<StatusCode, ApiError> {
+    let id = extract_claims_from_header(&headers).await?.1.id;
+
+    let mut conn = state
+        .pool
+        .get()
+        .await
+        .map_err(|e| ApiError::Database(e.to_string()))?;
+
+    if let Err(e) = is_notebook_owner(&mut conn, Some(id), &notebook_id).await {
+        return Err(e);
+    }
+
+    match models::notebook::update_notebook_visibility(&mut conn, notebook_id, payload.is_visible)
+        .await
+    {
         Ok(_) => Ok(StatusCode::OK),
         Err(e) => Err(ApiError::Database(e)),
     }

@@ -1,11 +1,9 @@
 use std::sync::Arc;
 
-use crate::controllers::jwt::jwt_auth;
-use crate::controllers::sync::{ActiveNotebook, SyncRegistry};
+use crate::controllers::sync::SyncRegistry;
 use crate::controllers::utils::{get_database_url_from_env, get_frontend_url_from_env};
 use crate::models::error::ApiError;
 use crate::models::state::AppState;
-use crate::routes::docs::get_api_docs;
 use crate::routes::notebook::notebook_routes;
 use crate::routes::run_rust::run_rust_routes;
 use crate::routes::user::user_routes;
@@ -13,7 +11,6 @@ use axum::{Json, Router};
 use axum::{
     extract::DefaultBodyLimit,
     http::HeaderValue,
-    middleware,
     routing::{get, get_service},
 };
 use dashmap::DashMap;
@@ -27,12 +24,9 @@ use hyper::StatusCode;
 use hyper::header::{AUTHORIZATION, CONTENT_TYPE};
 use rustls::ClientConfig;
 use rustls_platform_verifier::ConfigVerifierExt;
-use tokio::sync::RwLock;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::ServeDir;
 use utoipa_axum::router::OpenApiRouter;
-use utoipa_swagger_ui::SwaggerUi;
-use uuid::Uuid;
 
 pub mod docs;
 pub mod notebook;

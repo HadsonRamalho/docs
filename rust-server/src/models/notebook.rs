@@ -1,11 +1,13 @@
 use crate::{models::error::ApiError, schema::blocks::dsl as blocks_dsl};
 use chrono::{DateTime, Utc};
 use diesel::{
-    BelongingToDsl, BoolExpressionMethods, ExpressionMethods, JoinOnDsl, PgTextExpressionMethods,
-    QueryDsl, Selectable,
+    BelongingToDsl, BoolExpressionMethods, ExpressionMethods, JoinOnDsl, OptionalExtension,
+    PgTextExpressionMethods, QueryDsl, Selectable,
     prelude::{Associations, Identifiable, Insertable, Queryable},
 };
-use diesel_async::{AsyncConnection, AsyncPgConnection, RunQueryDsl};
+use diesel_async::{
+    AsyncConnection, AsyncPgConnection, RunQueryDsl, pooled_connection::deadpool::Pool,
+};
 use diesel_derive_enum::DbEnum;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -148,6 +150,11 @@ pub struct UpdateNotebookTitle {
 }
 
 #[derive(Deserialize)]
+pub struct UpdateNotebookVisibility {
+    pub is_visible: bool,
+}
+
+#[derive(Deserialize)]
 pub struct SyncNotebookRequest {
     pub title: String,
     pub blocks: Vec<BlockRequest>,
@@ -176,6 +183,12 @@ pub struct SearchResult {
     pub id: Uuid,
     pub title: String,
     pub content: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NotebookPermission {
+    OwnerOrTeam,
+    Viewer,
 }
 
 pub async fn create_notebook(
@@ -246,6 +259,23 @@ pub async fn update_notebook_title(
 
     match diesel::update(notebooks.filter(id.eq(param_id)))
         .set((title.eq(new_title), updated_at.eq(Utc::now())))
+        .execute(conn)
+        .await
+    {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+pub async fn update_notebook_visibility(
+    conn: &mut AsyncPgConnection,
+    param_id: Uuid,
+    is_visible: bool,
+) -> Result<(), String> {
+    use crate::schema::notebooks::dsl::*;
+
+    match diesel::update(notebooks.filter(id.eq(param_id)))
+        .set((is_public.eq(is_visible), updated_at.eq(Utc::now())))
         .execute(conn)
         .await
     {
@@ -506,17 +536,15 @@ pub async fn save_notebook_data(
 ) {
     use crate::schema::notebooks::dsl::*;
 
-    /*
     let notebook: Notebook = notebooks
         .filter(id.eq(notebook_id_param))
         .get_result(conn)
         .await
         .unwrap();
 
-    if notebook.user_id != user_id_param && !notebook.is_public {
+    if notebook.user_id != user_id_param {
         return;
     }
-    */
 
     diesel::update(notebooks)
         .filter(id.eq(notebook_id_param))
@@ -527,4 +555,37 @@ pub async fn save_notebook_data(
         .execute(conn)
         .await
         .ok();
+}
+
+pub async fn check_permission(
+    pool: &Pool<AsyncPgConnection>,
+    user_id: Option<Uuid>,
+    notebook_id: Uuid,
+) -> Result<NotebookPermission, ApiError> {
+    let mut conn = pool.get().await.unwrap();
+
+    let uid = match user_id {
+        Some(id) => id,
+        None => return Ok(NotebookPermission::Viewer),
+    };
+
+    let is_owner = match notebooks::table
+        .filter(notebooks::id.eq(notebook_id))
+        .filter(notebooks::user_id.eq(uid))
+        .first::<Notebook>(&mut conn)
+        .await
+        .optional()
+    {
+        Ok(n) => n,
+        Err(_) => None,
+    };
+
+    if is_owner.is_some() {
+        return Ok(NotebookPermission::OwnerOrTeam);
+    }
+
+    // let is_team_member =
+    // if is_team_member { return Ok(NotebookPermission::OwnerOrTeam); }
+
+    Ok(NotebookPermission::Viewer)
 }

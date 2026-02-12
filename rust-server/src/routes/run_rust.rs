@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use axum::routing::post;
-use diesel_async::{AsyncPgConnection, pooled_connection::deadpool::Pool};
 use utoipa_axum::router::OpenApiRouter;
 
 use crate::{http::verify_request, models::state::AppState};

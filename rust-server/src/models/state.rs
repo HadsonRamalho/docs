@@ -1,7 +1,6 @@
 use crate::controllers::sync::SyncRegistry;
 use axum::extract::FromRef;
 use diesel_async::{AsyncPgConnection, pooled_connection::deadpool::Pool};
-use std::sync::Arc;
 
 pub struct AppState {
     pub pool: Pool<AsyncPgConnection>,

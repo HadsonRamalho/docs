@@ -18,11 +18,11 @@ use automerge::sync::{Message as SyncMessage, State as SyncState, SyncDoc};
 
 use crate::{
     controllers::{
-        jwt::extract_claims_from_header,
+        jwt::extract_claims_from_ws_headers,
         sync::{ActiveNotebook, SyncRegistry},
     },
     models::{
-        notebook::{load_notebook_data, save_notebook_data},
+        notebook::{NotebookPermission, load_notebook_data, save_notebook_data},
         state::AppState,
     },
 };
@@ -33,9 +33,10 @@ pub async fn websocket_handler(
     Path(notebook_id): Path<Uuid>,
     AxumState(state): AxumState<Arc<AppState>>,
 ) -> impl IntoResponse {
-    //let user_id = extract_claims_from_header(&headers).await.unwrap().1.id;
-
-    let user_id = Uuid::new_v4();
+    let user_token = match extract_claims_from_ws_headers(&headers).await {
+        Ok(t) => Some(t.1.id),
+        Err(_) => None,
+    };
 
     let pool = state.pool.clone();
 
@@ -43,7 +44,7 @@ pub async fn websocket_handler(
         handle_socket(
             socket,
             notebook_id,
-            user_id,
+            user_token,
             state.sync_registry.clone(),
             pool,
         )
@@ -53,11 +54,18 @@ pub async fn websocket_handler(
 async fn handle_socket(
     socket: WebSocket,
     notebook_id: Uuid,
-    user_id: Uuid,
+    original_user_id: Option<Uuid>,
     registry: SyncRegistry,
     pool: Pool<AsyncPgConnection>,
 ) {
+    let user_id = original_user_id.unwrap_or(Uuid::new_v4());
     let (mut sender, mut receiver) = socket.split();
+
+    let permission =
+        crate::models::notebook::check_permission(&pool, original_user_id, notebook_id)
+            .await
+            .unwrap_or(NotebookPermission::Viewer);
+
     let (tx, mut rx) = mpsc::unbounded_channel::<Vec<u8>>();
 
     let notebook = {
@@ -92,9 +100,11 @@ async fn handle_socket(
     });
 
     let notebook_recv = notebook.clone();
+    let permission_cloned = permission.clone();
+
     let mut recv_task = tokio::spawn(async move {
         while let Some(Ok(Message::Binary(data))) = receiver.next().await {
-            process_msg(notebook_id, user_id, data, &notebook_recv).await;
+            process_msg(user_id, data, &notebook_recv, permission_cloned.clone()).await;
         }
     });
 
@@ -122,12 +132,11 @@ async fn handle_socket(
         registry.remove(&notebook_id);
     }
 }
-
 async fn process_msg(
-    _notebook_id: Uuid,
-    sender_id: Uuid,
+    sender_session_id: Uuid,
     data: Bytes,
     notebook: &Arc<RwLock<ActiveNotebook>>,
+    permission: NotebookPermission,
 ) {
     let mut nb_guard = notebook.write().await;
 
@@ -135,18 +144,30 @@ async fn process_msg(
         doc,
         peer_states,
         subscribers,
+        ..
     } = &mut *nb_guard;
 
     if let Ok(msg) = SyncMessage::decode(&data) {
-        if let Some(peer_state) = peer_states.get_mut(&sender_id) {
-            let _ = doc.sync().receive_sync_message(peer_state, msg);
+        if let Some(peer_state) = peer_states.get_mut(&sender_session_id) {
+            match permission {
+                NotebookPermission::OwnerOrTeam => {
+                    if let Err(e) = doc.sync().receive_sync_message(peer_state, msg) {
+                        tracing::error!("Erro sync owner: {:?}", e);
+                    }
+                }
+                NotebookPermission::Viewer => {
+                    let mut doc_clone = doc.fork();
+                    if let Err(e) = doc_clone.sync().receive_sync_message(peer_state, msg) {
+                        tracing::error!("Erro sync viewer: {:?}", e);
+                    }
+                }
+            }
         }
     }
 
     for (peer_id, peer_state) in peer_states.iter_mut() {
         if let Some(msg) = doc.sync().generate_sync_message(peer_state) {
             let bytes = msg.encode();
-
             if let Some(tx) = subscribers.get(peer_id) {
                 let _ = tx.send(bytes);
             }

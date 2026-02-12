@@ -1,5 +1,4 @@
 import type * as AutomergeType from "@automerge/automerge";
-import { getCookie } from "cookies-next";
 import diff from "fast-diff";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
@@ -11,11 +10,9 @@ import type {
   Notebook,
 } from "@/lib/types";
 
-export function useAutomergeSync(notebookId: string) {
+export function useAutomergeSync(notebookId: string, token: string) {
   const [isConnected, setIsConnected] = useState(false);
   const automerge = useRef<typeof AutomergeType | null>(null);
-
-  const token = getCookie("auth_token");
 
   const [doc, setDoc] = useState<Notebook | null>(null);
 
@@ -61,14 +58,13 @@ export function useAutomergeSync(notebookId: string) {
 
     if (socketRef.current?.readyState === WebSocket.OPEN) return;
 
-    //const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `wss:${process.env.NEXT_PUBLIC_WS_URL}/notebook/ws/${notebookId}`;
+    const validToken = token.length > 0;
 
-    const socket = new WebSocket(wsUrl, [
-      "access_token",
-      token ? token.toString() : "",
-    ]);
-    //console.log("Token definido: ", token);
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}${process.env.NEXT_PUBLIC_WS_URL}/notebook/ws/${notebookId}`;
+
+    const protocols = validToken ? ["access_token", token] : undefined;
+    const socket = new WebSocket(wsUrl, protocols);
     socket.binaryType = "arraybuffer";
     socketRef.current = socket;
 

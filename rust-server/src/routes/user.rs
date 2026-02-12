@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use axum::routing::{delete, get, patch, post};
-use diesel_async::{AsyncPgConnection, pooled_connection::deadpool::Pool};
 use utoipa_axum::router::OpenApiRouter;
 
 use crate::{

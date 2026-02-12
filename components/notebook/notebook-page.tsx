@@ -1,5 +1,6 @@
 "use client";
 
+import { getCookie } from "cookies-next";
 import { Reorder } from "framer-motion";
 import { useState } from "react";
 import { useAutomergeSync } from "@/hooks/use-automerge-sync";
@@ -18,6 +19,8 @@ export default function RustInteractivePage({
 }: RustInteractivePageProps) {
   const { isDragging, setIsDragging } = useNotebook();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const tokenX = getCookie("auth_token");
+  const token = tokenX?.toString() || "";
 
   const {
     doc,
@@ -27,7 +30,7 @@ export default function RustInteractivePage({
     updateBlockMetadataSync,
     deleteBlock,
     reorderBlocks,
-  } = useAutomergeSync(pageId);
+  } = useAutomergeSync(pageId, token);
 
   const blocks = doc?.blocks || [];
 

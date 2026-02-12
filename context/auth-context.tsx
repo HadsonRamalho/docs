@@ -38,7 +38,7 @@ export function AuthProvider({
       const token = getCookie("auth_token");
 
       if (!token) {
-        console.error("Token não encontrado nos cookies");
+        console.log("Token não encontrado nos cookies");
         setIsLoading(false);
         return;
       }

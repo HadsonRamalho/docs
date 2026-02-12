@@ -12,6 +12,7 @@ import {
   deleteNotebook,
   getMyNotebooks,
   updateNotebookTitle,
+  updateNotebookVisibility,
 } from "@/lib/api/notebook-service";
 import { restoreFullBackup } from "@/lib/storage";
 import type { NotebookMeta } from "@/lib/types";
@@ -25,6 +26,7 @@ interface NotebookManagerType {
   uploadBackup: (file: File) => Promise<void>;
   renamePage: (id: string, newTitle: string) => Promise<void>;
   clone: (id: string) => Promise<void>;
+  updateVisibility: (id: string, visible: boolean) => Promise<void>;
 }
 
 const NotebookManagerContext = createContext<NotebookManagerType | undefined>(
@@ -105,6 +107,19 @@ export function NotebookManagerProvider({
     }
   };
 
+  const updateVisibility = async (id: string, isVisible: boolean) => {
+    try {
+      if (!user) {
+        return;
+      }
+      await updateNotebookVisibility(id, isVisible);
+
+      await refreshPages();
+    } catch (err) {
+      handleApiError({ err, t });
+    }
+  };
+
   const deletePage = async (id: string) => {
     try {
       if (!user) {
@@ -171,6 +186,7 @@ export function NotebookManagerProvider({
         pages,
         createPage,
         renamePage,
+        updateVisibility,
         deletePage,
         refreshPages,
         uploadBackup,

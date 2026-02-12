@@ -53,7 +53,7 @@ export function NotebookProvider({
   const [notebook, setNotebook] = useState<Notebook | null>(null);
   const [isPublic, setVisibility] = useState(false);
   const [isCloning, setIsCloning] = useState(false);
-  const { clone } = useNotebookManager();
+  const { clone, updateVisibility } = useNotebookManager();
 
   const triggerSave = () => setSaveSignal((prev) => prev + 1);
   const triggerAddBlock = () => setAddBlockSignal((prev) => prev + 1);
@@ -74,6 +74,12 @@ export function NotebookProvider({
       setIsCloning(false);
     }
   };
+
+  useEffect(() => {
+    if (pageId) {
+      updateVisibility(pageId, isPublic);
+    }
+  }, [isPublic, pageId]);
 
   useEffect(() => {
     if (pageId) {

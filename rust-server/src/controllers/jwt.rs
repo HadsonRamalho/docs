@@ -116,3 +116,32 @@ pub fn generate_jwt(input: UserAuthInfo) -> Result<String, ApiError> {
         Err(e) => Err(ApiError::CreateToken(e.to_string())),
     }
 }
+
+pub fn extract_token_from_ws(headers: &HeaderMap) -> Option<String> {
+    headers
+        .get("sec-websocket-protocol")
+        .and_then(|val| val.to_str().ok())
+        .and_then(|s| {
+            let parts: Vec<&str> = s.split(',').map(|p| p.trim()).collect();
+            parts.get(1).map(|&t| t.to_string())
+        })
+}
+
+pub async fn extract_claims_from_ws_headers(
+    headers: &HeaderMap,
+) -> Result<(String, Claims), ApiError> {
+    let token = extract_token_from_ws(headers).ok_or(ApiError::InvalidAuthorizationToken)?;
+
+    let secret = get_jwt_secret_from_env()?;
+
+    let decoded = decode::<Claims>(
+        &token,
+        &DecodingKey::from_secret(secret.as_bytes()),
+        &Validation::new(Algorithm::HS256),
+    )
+    .map_err(|_| ApiError::InvalidAuthorizationToken)?;
+
+    validate_claims(&decoded.claims).await?;
+
+    Ok((token, decoded.claims))
+}
