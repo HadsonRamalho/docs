@@ -79,7 +79,7 @@ export function NotebookProvider({
     if (pageId) {
       updateVisibility(pageId, isPublic);
     }
-  }, [isPublic, pageId]);
+  }, [isPublic]);
 
   useEffect(() => {
     if (pageId) {
