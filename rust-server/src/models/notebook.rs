@@ -86,6 +86,7 @@ pub struct Notebook {
     pub updated_at: DateTime<Utc>,
     #[serde(rename = "isPublic")]
     pub is_public: bool,
+    pub document_data: Option<Vec<u8>>,
 }
 
 #[derive(Queryable, Selectable, Identifiable, Associations, Serialize, Debug, Insertable)]
@@ -406,6 +407,17 @@ pub async fn clone_notebook(
         Err(e) => return Err(ApiError::Database(e.to_string())),
     };
 
+    let mut new_db_blocks = vec![];
+    if !db_blocks.is_empty() {
+        for block in db_blocks {
+            let mut block = block;
+            block.id = Uuid::new_v4();
+            block.notebook_id = new_notebook_id.clone();
+
+            new_db_blocks.push(block);
+        }
+    }
+
     let result = conn
         .transaction::<_, diesel::result::Error, _>(|conn| {
             Box::pin(async move {
@@ -424,21 +436,10 @@ pub async fn clone_notebook(
                 .execute(conn)
                 .await?;
 
-                if !db_blocks.is_empty() {
-                    let mut new_db_blocks = vec![];
-
-                    for block in db_blocks {
-                        let mut block = block;
-                        block.id = Uuid::new_v4();
-                        block.notebook_id = new_notebook_id.clone();
-                        new_db_blocks.push(block);
-                    }
-
-                    diesel::insert_into(blocks_dsl::blocks)
-                        .values(&new_db_blocks)
-                        .execute(conn)
-                        .await?;
-                }
+                diesel::insert_into(blocks_dsl::blocks)
+                    .values(&new_db_blocks)
+                    .execute(conn)
+                    .await?;
 
                 Ok(())
             })
@@ -480,4 +481,29 @@ pub async fn search_user_blocks(
         .collect::<Vec<SearchResult>>();
 
     Ok(final_results)
+}
+
+pub async fn load_notebook_data(
+    conn: &mut AsyncPgConnection,
+    notebook_id: Uuid,
+) -> Option<Vec<u8>> {
+    use crate::schema::notebooks::dsl::*;
+
+    notebooks
+        .filter(id.eq(notebook_id))
+        .select(document_data)
+        .first::<Option<Vec<u8>>>(conn)
+        .await
+        .unwrap_or(None)
+}
+
+pub async fn save_notebook_data(conn: &mut AsyncPgConnection, notebook_id: Uuid, data: Vec<u8>) {
+    diesel::update(notebooks::table.find(notebook_id))
+        .set((
+            notebooks::document_data.eq(data),
+            notebooks::updated_at.eq(chrono::Utc::now().naive_utc()),
+        ))
+        .execute(conn)
+        .await
+        .ok();
 }

@@ -44,6 +44,44 @@ diesel::table! {
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
         is_public -> Bool,
+        document_data -> Nullable<Bytea>,
+    }
+}
+
+diesel::table! {
+    team_members (id) {
+        id -> Uuid,
+        team_id -> Uuid,
+        user_id -> Uuid,
+        role_id -> Uuid,
+        joined_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    team_roles (id) {
+        id -> Uuid,
+        team_id -> Uuid,
+        name -> Varchar,
+        can_read -> Bool,
+        can_write -> Bool,
+        can_manage_privacy -> Bool,
+        can_manage_clones -> Bool,
+        can_invite_users -> Bool,
+        can_remove_users -> Bool,
+        can_manage_permissions -> Bool,
+        created_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    teams (id) {
+        id -> Uuid,
+        name -> Varchar,
+        description -> Nullable<Text>,
+        image_url -> Nullable<Varchar>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -77,5 +115,16 @@ diesel::table! {
 
 diesel::joinable!(blocks -> notebooks (notebook_id));
 diesel::joinable!(notebooks -> users (user_id));
+diesel::joinable!(team_members -> team_roles (role_id));
+diesel::joinable!(team_members -> teams (team_id));
+diesel::joinable!(team_members -> users (user_id));
+diesel::joinable!(team_roles -> teams (team_id));
 
-diesel::allow_tables_to_appear_in_same_query!(blocks, notebooks, users,);
+diesel::allow_tables_to_appear_in_same_query!(
+    blocks,
+    notebooks,
+    team_members,
+    team_roles,
+    teams,
+    users,
+);

@@ -1,5 +1,6 @@
+use std::sync::Arc;
+
 use axum::{Json, extract::State};
-use diesel_async::{AsyncPgConnection, pooled_connection::deadpool::Pool};
 use hyper::{HeaderMap, StatusCode};
 use pwhash::bcrypt::verify;
 use validator::Validate;
@@ -12,6 +13,7 @@ use crate::{
     models::{
         self,
         error::ApiError,
+        state::AppState,
         user::{
             AuthProvider, LoginUser, NewUser, UpdateUser, UpdateUserPassword, User, UserAuthInfo,
         },
@@ -20,7 +22,7 @@ use crate::{
 
 #[utoipa::path(post, path = "/user/register", responses((status = CREATED, body = String), (status = 401, body = ApiError)))]
 pub async fn api_register_user(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     input: Json<NewUser>,
 ) -> Result<(StatusCode, Json<String>), ApiError> {
     let mut user_input = input.0;
@@ -34,7 +36,7 @@ pub async fn api_register_user(
         user_input.password_hash = Some(password_hash(&user_input.password_hash.unwrap()));
     }
 
-    let conn = &mut get_conn(&pool)
+    let conn = &mut get_conn(&state.pool)
         .await
         .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
 
@@ -49,7 +51,7 @@ pub async fn api_register_user(
 
 #[utoipa::path(post, path = "/user/login", responses((status = OK, body = String), (status = 401, body = ApiError)))]
 pub async fn api_login_user(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     Json(input): Json<LoginUser>,
 ) -> Result<Json<String>, ApiError> {
     let mut user_input = input;
@@ -59,7 +61,7 @@ pub async fn api_login_user(
         return Err(ApiError::Request(errors.to_string()));
     }
 
-    let conn = &mut get_conn(&pool)
+    let conn = &mut get_conn(&state.pool)
         .await
         .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
 
@@ -93,7 +95,7 @@ pub async fn api_login_user(
 }
 
 pub async fn api_update_user_data(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     headers: HeaderMap,
     input: Json<UpdateUser>,
 ) -> Result<StatusCode, ApiError> {
@@ -106,7 +108,7 @@ pub async fn api_update_user_data(
 
     let id = extract_claims_from_header(&headers).await?.1.id;
 
-    let conn = &mut get_conn(&pool)
+    let conn = &mut get_conn(&state.pool)
         .await
         .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
 
@@ -124,12 +126,12 @@ pub async fn api_update_user_data(
 }
 
 pub async fn api_get_logged_user(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     headers: HeaderMap,
 ) -> Result<Json<User>, ApiError> {
     let id = extract_claims_from_header(&headers).await?.1.id;
 
-    let conn = &mut get_conn(&pool)
+    let conn = &mut get_conn(&state.pool)
         .await
         .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
 
@@ -141,12 +143,12 @@ pub async fn api_get_logged_user(
 }
 
 pub async fn api_delete_user(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     headers: HeaderMap,
 ) -> Result<StatusCode, ApiError> {
     let id = extract_claims_from_header(&headers).await?.1.id;
 
-    let conn = &mut get_conn(&pool)
+    let conn = &mut get_conn(&state.pool)
         .await
         .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
 
@@ -156,7 +158,7 @@ pub async fn api_delete_user(
 }
 
 pub async fn api_update_user_password(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     headers: HeaderMap,
     input: Json<UpdateUserPassword>,
 ) -> Result<StatusCode, ApiError> {
@@ -172,7 +174,7 @@ pub async fn api_update_user_password(
 
     let id = extract_claims_from_header(&headers).await?.1.id;
 
-    let conn = &mut get_conn(&pool)
+    let conn = &mut get_conn(&state.pool)
         .await
         .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
 

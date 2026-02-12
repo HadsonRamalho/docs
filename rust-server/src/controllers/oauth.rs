@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::{
     controllers::{
         jwt::generate_jwt,
@@ -8,6 +10,7 @@ use crate::{
         self,
         error::ApiError,
         oauth::{AuthRequest, GithubEmail, GithubUser, GithubUserResponse},
+        state::AppState,
         user::{AuthProvider, NewUser, UserAuthInfo},
     },
 };
@@ -16,7 +19,6 @@ use axum::{
     extract::{Query, State},
     response::{IntoResponse, Redirect},
 };
-use diesel_async::{AsyncPgConnection, pooled_connection::deadpool::Pool};
 use oauth2::{
     AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, RedirectUrl, Scope,
     TokenResponse, TokenUrl, basic::BasicClient,
@@ -148,7 +150,7 @@ async fn get_github_user(
 }
 
 pub async fn api_link_github_callback(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     Query(params): Query<AuthRequest>,
 ) -> impl IntoResponse {
     let http_client = ReqwestClient::new();
@@ -165,7 +167,7 @@ pub async fn api_link_github_callback(
         Err(e) => return Redirect::to(&e).into_response(),
     };
 
-    let conn = &mut get_conn(&pool)
+    let conn = &mut get_conn(&state.pool)
         .await
         .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))
         .unwrap();
@@ -250,7 +252,7 @@ async fn get_user_github_email(
 }
 
 pub async fn api_github_callback(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     Query(params): Query<AuthRequest>,
 ) -> impl IntoResponse {
     let http_client = ReqwestClient::new();
@@ -269,7 +271,7 @@ pub async fn api_github_callback(
 
     let user_data = user_data.user;
 
-    let mut conn = &mut get_conn(&pool)
+    let mut conn = &mut get_conn(&state.pool)
         .await
         .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))
         .unwrap();
@@ -296,7 +298,7 @@ pub async fn api_github_callback(
     }
 
     let _ = api_register_user(
-        State(pool),
+        State(state),
         Json(NewUser {
             name: user_data.login,
             email: email.clone(),

@@ -1,8 +1,10 @@
+use std::sync::Arc;
+
 use axum::{
     Json,
     extract::{Path, Query, State},
 };
-use diesel_async::{AsyncPgConnection, pooled_connection::deadpool::Pool};
+use diesel_async::AsyncPgConnection;
 use hyper::{HeaderMap, StatusCode};
 use uuid::Uuid;
 
@@ -15,17 +17,18 @@ use crate::{
             NewBlock, NewNotebook, Notebook, NotebookResponse, SearchQuery, SearchResult,
             SyncNotebookRequest, UpdateNotebookTitle, delete_notebook, update_notebook_title,
         },
+        state::AppState,
     },
 };
 
 #[utoipa::path(post, path = "/notebook/create", responses((status = OK), (status = 401, body = ApiError)))]
 pub async fn api_create_notebook(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     headers: HeaderMap,
 ) -> Result<(StatusCode, Json<Uuid>), ApiError> {
     let id = extract_claims_from_header(&headers).await?.1.id;
 
-    let conn = &mut get_conn(&pool)
+    let conn = &mut get_conn(&state.pool)
         .await
         .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
 
@@ -59,12 +62,12 @@ pub async fn api_create_notebook(
 }
 
 pub async fn api_get_notebooks(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     headers: HeaderMap,
 ) -> Result<(StatusCode, Json<Vec<Notebook>>), ApiError> {
     let id = extract_claims_from_header(&headers).await?.1.id;
 
-    let conn = &mut get_conn(&pool)
+    let conn = &mut get_conn(&state.pool)
         .await
         .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
 
@@ -95,7 +98,7 @@ pub async fn is_notebook_owner(
 }
 
 pub async fn api_get_single_notebook(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     Path(notebook_id): Path<Uuid>,
     headers: HeaderMap,
 ) -> Result<(StatusCode, Json<Notebook>), ApiError> {
@@ -104,7 +107,7 @@ pub async fn api_get_single_notebook(
         Err(_) => None,
     };
 
-    let conn = &mut get_conn(&pool)
+    let conn = &mut get_conn(&state.pool)
         .await
         .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
 
@@ -125,14 +128,15 @@ pub async fn api_get_single_notebook(
 }
 
 pub async fn api_rename_notebook(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     Path(notebook_id): Path<Uuid>,
     headers: HeaderMap,
     Json(payload): Json<UpdateNotebookTitle>,
 ) -> Result<StatusCode, ApiError> {
     let id = extract_claims_from_header(&headers).await?.1.id;
 
-    let mut conn = pool
+    let mut conn = state
+        .pool
         .get()
         .await
         .map_err(|e| ApiError::Database(e.to_string()))?;
@@ -148,13 +152,14 @@ pub async fn api_rename_notebook(
 }
 
 pub async fn api_delete_notebook(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     Path(notebook_id): Path<Uuid>,
     headers: HeaderMap,
 ) -> Result<StatusCode, ApiError> {
     let id = extract_claims_from_header(&headers).await?.1.id;
 
-    let mut conn = pool
+    let mut conn = state
+        .pool
         .get()
         .await
         .map_err(|e| ApiError::Database(e.to_string()))?;
@@ -170,7 +175,7 @@ pub async fn api_delete_notebook(
 }
 
 pub async fn api_get_single_notebook_with_blocks(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     Path(notebook_id): Path<Uuid>,
     headers: HeaderMap,
 ) -> Result<(StatusCode, Json<NotebookResponse>), ApiError> {
@@ -179,7 +184,7 @@ pub async fn api_get_single_notebook_with_blocks(
         Err(_) => None,
     };
 
-    let conn = &mut get_conn(&pool)
+    let conn = &mut get_conn(&state.pool)
         .await
         .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
 
@@ -200,14 +205,15 @@ pub async fn api_get_single_notebook_with_blocks(
 }
 
 pub async fn api_save_notebook_content(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     Path(notebook_id): Path<Uuid>,
     headers: HeaderMap,
     Json(payload): Json<SyncNotebookRequest>,
 ) -> Result<StatusCode, ApiError> {
     let id = extract_claims_from_header(&headers).await?.1.id;
 
-    let mut conn = pool
+    let mut conn = state
+        .pool
         .get()
         .await
         .map_err(|e| ApiError::Database(e.to_string()))?;
@@ -250,13 +256,13 @@ pub async fn api_save_notebook_content(
     }
 }
 pub async fn api_clone_notebook(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     Path(notebook_id): Path<Uuid>,
     headers: HeaderMap,
 ) -> Result<(StatusCode, Json<Uuid>), ApiError> {
     let id = extract_claims_from_header(&headers).await?.1.id;
 
-    let conn = &mut get_conn(&pool)
+    let conn = &mut get_conn(&state.pool)
         .await
         .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
 
@@ -298,7 +304,7 @@ pub async fn api_clone_notebook(
 }
 
 pub async fn api_search_notebooks(
-    State(pool): State<Pool<AsyncPgConnection>>,
+    State(state): State<Arc<AppState>>,
     Query(params): Query<SearchQuery>,
     headers: HeaderMap,
 ) -> Result<(StatusCode, Json<Vec<SearchResult>>), ApiError> {
@@ -308,7 +314,8 @@ pub async fn api_search_notebooks(
         return Ok((StatusCode::OK, Json(Vec::<SearchResult>::new())));
     }
 
-    let mut conn = pool
+    let mut conn = state
+        .pool
         .get()
         .await
         .map_err(|e| ApiError::DatabaseConnection(e.to_string()))?;

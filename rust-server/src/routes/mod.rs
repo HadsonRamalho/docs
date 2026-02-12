@@ -1,6 +1,10 @@
+use std::sync::Arc;
+
 use crate::controllers::jwt::jwt_auth;
+use crate::controllers::sync::{ActiveNotebook, SyncRegistry};
 use crate::controllers::utils::{get_database_url_from_env, get_frontend_url_from_env};
 use crate::models::error::ApiError;
+use crate::models::state::AppState;
 use crate::routes::docs::get_api_docs;
 use crate::routes::notebook::notebook_routes;
 use crate::routes::run_rust::run_rust_routes;
@@ -12,6 +16,7 @@ use axum::{
     middleware,
     routing::{get, get_service},
 };
+use dashmap::DashMap;
 use diesel::{ConnectionError, ConnectionResult};
 use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 use diesel_async::pooled_connection::ManagerConfig;
@@ -22,10 +27,12 @@ use hyper::StatusCode;
 use hyper::header::{AUTHORIZATION, CONTENT_TYPE};
 use rustls::ClientConfig;
 use rustls_platform_verifier::ConfigVerifierExt;
+use tokio::sync::RwLock;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::ServeDir;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_swagger_ui::SwaggerUi;
+use uuid::Uuid;
 
 pub mod docs;
 pub mod notebook;
@@ -41,15 +48,6 @@ pub async fn print_protected_route()
 pub async fn print_common_route() -> Result<(StatusCode, Json<String>), (StatusCode, Json<ApiError>)>
 {
     Ok((StatusCode::OK, Json("Common route!".to_string())))
-}
-
-pub fn protected_routes(pool: Pool<AsyncPgConnection>) -> OpenApiRouter<Pool<AsyncPgConnection>> {
-    let protected_routes = OpenApiRouter::new()
-        .route("/protected", get(print_protected_route))
-        .layer(middleware::from_fn_with_state(pool.clone(), jwt_auth))
-        .with_state(pool);
-
-    protected_routes
 }
 
 pub fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConnection>> {
@@ -73,12 +71,19 @@ pub async fn init_routes() -> Router {
     let mut config = ManagerConfig::default();
     config.custom_setup = Box::new(establish_connection);
 
+    let sync_registry: SyncRegistry = Arc::new(DashMap::new());
+
     if let Some(db_url) = db_url {
         let mgr =
             AsyncDieselConnectionManager::<AsyncPgConnection>::new_with_config(db_url, config);
         let pool = Pool::builder(mgr).max_size(10).build().unwrap();
 
-        let app: OpenApiRouter<_> = OpenApiRouter::new()
+        let app_state = Arc::new(AppState {
+            pool,
+            sync_registry,
+        });
+
+        let app = OpenApiRouter::<Arc<AppState>>::new()
             .route("/common", get(print_common_route))
             .nest_service("/images", get_service(ServeDir::new("./images")));
 
@@ -87,9 +92,8 @@ pub async fn init_routes() -> Router {
             .nest("/api", run_rust_routes().await.into())
             .nest("/api/user", user_routes().await.into())
             .nest("/api/notebook", notebook_routes().await.into())
-            .nest("/api", protected_routes(pool.clone()).into())
-            .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", get_api_docs()))
-            .with_state(pool)
+            //.merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", get_api_docs()))
+            .with_state(app_state)
             .layer(DefaultBodyLimit::max(1024 * 1024 * 100))
             .layer(
                 CorsLayer::new()
