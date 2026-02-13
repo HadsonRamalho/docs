@@ -27,7 +27,7 @@ interface NotebookContextType {
   notebook: Notebook | null;
   setNotebook: (n: Notebook) => void;
   isPublic: boolean;
-  setVisibility: (v: boolean) => void;
+  handleToggleVisibility: (v: boolean) => void;
   setIsCloning: (c: boolean) => void;
   isCloning: boolean;
   triggerClone: () => Promise<void>;
@@ -75,11 +75,13 @@ export function NotebookProvider({
     }
   };
 
-  useEffect(() => {
+  const handleToggleVisibility = async (newVisibility: boolean) => {
+    setVisibility(newVisibility);
+
     if (pageId) {
-      updateVisibility(pageId, isPublic);
+      await updateVisibility(pageId, newVisibility);
     }
-  }, [isPublic]);
+  };
 
   useEffect(() => {
     if (pageId) {
@@ -95,7 +97,7 @@ export function NotebookProvider({
   return (
     <NotebookContext.Provider
       value={{
-        setVisibility,
+        handleToggleVisibility,
         isPublic,
         triggerSave,
         saveSignal,

@@ -20,7 +20,7 @@ export function NotebookControls() {
     triggerSave,
     isSaving,
     hasSaved,
-    setVisibility,
+    handleToggleVisibility,
     notebook,
     isPublic,
     triggerClone,
@@ -50,7 +50,7 @@ export function NotebookControls() {
       <div className="grid grid-cols-1 w-full md:w-100 md:flex gap-2 items-center justify-center md:justify-start">
         <Select
           value={isPublic ? "true" : "false"}
-          onValueChange={(val) => setVisibility(val === "true")}
+          onValueChange={(val) => handleToggleVisibility(val === "true")}
         >
           <SelectTrigger className="w-full md:w-45">
             <SelectValue placeholder={t("visibility")} />
