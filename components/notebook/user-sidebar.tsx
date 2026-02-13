@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, FileText, Pencil, Plus } from "lucide-react";
+import { Check, FileText, Pencil, Plus, RotateCw } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -17,7 +17,7 @@ export function UserSidebar() {
   const { pages, createPage } = useNotebookManager();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempTitle, setTempTitle] = useState("");
-  const { renamePage } = useNotebookManager();
+  const { renamePage, refreshPages } = useNotebookManager();
 
   const router = useRouter();
   const pathname = usePathname();
@@ -43,6 +43,16 @@ export function UserSidebar() {
       <div className="flex items-center justify-between px-2">
         <span className="text-xs font-bold uppercase">{t("my_notebook")}</span>
         <div className="flex items-center gap-1">
+          <button
+            type="button"
+            className="p-1 hover:bg-white/10 rounded transition-colors text-gray-400 hover:text-white"
+            onClick={refreshPages}
+          >
+            <RotateCw size={14} />
+          </button>
+
+          <div className="w-px h-3 bg-white/10 mx-1" />
+
           <SidebarBackup />
 
           <div className="w-px h-3 bg-white/10 mx-1" />
