@@ -40,7 +40,7 @@ pub async fn websocket_handler(
 
     let pool = state.pool.clone();
 
-    ws.on_upgrade(move |socket| {
+    ws.protocols(["access_token"]).on_upgrade(move |socket| {
         handle_socket(
             socket,
             notebook_id,

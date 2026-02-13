@@ -213,10 +213,11 @@ export function useAutomergeSync(notebookId: string, token: string) {
   };
 
   const reorderBlocks = (newOrder: Block[]) => {
-    updateDoc((d) => {
-      d.blocks = newOrder;
-    });
-  };
+      updateDoc((d) => {
+        const cleanOrder = JSON.parse(JSON.stringify(newOrder));
+        d.blocks = cleanOrder;
+      });
+    };
 
   return {
     doc,
