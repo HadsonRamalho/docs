@@ -118,7 +118,7 @@ export function useAutomergeSync(notebookId: string, token: string) {
       socket.close();
       socketRef.current = null;
     };
-  }, [notebookId, token, canWrite]);
+  }, [notebookId, token, canWrite, !!doc]);
 
   const updateDoc = useCallback(
     (callback: (d: Notebook) => void) => {

@@ -2,10 +2,11 @@
 
 import { getCookie } from "cookies-next";
 import { Reorder } from "framer-motion";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAutomergeSync } from "@/hooks/use-automerge-sync";
-import type { BlockMetadata, BlockType, Language } from "@/lib/types";
+import type { Block, BlockMetadata, BlockType, Language } from "@/lib/types";
 import { InlineTOC } from "../inline-toc";
+import { Button } from "../ui/button";
 import { useNotebook } from "./notebook-context";
 import { ReorderItem } from "./reorder/reorder-item";
 import { ReorderTools } from "./reorder/reorder-tools";
@@ -32,7 +33,11 @@ export default function RustInteractivePage({
     reorderBlocks,
   } = useAutomergeSync(pageId, token);
 
-  const blocks = doc?.blocks || [];
+  const blocks = useMemo(() => {
+    if (!doc || !doc.blocks) return [];
+    const data = JSON.parse(JSON.stringify(doc.blocks));
+    return data as Block[];
+  }, [doc]);
 
   const getFileName = (title: string) => {
     return title.replace(/[^a-zA-Z0-9]/g, "_");
@@ -68,10 +73,24 @@ export default function RustInteractivePage({
     setHoveredIndex(null);
   };
 
-  if (!doc || !doc.blocks || !isConnected) {
+  if (!doc || !isConnected) {
     return (
       <div className="flex h-screen w-full items-center justify-center text-muted-foreground">
-        <h2>Carregando conteúdo da página...</h2>
+        <h2>Conectando ao servidor...</h2>
+      </div>
+    );
+  }
+
+  if (blocks.length === 0) {
+    return (
+      <div className="flex h-screen w-full flex-col items-center justify-center text-muted-foreground space-y-4">
+        <h2>Esta página está vazia.</h2>
+        <Button
+          onClick={() => handleAddBlock(-1, "text")}
+          className="px-4 py-2 bg-fd-primary text-foreground rounded-md hover:bg-primary/90 transition-colors"
+        >
+          Adicionar Primeiro Bloco
+        </Button>
       </div>
     );
   }
@@ -84,50 +103,51 @@ export default function RustInteractivePage({
         onReorder={reorderBlocks}
         className="space-y-4 w-full"
       >
-        {blocks.length > 0 &&
-          blocks.map((block, index) => {
-            const blockName = getFileName(block.title);
-            const currentBlockFileName = `/${blockName}.tsx`;
-            const isTS = block.language === "typescript";
-            const filesForThisBlock = {
-              ...pageFiles,
-              [currentBlockFileName]: block.content,
-            };
-            if (isTS) {
-              filesForThisBlock["/App.tsx"] = {
-                code: `import { App as Component } from "./${blockName}"; export default function Main() { return <Component />; }`,
-                hidden: true,
-              };
-            }
-            delete filesForThisBlock[currentBlockFileName];
-            return (
-              // biome-ignore lint/a11y/noStaticElementInteractions: <Necessário pra controlar o render>
-              <div
-                key={block.id}
-                className="relative group overflow-visible"
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
-              >
-                <ReorderTools
-                  hoveredIndex={hoveredIndex}
-                  index={index}
-                  addBlock={handleAddBlock}
-                />
+        {blocks.map((block, index) => {
+          const blockName = getFileName(block.title);
+          const currentBlockFileName = `/${blockName}.tsx`;
+          const isTS = block.language === "typescript";
+          const filesForThisBlock = {
+            ...pageFiles,
+            [currentBlockFileName]: block.content,
+          };
 
-                <ReorderItem
-                  block={block}
-                  isDragging={isDragging}
-                  pageFiles={pageFiles}
-                  pageBlocks={blocks}
-                  setBlocks={() => {}}
-                  setIsDragging={setIsDragging}
-                  removeBlock={deleteBlock}
-                  updateBlock={updateBlockContent}
-                  updateBlockMetadata={updateBlockMetadataSync}
-                />
-              </div>
-            );
-          })}
+          if (isTS) {
+            filesForThisBlock["/App.tsx"] = {
+              code: `import { App as Component } from "./${blockName}"; export default function Main() { return <Component />; }`,
+              hidden: true,
+            };
+          }
+          delete filesForThisBlock[currentBlockFileName];
+
+          return (
+            // biome-ignore lint/a11y/noStaticElementInteractions: <Necessário pra controlar o render>
+            <div
+              key={block.id}
+              className="relative group overflow-visible"
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
+              <ReorderTools
+                hoveredIndex={hoveredIndex}
+                index={index}
+                addBlock={handleAddBlock}
+              />
+
+              <ReorderItem
+                block={block}
+                isDragging={isDragging}
+                pageFiles={pageFiles}
+                pageBlocks={blocks}
+                setBlocks={() => {}}
+                setIsDragging={setIsDragging}
+                removeBlock={deleteBlock}
+                updateBlock={updateBlockContent}
+                updateBlockMetadata={updateBlockMetadataSync}
+              />
+            </div>
+          );
+        })}
       </Reorder.Group>
       <aside className="hidden xl:block w-70">
         <div className="sticky top-24">
