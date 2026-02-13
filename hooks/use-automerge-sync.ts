@@ -127,27 +127,22 @@ export function useAutomergeSync(notebookId: string, token: string) {
   }, [notebookId, token]);
 
   const updateDoc = useCallback((callback: (d: Notebook) => void) => {
-    if (!automerge.current) return;
+    if (!automerge.current || !docRef.current) return;
 
-    setDoc((currentDoc) => {
-      if (!automerge.current || !docRef.current) return;
+    const newDoc = automerge.current.change(docRef.current, callback);
 
-      const newDoc = automerge.current.change(docRef.current, callback);
+    docRef.current = newDoc;
+    setDoc(newDoc);
 
-      docRef.current = newDoc;
-      setDoc(newDoc);
+    const [nextSyncState, message] = automerge.current.generateSyncMessage(
+      newDoc,
+      syncState.current,
+    );
+    syncState.current = nextSyncState;
 
-      const [nextSyncState, message] = automerge.current.generateSyncMessage(
-        newDoc,
-        syncState.current,
-      );
-      syncState.current = nextSyncState;
-
-      if (message && socketRef.current?.readyState === WebSocket.OPEN) {
-        socketRef.current.send(message);
-      }
-      return newDoc;
-    });
+    if (message && socketRef.current?.readyState === WebSocket.OPEN) {
+      socketRef.current.send(message);
+    }
   }, []);
 
   const addBlockSync = (
