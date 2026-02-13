@@ -10,12 +10,15 @@ import type {
   Notebook,
 } from "@/lib/types";
 
+type AutomergeLib = typeof AutomergeType;
+
 export function useAutomergeSync(notebookId: string, token: string) {
   const [isConnected, setIsConnected] = useState(false);
-  const automerge = useRef<typeof AutomergeType | null>(null);
 
   const [doc, setDoc] = useState<Notebook | null>(null);
 
+  const docRef = useRef<Notebook | null>(null);
+  const automerge = useRef<AutomergeLib | null>(null);
   const syncState = useRef<any>(null);
   const socketRef = useRef<WebSocket | null>(null);
 
@@ -45,6 +48,7 @@ export function useAutomergeSync(notebookId: string, token: string) {
         }
       });
 
+      docRef.current = docWithData;
       setDoc(docWithData);
     }
     loadLibrary();
@@ -54,7 +58,11 @@ export function useAutomergeSync(notebookId: string, token: string) {
   }, [notebookId]);
 
   useEffect(() => {
-    if (!doc || !automerge.current) return;
+    if (!notebookId || !automerge.current) return;
+
+    if (socketRef.current) {
+      socketRef.current.close();
+    }
 
     if (socketRef.current?.readyState === WebSocket.OPEN) return;
 
@@ -68,53 +76,66 @@ export function useAutomergeSync(notebookId: string, token: string) {
     socket.binaryType = "arraybuffer";
     socketRef.current = socket;
 
-    socket.onopen = () => setIsConnected(true);
-    socket.onclose = () => setIsConnected(false);
+    const handleOpen = () => setIsConnected(true);
+    const handleClose = () => setIsConnected(false);
 
-    socket.onmessage = (event) => {
+    const handleMessage = (event: MessageEvent) => {
+      if (!automerge.current || !docRef.current) return;
+
       const binaryMessage = new Uint8Array(event.data);
+      const currentDoc = docRef.current;
 
-      setDoc((currentDoc) => {
-        if (!currentDoc || !automerge.current) return currentDoc;
+      const [nextDoc, nextSyncState] = automerge.current.receiveSyncMessage(
+        currentDoc,
+        syncState.current,
+        binaryMessage,
+      );
 
-        const docClone = automerge.current.clone(currentDoc);
+      syncState.current = nextSyncState;
 
-        const [nextDoc, nextSyncState] = automerge.current.receiveSyncMessage(
-          docClone,
-          syncState.current,
-          binaryMessage,
-        );
+      if (nextDoc !== currentDoc) {
+        docRef.current = nextDoc;
+        setDoc(nextDoc);
+      }
 
-        syncState.current = nextSyncState;
+      const [updatedSyncState, responseMessage] =
+        automerge.current.generateSyncMessage(nextDoc, syncState.current);
 
-        const [updatedSyncState, responseMessage] =
-          automerge.current.generateSyncMessage(nextDoc, syncState.current);
+      syncState.current = updatedSyncState;
 
-        syncState.current = updatedSyncState;
-
-        if (responseMessage && socket.readyState === WebSocket.OPEN) {
-          socket.send(responseMessage);
-        }
-
-        return nextDoc;
-      });
+      if (responseMessage && socket.readyState === WebSocket.OPEN) {
+        socket.send(responseMessage);
+      }
     };
 
+    socket.addEventListener("open", handleOpen);
+    socket.addEventListener("close", handleClose);
+    socket.addEventListener("message", handleMessage);
+
     return () => {
+      socket.removeEventListener("open", handleOpen);
+      socket.removeEventListener("close", handleClose);
+      socket.removeEventListener("message", handleMessage);
+
+      socket.onopen = null;
+      socket.onclose = null;
+      socket.onmessage = null;
+
       socket.close();
       socketRef.current = null;
     };
-  }, [notebookId, !!doc, token]);
+  }, [notebookId, token]);
 
   const updateDoc = useCallback((callback: (d: Notebook) => void) => {
     if (!automerge.current) return;
 
     setDoc((currentDoc) => {
-      if (!currentDoc || !automerge.current) return null;
+      if (!automerge.current || !docRef.current) return;
 
-      const docClone = automerge.current.clone(currentDoc);
+      const newDoc = automerge.current.change(docRef.current, callback);
 
-      const newDoc = automerge.current.change(docClone, callback);
+      docRef.current = newDoc;
+      setDoc(newDoc);
 
       const [nextSyncState, message] = automerge.current.generateSyncMessage(
         newDoc,
