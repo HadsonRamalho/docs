@@ -33,34 +33,27 @@ export function useAutomergeSync(notebookId: string, token: string) {
 
       const initialDoc = automergex.init<Notebook>();
 
-      const docWithData = automergex.change(initialDoc, (n) => {
-        if (!n.blocks) {
-          n.id = notebookId;
-          n.title = "Carregando...";
-          n.blocks = [
-            {
-              id: uuidv4(),
-              type: "text",
-              title: "Nota Inicial",
-              content: "## Carregando...\nEstamos carregando o conteúdo...",
-            },
-          ];
-        }
-      });
-
-      docRef.current = docWithData;
-      setDoc(docWithData);
+      docRef.current = initialDoc;
+      setDoc(initialDoc);
     }
+
     loadLibrary();
+
     return () => {
       isMounted = false;
     };
-  }, [notebookId]);
+  }, []);
 
   useEffect(() => {
-    if (!notebookId || !automerge.current) return;
+    if (!notebookId || !automerge.current || !docRef.current) return;
 
     if (socketRef.current) {
+      if (
+        socketRef.current.readyState === WebSocket.OPEN ||
+        socketRef.current.readyState === WebSocket.CONNECTING
+      ) {
+        return;
+      }
       socketRef.current.close();
     }
 
@@ -162,6 +155,7 @@ export function useAutomergeSync(notebookId: string, token: string) {
         ...(language !== undefined ? { language: language as any } : {}),
         ...(metadata !== undefined ? { metadata } : {}),
       };
+      if (!d.blocks) d.blocks = [];
       d.blocks.splice(index + 1, 0, newBlock);
     });
 

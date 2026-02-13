@@ -68,8 +68,12 @@ export default function RustInteractivePage({
     setHoveredIndex(null);
   };
 
-  if (!isConnected) {
-    return <div>Conectando ao servidor...</div>;
+  if (!doc || !doc.blocks || !isConnected) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center text-muted-foreground">
+        <h2>Carregando conteúdo da página...</h2>
+      </div>
+    );
   }
 
   return (
