@@ -25,18 +25,18 @@
     "back_button": "Back"
   },
   "docs": {
-    "docs": "Zeile Docs"
+    "docs": "Zeile Notebook"
   },
   "homepage": {
     "nav": {
-      "docs": "Docs",
+      "docs": "Zeile Notebook",
       "login": "Login",
       "profile": "Profile",
       "settings": "Settings",
       "logout": "Logout"
     },
     "hero": {
-      "title": "Docs",
+      "title": "Zeile Notebook",
       "subtitle": "Login"
     },
     "about": {
