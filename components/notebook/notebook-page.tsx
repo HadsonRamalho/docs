@@ -3,10 +3,13 @@
 import { getCookie } from "cookies-next";
 import { Reorder } from "framer-motion";
 import { useMemo, useState } from "react";
+import { useAuth } from "@/context/auth-context";
 import { useAutomergeSync } from "@/hooks/use-automerge-sync";
+import { usePresence } from "@/hooks/use-presence";
 import type { Block, BlockMetadata, BlockType, Language } from "@/lib/types";
 import { InlineTOC } from "../inline-toc";
 import { Button } from "../ui/button";
+import { LiveCursors } from "./collaboration/live-cursors";
 import { useNotebook } from "./notebook-context";
 import { ReorderItem } from "./reorder/reorder-item";
 import { ReorderTools } from "./reorder/reorder-tools";
@@ -18,6 +21,7 @@ interface RustInteractivePageProps {
 export default function RustInteractivePage({
   pageId = "default",
 }: RustInteractivePageProps) {
+  const { user } = useAuth();
   const { isDragging, setIsDragging } = useNotebook();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const tokenX = getCookie("auth_token");
@@ -32,6 +36,15 @@ export default function RustInteractivePage({
     deleteBlock,
     reorderBlocks,
   } = useAutomergeSync(pageId, token);
+
+  const { collaborators, updateCursor, updateFocus } = usePresence(
+    pageId,
+    user,
+  );
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    updateCursor(e.clientX, e.clientY);
+  };
 
   const blocks = useMemo(() => {
     if (!doc || !doc.blocks) return [];
@@ -96,7 +109,11 @@ export default function RustInteractivePage({
   }
 
   return (
-    <div className="min-h-screen flex flex-row w-full print:block print:min-h-0 print:h-auto print:m-0 print:p-0 print:bg-white print:text-black">
+    <div
+      onPointerMove={handlePointerMove}
+      className="min-h-screen flex flex-row w-full print:block print:min-h-0 print:h-auto print:m-0 print:p-0 print:bg-white print:text-black"
+    >
+      <LiveCursors collaborators={collaborators} />
       <Reorder.Group
         axis="y"
         values={blocks}
@@ -104,6 +121,12 @@ export default function RustInteractivePage({
         className="space-y-4 w-full"
       >
         {blocks.map((block, index) => {
+          const focusedUsers = collaborators.filter(
+            (c) => c.focusedBlockId === block.id,
+          );
+          const borderColor =
+            focusedUsers.length > 0 ? focusedUsers[0].color : "transparent";
+
           const blockName = getFileName(block.title);
           const currentBlockFileName = `/${blockName}.tsx`;
           const isTS = block.language === "typescript";
@@ -124,7 +147,13 @@ export default function RustInteractivePage({
             // biome-ignore lint/a11y/noStaticElementInteractions: <Necessário pra controlar o render>
             <div
               key={block.id}
+              onFocus={() => updateFocus(block.id)}
+              onBlur={() => updateFocus(null)}
               className="relative group overflow-visible"
+              style={{
+                boxShadow:
+                  focusedUsers.length > 0 ? `0 0 0 2px ${borderColor}` : "none",
+              }}
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
@@ -133,6 +162,21 @@ export default function RustInteractivePage({
                 index={index}
                 addBlock={handleAddBlock}
               />
+
+              {focusedUsers.length > 0 && (
+                <div className="absolute -top-3 right-4 flex -space-x-2 z-10">
+                  {focusedUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      className="size-6 rounded-full border-2 border-white flex items-center justify-center text-[10px] text-white font-bold"
+                      style={{ backgroundColor: user.color }}
+                      title={`${user.name} está editando`}
+                    >
+                      {user.name.charAt(0)}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <ReorderItem
                 block={block}

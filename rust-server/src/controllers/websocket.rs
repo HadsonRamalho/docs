@@ -10,7 +10,7 @@ use bytes::Bytes;
 use diesel_async::{AsyncPgConnection, pooled_connection::deadpool::Pool};
 use futures::{SinkExt, stream::StreamExt};
 use hyper::HeaderMap;
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{RwLock, mpsc};
 use uuid::Uuid;
 
@@ -19,7 +19,7 @@ use automerge::sync::{Message as SyncMessage, State as SyncState, SyncDoc};
 use crate::{
     controllers::{
         jwt::extract_claims_from_ws_headers,
-        sync::{ActiveNotebook, SyncRegistry},
+        sync::{ActiveNotebook, PresenceRoom, SyncRegistry},
         user::get_user_notebook_permissions,
     },
     models::{
@@ -171,5 +171,94 @@ async fn process_msg(
                 let _ = tx.send(bytes);
             }
         }
+    }
+}
+
+pub async fn websocket_presence_handler(
+    ws: WebSocketUpgrade,
+    headers: HeaderMap,
+    Path(notebook_id): Path<Uuid>,
+    AxumState(state): AxumState<Arc<AppState>>,
+) -> impl IntoResponse {
+    let user_token = match extract_claims_from_ws_headers(&headers).await {
+        Ok(t) => Some(t.1.id),
+        Err(_) => None,
+    };
+
+    ws.protocols(["access_token"]).on_upgrade(move |socket| {
+        handle_presence_socket(
+            socket,
+            notebook_id,
+            user_token,
+            state.presence_registry.clone(),
+        )
+    })
+}
+
+async fn handle_presence_socket(
+    socket: WebSocket,
+    notebook_id: Uuid,
+    original_user_id: Option<Uuid>,
+    registry: Arc<RwLock<HashMap<Uuid, Arc<RwLock<PresenceRoom>>>>>,
+) {
+    let user_id = original_user_id.unwrap_or_else(Uuid::new_v4);
+    let (mut sender, mut receiver) = socket.split();
+
+    let (tx, mut rx) = mpsc::unbounded_channel::<String>();
+
+    let room = {
+        let mut reg = registry.write().await;
+        let room_arc = reg
+            .entry(notebook_id)
+            .or_insert_with(|| Arc::new(RwLock::new(PresenceRoom::new())))
+            .clone();
+        room_arc
+    };
+
+    {
+        let mut r = room.write().await;
+        r.subscribers.insert(user_id, tx);
+    }
+
+    let mut send_task = tokio::spawn(async move {
+        while let Some(msg_text) = rx.recv().await {
+            if sender.send(Message::Text(msg_text.into())).await.is_err() {
+                break;
+            }
+        }
+    });
+
+    let room_for_recv = room.clone();
+    let mut recv_task = tokio::spawn(async move {
+        while let Some(Ok(Message::Text(text))) = receiver.next().await {
+            let r = room_for_recv.read().await;
+            for (peer_id, peer_tx) in r.subscribers.iter() {
+                if *peer_id != user_id {
+                    let _ = peer_tx.send(text.to_string());
+                }
+            }
+        }
+    });
+
+    tokio::select! {
+        _ = (&mut send_task) => recv_task.abort(),
+        _ = (&mut recv_task) => send_task.abort(),
+    };
+
+    let should_remove_room = {
+        let mut r = room.write().await;
+        r.subscribers.remove(&user_id);
+
+        let disconnect_msg = format!(r#"{{"type":"disconnect","userId":"{}"}}"#, user_id);
+        for peer_tx in r.subscribers.values() {
+            let _ = peer_tx.send(disconnect_msg.clone());
+        }
+
+        r.subscribers.is_empty()
+    };
+
+    if should_remove_room {
+        let mut reg = registry.write().await;
+        reg.remove(&notebook_id);
     }
 }

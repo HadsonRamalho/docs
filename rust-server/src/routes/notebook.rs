@@ -12,7 +12,7 @@ use crate::{
             api_update_notebook_visibility,
         },
         user::api_get_user_notebook_permissions,
-        websocket::websocket_handler,
+        websocket::{websocket_handler, websocket_presence_handler},
     },
     models::state::AppState,
 };
@@ -30,6 +30,7 @@ pub async fn notebook_routes() -> OpenApiRouter<Arc<AppState>> {
         .route("/{id}/permissions", get(api_get_user_notebook_permissions))
         .route("/search/", get(api_search_notebooks))
         .route("/ws/{notebook_id}", get(websocket_handler))
+        .route("/ws/presence/{id}", get(websocket_presence_handler))
         .route("/all", get(api_get_notebooks))
         .route("/all/public", get(api_get_public_notebooks));
 

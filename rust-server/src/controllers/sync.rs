@@ -26,4 +26,17 @@ impl ActiveNotebook {
     }
 }
 
+pub struct PresenceRoom {
+    pub subscribers: HashMap<Uuid, mpsc::UnboundedSender<String>>,
+}
+
+impl PresenceRoom {
+    pub fn new() -> Self {
+        Self {
+            subscribers: HashMap::new(),
+        }
+    }
+}
+
 pub type SyncRegistry = Arc<dashmap::DashMap<Uuid, Arc<RwLock<ActiveNotebook>>>>;
+pub type PresenceRegistry = Arc<RwLock<HashMap<Uuid, Arc<RwLock<PresenceRoom>>>>>;

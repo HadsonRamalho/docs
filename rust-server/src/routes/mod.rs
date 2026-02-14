@@ -1,6 +1,4 @@
-use std::sync::Arc;
-
-use crate::controllers::sync::SyncRegistry;
+use crate::controllers::sync::{PresenceRegistry, SyncRegistry};
 use crate::controllers::utils::{get_database_url_from_env, get_frontend_url_from_env};
 use crate::models::error::ApiError;
 use crate::models::state::AppState;
@@ -25,6 +23,9 @@ use hyper::StatusCode;
 use hyper::header::{AUTHORIZATION, CONTENT_TYPE};
 use rustls::ClientConfig;
 use rustls_platform_verifier::ConfigVerifierExt;
+use std::collections::HashMap;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::ServeDir;
 use utoipa_axum::router::OpenApiRouter;
@@ -68,6 +69,7 @@ pub async fn init_routes() -> Router {
     config.custom_setup = Box::new(establish_connection);
 
     let sync_registry: SyncRegistry = Arc::new(DashMap::new());
+    let presence_registry: PresenceRegistry = Arc::new(RwLock::new(HashMap::new()));
 
     if let Some(db_url) = db_url {
         let mgr =
@@ -75,6 +77,7 @@ pub async fn init_routes() -> Router {
         let pool = Pool::builder(mgr).max_size(10).build().unwrap();
 
         let app_state = Arc::new(AppState {
+            presence_registry,
             pool,
             sync_registry,
         });
