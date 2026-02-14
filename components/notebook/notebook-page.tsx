@@ -9,6 +9,7 @@ import { usePresence } from "@/hooks/use-presence";
 import type { Block, BlockMetadata, BlockType, Language } from "@/lib/types";
 import { InlineTOC } from "../inline-toc";
 import { Button } from "../ui/button";
+import { CollabChat } from "./collaboration/chat";
 import { LiveCursors } from "./collaboration/live-cursors";
 import { useNotebook } from "./notebook-context";
 import { ReorderItem } from "./reorder/reorder-item";
@@ -37,10 +38,13 @@ export default function RustInteractivePage({
     reorderBlocks,
   } = useAutomergeSync(pageId, token);
 
-  const { collaborators, updateCursor, updateFocus } = usePresence(
-    pageId,
-    user,
-  );
+  const {
+    collaborators,
+    updateCursor,
+    messages,
+    sendChatMessage,
+    updateFocus,
+  } = usePresence(pageId, user);
 
   const handlePointerMove = (e: React.PointerEvent) => {
     updateCursor(e.clientX, e.clientY);
@@ -113,6 +117,7 @@ export default function RustInteractivePage({
       onPointerMove={handlePointerMove}
       className="min-h-screen flex flex-row w-full print:block print:min-h-0 print:h-auto print:m-0 print:p-0 print:bg-white print:text-black"
     >
+      <CollabChat messages={messages} sendChatMessage={sendChatMessage} />
       <LiveCursors collaborators={collaborators} />
       <Reorder.Group
         axis="y"
