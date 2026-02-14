@@ -225,7 +225,11 @@
       "danger_zone_delete_title": "Delete Team",
       "danger_zone_delete_description": "Deleting the team will permanently erase all notebooks and remove all members.",
       "danger_zone_delete_button": "Delete Team",
-      "invalid_team_name": "Invalid team name"
+      "invalid_team_name": "Invalid team name",
+      "delete_team_confirm_title": "Are you absolutely sure?",
+      "delete_team_confirm_description": "This action cannot be undone. This will permanently delete the <strong>{name}</strong> team, all its notebooks, notes, and remove permissions for all members.",
+      "cancel_button": "Cancel",
+      "team_deleted": "Team deleted."
     },
     "team_member": {
       "invited_member": "Member invited!",
@@ -241,7 +245,10 @@
       "send_invite": "Send Invite",
       "joined_on": "Joined on ",
       "remove_member_button": "Remove Member",
-      "no_members_found": "No members found."
+      "no_members_found": "No members found.",
+      "remove_member_title": "Remove Member",
+      "remove_member_description": "Are you sure you want to remove <strong>{name}</strong> from this team? They will immediately lose access to all shared notebooks and resources.",
+      "confirm_remove_button": "Remove Member"
     },
     "team_role": {
       "title": "Roles and Permissions",

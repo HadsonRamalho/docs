@@ -219,7 +219,11 @@
       "danger_zone_delete_title": "Excluir Time",
       "danger_zone_delete_description": "A exclusão apagará permanentemente todos os cadernos e removerá todos os membros.",
       "danger_zone_delete_button": "Excluir Time",
-      "invalid_team_name": "O nome do time não é válido"
+      "invalid_team_name": "O nome do time não é válido",
+      "delete_team_confirm_title": "Tem certeza absoluta?",
+      "delete_team_confirm_description": "Esta ação não pode ser desfeita. Isso excluirá permanentemente o time <strong>{name}</strong>, todos os seus cadernos, anotações e removerá as permissões de todos os membros.",
+      "cancel_button": "Cancelar",
+      "team_deleted": "Time excluído com sucesso."
     },
     "team_member": {
       "invited_member": "Membro convidado!",
@@ -235,7 +239,10 @@
       "send_invite": "Enviar Convite",
       "joined_on": "Entrou em ",
       "remove_member_button": "Remover Membro",
-      "no_members_found": "Nenhum membro encontrado."
+      "no_members_found": "Nenhum membro encontrado.",
+      "remove_member_title": "Remover Membro",
+      "remove_member_description": "Tem certeza que deseja remover <strong>{name}</strong> deste time? Eles perderão acesso a todos os cadernos e recursos compartilhados imediatamente.",
+      "confirm_remove_button": "Remover Membro"
     },
     "team_role": {
       "title": "Cargos e Permissões",

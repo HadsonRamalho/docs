@@ -5,6 +5,7 @@ use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::Validate;
 
 #[derive(Queryable, Selectable, Identifiable, Debug, Serialize, Deserialize)]
 #[diesel(table_name = teams)]
@@ -20,6 +21,7 @@ pub struct Team {
 #[derive(Insertable, Deserialize)]
 #[diesel(table_name = teams)]
 pub struct NewTeam {
+    #[validate(length(min = 2, message = "Team name is required"))]
     pub name: String,
     pub description: Option<String>,
     pub image_url: Option<String>,
@@ -28,6 +30,7 @@ pub struct NewTeam {
 #[derive(AsChangeset, Deserialize)]
 #[diesel(table_name = teams)]
 pub struct UpdateTeam {
+    #[validate(length(min = 2, message = "Team name is required"))]
     pub name: Option<String>,
     pub description: Option<String>,
     pub image_url: Option<String>,
@@ -103,6 +106,7 @@ pub struct NewTeamRole {
 
 #[derive(Serialize, Deserialize)]
 pub struct NewTeamRoleRequest {
+    #[validate(length(min = 2, message = "Team role name is required"))]
     pub name: String,
     pub can_read: bool,
     pub can_write: bool,
@@ -147,6 +151,7 @@ pub struct UpdateTeamRole {
 
 pub struct UpdateTeamRoleRequest {
     pub id: String,
+    #[validate(length(min = 2, message = "Team role name is required"))]
     pub name: Option<String>,
     pub can_read: Option<bool>,
     pub can_write: Option<bool>,

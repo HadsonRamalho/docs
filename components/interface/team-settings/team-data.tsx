@@ -2,9 +2,21 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, Loader2, Save, Settings, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,8 +36,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+
 import { handleApiError } from "@/lib/api/handle-api-error";
-import { updateTeam } from "@/lib/api/teams-service";
+import { deleteTeam, updateTeam } from "@/lib/api/teams-service";
 import { getTeamFormSchema } from "@/lib/schemas/team-schemas";
 import type { Team, TeamFormValues, TeamRole } from "@/lib/types/team-types";
 
@@ -48,12 +61,19 @@ export function TeamData({
 }: TeamDataProps) {
   const a = useTranslations("team_settings.team_data");
   const t = useTranslations("api_errors");
+  const router = useRouter();
+
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const form = useForm<TeamFormValues>({
     resolver: zodResolver(getTeamFormSchema(a)),
     defaultValues: {
       name: "",
       description: "",
+    },
+    values: {
+      name: team?.name || "",
+      description: team?.description || "",
     },
     mode: "onChange",
   });
@@ -76,6 +96,20 @@ export function TeamData({
       handleApiError({ err, t });
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleDeleteTeam() {
+    setIsDeleting(true);
+    try {
+      await deleteTeam(teamId);
+
+      toast.success(a("team_deleted"));
+
+      router.push("/docs");
+    } catch (err) {
+      handleApiError({ err, t });
+      setIsDeleting(false);
     }
   }
 
@@ -169,9 +203,45 @@ export function TeamData({
                   {a("danger_zone_delete_description")}
                 </p>
               </div>
-              <Button variant="destructive" className="gap-2 shrink-0">
-                <Trash2 size={16} /> {a("danger_zone_delete_button")}
-              </Button>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="gap-2 shrink-0">
+                    <Trash2 size={16} /> {a("danger_zone_delete_button")}
+                  </Button>
+                </AlertDialogTrigger>
+
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-destructive">
+                      {a("delete_team_confirm_title")}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {a.rich("delete_team_confirm_description", {
+                        name: team?.name || "este time",
+                        strong: (chunks) => <strong>{chunks}</strong>,
+                      })}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isDeleting}>
+                      {a("cancel_button")}
+                    </AlertDialogCancel>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteTeam}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="mr-2 h-4 w-4" />
+                      )}
+                      {a("danger_zone_delete_button")}
+                    </Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </CardContent>
         </Card>

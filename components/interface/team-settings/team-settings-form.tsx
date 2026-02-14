@@ -57,19 +57,35 @@ export default function TeamSettingsForm({ teamId }: TeamSettingsFormProps) {
     }
   };
 
+  const reloadTeamMembers = async () => {
+    try {
+      const tempMembers = await fetchTeamMembers(teamId);
+      setMembers(tempMembers);
+    } catch (err) {
+      handleApiError({ err, t });
+    }
+  };
+
   useEffect(() => {
     setIsLoading(true);
     Promise.all([
-      fetchTeam(teamId),
-      fetchTeamRoles(teamId),
-      fetchTeamMembers(teamId),
       getUserTeamPermissions(teamId),
+      fetchTeam(teamId),
+      fetchTeamMembers(teamId),
     ])
-      .then(([t, r, m, p]) => {
+      .then(async ([p, t, m]) => {
+        const fetchedPermissions = p[1];
+
+        setUserPermissions(fetchedPermissions);
         setTeam(t);
-        setRoles(r);
         setMembers(m);
-        setUserPermissions(p[1]);
+
+        if (fetchedPermissions?.can_manage_permissions) {
+          const r = await fetchTeamRoles(teamId);
+          setRoles(r);
+        } else {
+          setRoles([]);
+        }
       })
       .catch(() => {
         toast.error("Erro ao carregar dados do time.");
@@ -128,12 +144,14 @@ export default function TeamSettingsForm({ teamId }: TeamSettingsFormProps) {
           icon={<Users size={16} />}
           label={t("member_tab")}
         />
-        <TabButton
-          active={activeTab === "roles"}
-          onClick={() => setActiveTab("roles")}
-          icon={<Shield size={16} />}
-          label={t("role_tab")}
-        />
+        {roles.length > 0 && (
+          <TabButton
+            active={activeTab === "roles"}
+            onClick={() => setActiveTab("roles")}
+            icon={<Shield size={16} />}
+            label={t("role_tab")}
+          />
+        )}
       </div>
 
       <div className="pt-4">
@@ -154,10 +172,11 @@ export default function TeamSettingsForm({ teamId }: TeamSettingsFormProps) {
             userPermissions={userPermissions}
             roles={roles}
             members={members}
+            onUpdate={reloadTeamMembers}
           />
         )}
 
-        {activeTab === "roles" && (
+        {activeTab === "roles" && roles.length > 0 && (
           <TeamRoles roles={roles} teamId={teamId} onUpdate={reloadTeamRoles} />
         )}
       </div>
