@@ -10,6 +10,7 @@ use crate::{
             api_get_single_notebook, api_get_single_notebook_with_blocks, api_rename_notebook,
             api_save_notebook_content, api_search_notebooks, api_update_notebook_visibility,
         },
+        user::api_get_user_notebook_permissions,
         websocket::websocket_handler,
     },
     models::state::AppState,
@@ -25,6 +26,7 @@ pub async fn notebook_routes() -> OpenApiRouter<Arc<AppState>> {
         .route("/{id}/content", put(api_save_notebook_content))
         .route("/{id}/clone", post(api_clone_notebook))
         .route("/{id}/visibility", patch(api_update_notebook_visibility))
+        .route("/{id}/permissions", get(api_get_user_notebook_permissions))
         .route("/search/", get(api_search_notebooks))
         .route("/ws/{notebook_id}", get(websocket_handler))
         .route("/all", get(api_get_notebooks));

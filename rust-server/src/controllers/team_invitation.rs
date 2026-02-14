@@ -1,0 +1,112 @@
+use axum::{
+    Json,
+    extract::{Path, State},
+};
+use chrono::{Duration, Utc};
+use hyper::{HeaderMap, StatusCode};
+use rand::{Rng, distributions::Alphanumeric};
+use std::sync::Arc;
+use uuid::Uuid;
+
+use crate::{
+    controllers::{
+        email::send_team_invitation_email, jwt::extract_claims_from_header, utils::get_conn,
+    },
+    models::{
+        self,
+        error::ApiError,
+        state::AppState,
+        team::NewTeamMember,
+        team_invitation::{AcceptInviteRequest, InviteRequest, NewTeamInvitation},
+    },
+};
+
+pub async fn api_invite_member(
+    State(state): State<Arc<AppState>>,
+    Path(team_id): Path<Uuid>,
+    headers: HeaderMap,
+    Json(payload): Json<InviteRequest>,
+) -> Result<StatusCode, ApiError> {
+    let id = extract_claims_from_header(&headers).await?.1.id;
+
+    let mut conn = &mut get_conn(&state.pool)
+        .await
+        .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
+
+    let invited_by = models::user::find_user_by_id(conn, &id).await?;
+
+    let token: String = rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(32)
+        .map(char::from)
+        .collect();
+
+    let expires_at = (Utc::now() + Duration::days(7)).naive_utc();
+
+    let team = models::team::find_team_by_id(conn, team_id).await?;
+
+    let new_invite = NewTeamInvitation {
+        team_id,
+        role_id: payload.role_id,
+        email: payload.email.clone(),
+        token: token.clone(),
+        expires_at,
+    };
+
+    if let Err(e) = crate::models::team_invitation::create_invitation(&mut conn, &new_invite).await
+    {
+        return Err(ApiError::Database(e));
+    }
+
+    let invited_user = models::user::find_user_by_email(conn, &payload.email).await?;
+
+    let magic_link = format!(
+        "{}/invite?token={}",
+        std::env::var("FRONTEND_URL").unwrap(),
+        token
+    );
+
+    let _ = send_team_invitation_email(&invited_user, &magic_link, &team.name, &invited_by.name)
+        .await?;
+
+    Ok(StatusCode::OK)
+}
+
+pub async fn api_accept_invite(
+    State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
+    Json(payload): Json<AcceptInviteRequest>,
+) -> Result<StatusCode, ApiError> {
+    let id = extract_claims_from_header(&headers).await?.1.id;
+
+    let mut conn = &mut get_conn(&state.pool)
+        .await
+        .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
+
+    let user = models::user::find_user_by_id(conn, &id).await?;
+
+    let invitation = match crate::models::team_invitation::consume_invitation_by_token(
+        &mut conn,
+        &payload.token,
+    )
+    .await
+    {
+        Ok(inv) => inv,
+        Err(e) => return Err(ApiError::Database(e.to_string())),
+    };
+
+    if Utc::now().naive_utc() > invitation.expires_at {
+        return Err(ApiError::InvalidData);
+    }
+
+    let new_member = NewTeamMember {
+        team_id: invitation.team_id,
+        user_id: user.id,
+        role_id: invitation.role_id,
+    };
+
+    match models::team::add_user_to_team(&mut conn, &new_member).await {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(e) => Err(ApiError::Database(e.to_string())),
+    }
+}

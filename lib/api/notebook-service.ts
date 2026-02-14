@@ -1,4 +1,5 @@
 import type { Block, Notebook } from "../types";
+import type { TeamRole } from "../types/team-types";
 import { api } from "./base";
 
 export async function createNotebook() {
@@ -46,4 +47,8 @@ export async function saveNotebookData(
     blocks,
     isPublic,
   });
+}
+
+export async function getUserNotebookPermissions(id: string) {
+  return await api.get<TeamRole>(`/notebook/${id}/permissions`);
 }

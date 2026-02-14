@@ -20,10 +20,12 @@ use crate::{
     controllers::{
         jwt::extract_claims_from_ws_headers,
         sync::{ActiveNotebook, SyncRegistry},
+        user::get_user_notebook_permissions,
     },
     models::{
-        notebook::{NotebookPermission, load_notebook_data, save_notebook_data},
+        notebook::{load_notebook_data, save_notebook_data},
         state::AppState,
+        team::TeamRole,
     },
 };
 
@@ -61,10 +63,10 @@ async fn handle_socket(
     let user_id = original_user_id.unwrap_or(Uuid::new_v4());
     let (mut sender, mut receiver) = socket.split();
 
-    let permission =
-        crate::models::notebook::check_permission(&pool, original_user_id, notebook_id)
-            .await
-            .unwrap_or(NotebookPermission::Viewer);
+    let permissions = get_user_notebook_permissions(&pool, &notebook_id, original_user_id)
+        .await
+        .unwrap()
+        .0;
 
     let (tx, mut rx) = mpsc::unbounded_channel::<Vec<u8>>();
 
@@ -100,7 +102,7 @@ async fn handle_socket(
     });
 
     let notebook_recv = notebook.clone();
-    let permission_cloned = permission.clone();
+    let permission_cloned = permissions.clone();
 
     let mut recv_task = tokio::spawn(async move {
         while let Some(Ok(Message::Binary(data))) = receiver.next().await {
@@ -136,7 +138,7 @@ async fn process_msg(
     sender_session_id: Uuid,
     data: Bytes,
     notebook: &Arc<RwLock<ActiveNotebook>>,
-    permission: NotebookPermission,
+    permission: TeamRole,
 ) {
     let mut nb_guard = notebook.write().await;
 
@@ -149,17 +151,14 @@ async fn process_msg(
 
     if let Ok(msg) = SyncMessage::decode(&data) {
         if let Some(peer_state) = peer_states.get_mut(&sender_session_id) {
-            match permission {
-                NotebookPermission::OwnerOrTeam => {
-                    if let Err(e) = doc.sync().receive_sync_message(peer_state, msg) {
-                        tracing::error!("Erro sync owner: {:?}", e);
-                    }
+            if !permission.can_write {
+                let mut doc_clone = doc.fork();
+                if let Err(e) = doc_clone.sync().receive_sync_message(peer_state, msg) {
+                    tracing::error!("Erro sync viewer: {:?}", e);
                 }
-                NotebookPermission::Viewer => {
-                    let mut doc_clone = doc.fork();
-                    if let Err(e) = doc_clone.sync().receive_sync_message(peer_state, msg) {
-                        tracing::error!("Erro sync viewer: {:?}", e);
-                    }
+            } else {
+                if let Err(e) = doc.sync().receive_sync_message(peer_state, msg) {
+                    tracing::error!("Erro sync owner: {:?}", e);
                 }
             }
         }

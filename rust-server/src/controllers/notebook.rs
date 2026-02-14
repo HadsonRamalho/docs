@@ -37,7 +37,8 @@ pub async fn api_create_notebook(
 
     let new_notebook = NewNotebook {
         id: notebook_id.clone(),
-        user_id: id,
+        user_id: Some(id),
+        team_id: None,
         title: "Nova Página".to_string(),
     };
 
@@ -89,12 +90,14 @@ pub async fn is_notebook_owner(
     let user_id = user_id.unwrap();
     match models::notebook::find_notebook_by_id(&mut conn, &notebook_id).await {
         Ok(notebook) => {
-            if notebook.user_id != user_id.clone() {
+            if let Some(id) = notebook.user_id
+                && id != user_id.clone()
+            {
                 return Err(ApiError::InvalidAuthorizationToken);
             }
             Ok(())
         }
-        Err(e) => return Err(ApiError::Database(e)),
+        Err(e) => return Err(e),
     }
 }
 
@@ -124,7 +127,7 @@ pub async fn api_get_single_notebook(
             }
             Ok((StatusCode::OK, Json(notebook)))
         }
-        Err(e) => Err(ApiError::Database(e)),
+        Err(e) => Err(e),
     }
 }
 
@@ -302,7 +305,7 @@ pub async fn api_clone_notebook(
             }
             notebook
         }
-        Err(e) => return Err(ApiError::Database(e)),
+        Err(e) => return Err(e),
     };
 
     let new_notebook_id = Uuid::new_v4();
@@ -310,7 +313,8 @@ pub async fn api_clone_notebook(
 
     let new_notebook = NewNotebook {
         id: new_notebook_id.clone(),
-        user_id: id,
+        user_id: Some(id),
+        team_id: None,
         title: "Nova Página".to_string(),
     };
 

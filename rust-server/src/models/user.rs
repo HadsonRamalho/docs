@@ -148,10 +148,13 @@ pub async fn register_user(conn: &mut AsyncPgConnection, user: &NewUser) -> Resu
     }
 }
 
-pub async fn find_user_by_email(conn: &mut AsyncPgConnection, param: &str) -> Result<User, String> {
+pub async fn find_user_by_email(
+    conn: &mut AsyncPgConnection,
+    param: &str,
+) -> Result<User, ApiError> {
     match users.filter(email.eq(param)).get_result(conn).await {
         Ok(user) => Ok(user),
-        Err(e) => Err(e.to_string()),
+        Err(e) => Err(ApiError::Database(e.to_string())),
     }
 }
 

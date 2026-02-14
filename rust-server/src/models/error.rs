@@ -60,6 +60,9 @@ pub enum ApiError {
 
     #[error("The passwords do not match")]
     PasswordsDoNotMatch,
+
+    #[error("Error sending the e-mail")]
+    SendingEmail,
 }
 
 impl ApiError {
@@ -81,6 +84,7 @@ impl ApiError {
             ApiError::UserNotFound => "USER_NOT_FOUND",
             ApiError::MissingEnv(_) => "MISSING_ENV_VAR",
             ApiError::PasswordsDoNotMatch => "PASSWORDS_DO_NOT_MATCH",
+            ApiError::SendingEmail => "ERROR_SENDING_EMAIL",
         }
     }
 

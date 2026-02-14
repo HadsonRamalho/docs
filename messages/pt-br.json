@@ -186,7 +186,9 @@
     "manage_data": "Gerenciar dados",
     "download_all": "Exportar Tudo (.json)",
     "import": "Importar Backup",
-    "confirm_import": "Isso também substituirá todas as suas páginas duplicadas pelo backup. Deseja continuar?"
+    "confirm_import": "Isso também substituirá todas as suas páginas duplicadas pelo backup. Deseja continuar?",
+    "my_teams": "Meus Times",
+    "new_team": "Novo Time"
   },
   "toc": {
     "title": "Nesta página"

@@ -1,8 +1,13 @@
 use std::sync::Arc;
 
-use axum::{Json, extract::State};
+use axum::{
+    Json,
+    extract::{Path, State},
+};
+use diesel_async::{AsyncPgConnection, pooled_connection::deadpool::Pool};
 use hyper::{HeaderMap, StatusCode};
 use pwhash::bcrypt::verify;
+use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
@@ -14,6 +19,7 @@ use crate::{
         self,
         error::ApiError,
         state::AppState,
+        team::TeamRole,
         user::{
             AuthProvider, LoginUser, NewUser, UpdateUser, UpdateUserPassword, User, UserAuthInfo,
         },
@@ -199,4 +205,89 @@ pub async fn api_update_user_password(
         Ok(_) => Ok(StatusCode::OK),
         Err(e) => Err(e),
     }
+}
+
+pub fn get_user_owner_permissions() -> TeamRole {
+    let permissions = TeamRole {
+        id: Uuid::new_v4(),
+        team_id: Uuid::new_v4(),
+        name: "Notebook Owner".to_string(),
+        can_read: true,
+        can_write: true,
+        can_manage_privacy: true,
+        can_manage_clones: true,
+        can_invite_users: true,
+        can_remove_users: true,
+        can_manage_permissions: true,
+        created_at: chrono::Utc::now().naive_local(),
+        can_manage_team: true,
+    };
+
+    permissions
+}
+
+pub async fn get_user_notebook_permissions(
+    pool: &Pool<AsyncPgConnection>,
+    notebook_id: &Uuid,
+    user_id: Option<Uuid>,
+) -> Result<Json<TeamRole>, ApiError> {
+    let conn = &mut get_conn(&pool)
+        .await
+        .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
+
+    let notebook = models::notebook::find_notebook_by_id(conn, notebook_id).await?;
+
+    if let Some(notebook_user_id) = notebook.user_id {
+        if let Some(id) = user_id
+            && notebook_user_id == id
+        {
+            return Ok(Json(get_user_owner_permissions()));
+        }
+    }
+
+    let team_id = match notebook.team_id {
+        Some(id) => id,
+        None => {
+            if notebook.is_public {
+                return Ok(Json(TeamRole::get_view_only()));
+            }
+            return Ok(Json(TeamRole::get_all_false()));
+        }
+    };
+
+    let permissions = if let Some(id) = user_id {
+        let permissions = match models::team::find_team_member_with_role(conn, team_id, id).await {
+            Ok(p) => p.1,
+            Err(e) => {
+                if notebook.is_public {
+                    return Ok(Json(TeamRole::get_view_only()));
+                }
+                return Err(e);
+            }
+        };
+        permissions
+    } else {
+        if notebook.is_public {
+            TeamRole::get_view_only()
+        } else {
+            TeamRole::get_all_false()
+        }
+    };
+
+    Ok(Json(permissions))
+}
+
+pub async fn api_get_user_notebook_permissions(
+    State(state): State<Arc<AppState>>,
+    Path(notebook_id): Path<Uuid>,
+    headers: HeaderMap,
+) -> Result<Json<TeamRole>, ApiError> {
+    let id = match extract_claims_from_header(&headers).await {
+        Ok(data) => Some(data.1.id),
+        Err(_) => None,
+    };
+
+    let permissions = get_user_notebook_permissions(&state.pool, &notebook_id, id).await?;
+
+    Ok(permissions)
 }

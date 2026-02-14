@@ -80,7 +80,7 @@ pub struct GithubRepoProps {
 pub struct Notebook {
     pub id: Uuid,
     #[serde(rename = "userId")]
-    pub user_id: Uuid,
+    pub user_id: Option<Uuid>,
     pub title: String,
     #[serde(rename = "createdAt")]
     pub created_at: DateTime<Utc>,
@@ -89,6 +89,7 @@ pub struct Notebook {
     #[serde(rename = "isPublic")]
     pub is_public: bool,
     pub document_data: Option<Vec<u8>>,
+    pub team_id: Option<Uuid>,
 }
 
 #[derive(Queryable, Selectable, Identifiable, Associations, Serialize, Debug, Insertable)]
@@ -127,7 +128,8 @@ pub struct BlockResponse {
 #[diesel(table_name = notebooks)]
 pub struct NewNotebook {
     pub id: Uuid,
-    pub user_id: Uuid,
+    pub user_id: Option<Uuid>,
+    pub team_id: Option<Uuid>,
     pub title: String,
 }
 
@@ -226,7 +228,7 @@ pub async fn create_block(
 pub async fn find_notebook_by_id(
     conn: &mut AsyncPgConnection,
     param_id: &Uuid,
-) -> Result<Notebook, String> {
+) -> Result<Notebook, ApiError> {
     use crate::schema::notebooks::dsl::*;
     match notebooks
         .filter(id.eq(param_id))
@@ -234,7 +236,7 @@ pub async fn find_notebook_by_id(
         .await
     {
         Ok(notebook) => Ok(notebook),
-        Err(e) => Err(e.to_string()),
+        Err(e) => Err(ApiError::Database(e.to_string())),
     }
 }
 
@@ -542,8 +544,21 @@ pub async fn save_notebook_data(
         .await
         .unwrap();
 
-    if notebook.user_id != user_id_param {
+    if let Some(uid) = notebook.user_id
+        && uid != user_id_param
+    {
         return;
+    }
+
+    if let Some(tid) = notebook.team_id {
+        match crate::models::team::find_team_member_with_role(conn, tid, user_id_param).await {
+            Ok(m) => {
+                if !m.1.can_write {
+                    return;
+                }
+            }
+            Err(_) => return,
+        }
     }
 
     diesel::update(notebooks)
@@ -562,30 +577,69 @@ pub async fn check_permission(
     user_id: Option<Uuid>,
     notebook_id: Uuid,
 ) -> Result<NotebookPermission, ApiError> {
-    let mut conn = pool.get().await.unwrap();
+    use crate::schema::team_members;
+    use crate::schema::team_roles;
 
+    let mut conn = pool.get().await.unwrap();
     let uid = match user_id {
         Some(id) => id,
         None => return Ok(NotebookPermission::Viewer),
     };
 
-    let is_owner = match notebooks::table
+    let notebook = match notebooks::table
         .filter(notebooks::id.eq(notebook_id))
-        .filter(notebooks::user_id.eq(uid))
         .first::<Notebook>(&mut conn)
         .await
         .optional()
     {
-        Ok(n) => n,
-        Err(_) => None,
+        Ok(Some(n)) => n,
+        _ => return Ok(NotebookPermission::Viewer),
     };
 
-    if is_owner.is_some() {
+    if let Some(notebook_uid) = notebook.user_id
+        && notebook_uid == uid
+    {
         return Ok(NotebookPermission::OwnerOrTeam);
     }
 
-    // let is_team_member =
-    // if is_team_member { return Ok(NotebookPermission::OwnerOrTeam); }
+    let has_team_write_permission = if let Some(team_id) = notebook.team_id {
+        let can_write_result = team_members::table
+            .inner_join(team_roles::table.on(team_members::role_id.eq(team_roles::id)))
+            .filter(team_members::team_id.eq(team_id))
+            .filter(team_members::user_id.eq(uid))
+            .select(team_roles::can_write)
+            .first::<bool>(&mut conn)
+            .await
+            .optional();
+
+        match can_write_result {
+            Ok(Some(true)) => true,
+            _ => false,
+        }
+    } else {
+        false
+    };
+
+    if has_team_write_permission {
+        return Ok(NotebookPermission::OwnerOrTeam);
+    }
 
     Ok(NotebookPermission::Viewer)
+}
+
+pub async fn get_team_notebooks(
+    conn: &mut AsyncPgConnection,
+    param_id: &Uuid,
+) -> Result<Vec<Notebook>, String> {
+    use crate::schema::notebooks::dsl::*;
+
+    match notebooks
+        .filter(team_id.eq(param_id))
+        .order(updated_at.desc())
+        .load::<Notebook>(conn)
+        .await
+    {
+        Ok(items) => Ok(items),
+        Err(e) => Err(e.to_string()),
+    }
 }

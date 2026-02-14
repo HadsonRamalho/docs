@@ -4,4 +4,5 @@ pub mod notebook;
 pub mod oauth;
 pub mod state;
 pub mod team;
+pub mod team_invitation;
 pub mod user;

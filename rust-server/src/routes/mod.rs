@@ -6,6 +6,7 @@ use crate::models::error::ApiError;
 use crate::models::state::AppState;
 use crate::routes::notebook::notebook_routes;
 use crate::routes::run_rust::run_rust_routes;
+use crate::routes::team::team_routes;
 use crate::routes::user::user_routes;
 use axum::{Json, Router};
 use axum::{
@@ -31,6 +32,7 @@ use utoipa_axum::router::OpenApiRouter;
 pub mod docs;
 pub mod notebook;
 pub mod run_rust;
+pub mod team;
 pub mod user;
 
 pub async fn print_protected_route()
@@ -86,6 +88,7 @@ pub async fn init_routes() -> Router {
             .nest("/api", run_rust_routes().await.into())
             .nest("/api/user", user_routes().await.into())
             .nest("/api/notebook", notebook_routes().await.into())
+            .nest("/api/team", team_routes().await.into())
             //.merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", get_api_docs()))
             .with_state(app_state)
             .layer(DefaultBodyLimit::max(1024 * 1024 * 100))

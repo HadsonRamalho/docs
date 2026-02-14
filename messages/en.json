@@ -192,7 +192,9 @@
     "manage_data": "Manage data",
     "download_all": "Export All (.json)",
     "import": "Import Backup",
-    "confirm_import": "This will also overwrite all your duplicate pages with the backup. Do you want to continue?"
+    "confirm_import": "This will also overwrite all your duplicate pages with the backup. Do you want to continue?",
+    "my_teams": "My Teams",
+    "new_team": "New Team"
   },
   "toc": {
     "title": "On this page"

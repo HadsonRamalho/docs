@@ -38,13 +38,26 @@ diesel::table! {
 diesel::table! {
     notebooks (id) {
         id -> Uuid,
-        user_id -> Uuid,
+        user_id -> Nullable<Uuid>,
         #[max_length = 255]
         title -> Varchar,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
         is_public -> Bool,
         document_data -> Nullable<Bytea>,
+        team_id -> Nullable<Uuid>,
+    }
+}
+
+diesel::table! {
+    team_invitations (id) {
+        id -> Uuid,
+        team_id -> Uuid,
+        role_id -> Uuid,
+        email -> Varchar,
+        token -> Varchar,
+        expires_at -> Timestamp,
+        created_at -> Timestamp,
     }
 }
 
@@ -71,6 +84,7 @@ diesel::table! {
         can_remove_users -> Bool,
         can_manage_permissions -> Bool,
         created_at -> Timestamp,
+        can_manage_team -> Bool,
     }
 }
 
@@ -114,7 +128,10 @@ diesel::table! {
 }
 
 diesel::joinable!(blocks -> notebooks (notebook_id));
+diesel::joinable!(notebooks -> teams (team_id));
 diesel::joinable!(notebooks -> users (user_id));
+diesel::joinable!(team_invitations -> team_roles (role_id));
+diesel::joinable!(team_invitations -> teams (team_id));
 diesel::joinable!(team_members -> team_roles (role_id));
 diesel::joinable!(team_members -> teams (team_id));
 diesel::joinable!(team_members -> users (user_id));
@@ -123,6 +140,7 @@ diesel::joinable!(team_roles -> teams (team_id));
 diesel::allow_tables_to_appear_in_same_query!(
     blocks,
     notebooks,
+    team_invitations,
     team_members,
     team_roles,
     teams,

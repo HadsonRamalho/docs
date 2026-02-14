@@ -13,7 +13,6 @@ import type {
 type AutomergeLib = typeof AutomergeType;
 
 export function useAutomergeSync(notebookId: string, token: string) {
-  const canWrite = token.length > 0; // dps preciso mudar e pegar de outro lugar
   const [isConnected, setIsConnected] = useState(false);
 
   const [doc, setDoc] = useState<Notebook | null>(null);
@@ -97,7 +96,7 @@ export function useAutomergeSync(notebookId: string, token: string) {
 
       syncState.current = updatedSyncState;
 
-      if (canWrite && responseMessage && socket.readyState === WebSocket.OPEN) {
+      if (responseMessage && socket.readyState === WebSocket.OPEN) {
         socket.send(responseMessage);
       }
     };
@@ -118,33 +117,26 @@ export function useAutomergeSync(notebookId: string, token: string) {
       socket.close();
       socketRef.current = null;
     };
-  }, [notebookId, token, canWrite, !!doc]);
+  }, [notebookId, token, !!doc]);
 
-  const updateDoc = useCallback(
-    (callback: (d: Notebook) => void) => {
-      if (!automerge.current || !docRef.current) return;
+  const updateDoc = useCallback((callback: (d: Notebook) => void) => {
+    if (!automerge.current || !docRef.current) return;
 
-      const newDoc = automerge.current.change(docRef.current, callback);
+    const newDoc = automerge.current.change(docRef.current, callback);
 
-      docRef.current = newDoc;
-      setDoc(newDoc);
+    docRef.current = newDoc;
+    setDoc(newDoc);
 
-      const [nextSyncState, message] = automerge.current.generateSyncMessage(
-        newDoc,
-        syncState.current,
-      );
-      syncState.current = nextSyncState;
+    const [nextSyncState, message] = automerge.current.generateSyncMessage(
+      newDoc,
+      syncState.current,
+    );
+    syncState.current = nextSyncState;
 
-      if (
-        canWrite &&
-        message &&
-        socketRef.current?.readyState === WebSocket.OPEN
-      ) {
-        socketRef.current.send(message);
-      }
-    },
-    [canWrite],
-  );
+    if (message && socketRef.current?.readyState === WebSocket.OPEN) {
+      socketRef.current.send(message);
+    }
+  }, []);
 
   const addBlockSync = (
     index: number,

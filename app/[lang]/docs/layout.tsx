@@ -2,6 +2,8 @@ import { NextIntlClientProvider, useMessages } from "next-intl";
 import { DocsLayout } from "@/components/layout/docs";
 import { NotebookProvider } from "@/components/notebook/notebook-context";
 import { NotebookManagerProvider } from "@/components/notebook/notebook-manager";
+import { TeamNotebookManagerProvider } from "@/components/notebook/team/team-notebook-manager";
+import { TeamsSidebar } from "@/components/notebook/teams-sidebar";
 import { UserSidebar } from "@/components/notebook/user-sidebar";
 import { env } from "@/lib/env";
 import { baseOptions } from "@/lib/layout.shared";
@@ -28,20 +30,27 @@ export default function Layout({ children }: LayoutProps<"/[lang]/docs">) {
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <NotebookManagerProvider>
-        <NotebookProvider pageId={null}>
-          <DocsLayout
-            tree={filteredTree}
-            {...baseOptions()}
-            sidebar={{
-              defaultOpenLevel: 1,
-              banner: <UserSidebar />,
-            }}
-          >
-            {children}
-          </DocsLayout>
-        </NotebookProvider>
-      </NotebookManagerProvider>
+      <TeamNotebookManagerProvider>
+        <NotebookManagerProvider>
+          <NotebookProvider pageId={null}>
+            <DocsLayout
+              tree={filteredTree}
+              {...baseOptions()}
+              sidebar={{
+                defaultOpenLevel: 1,
+                banner: (
+                  <div>
+                    <UserSidebar />
+                    <TeamsSidebar />
+                  </div>
+                ),
+              }}
+            >
+              {children}
+            </DocsLayout>
+          </NotebookProvider>
+        </NotebookManagerProvider>
+      </TeamNotebookManagerProvider>
     </NextIntlClientProvider>
   );
 }

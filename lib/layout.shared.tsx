@@ -23,7 +23,7 @@ export function baseOptions(): BaseLayoutProps {
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
               <Image src="/logo.png" alt="Logo" width={34} height={34} />
-              <span className="text-xl font-bold hidden md:block">
+              <span className="text-lg font-bold hidden md:block">
                 {t("docs")}
               </span>
             </Link>

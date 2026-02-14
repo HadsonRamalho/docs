@@ -174,8 +174,7 @@ pub async fn api_link_github_callback(
 
     let user = match models::user::find_user_by_email(conn, &email).await {
         Ok(u) => u,
-        Err(e) => {
-            error!(e);
+        Err(_) => {
             return Redirect::to(&format!(
                 "{}/login?auth_error=github_emails_not_found",
                 base_redirect_url,

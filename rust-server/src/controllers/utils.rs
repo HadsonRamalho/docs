@@ -239,3 +239,17 @@ pub async fn auto_delete_files() {
         println!("LOG: [GC] Varredura finalizada.");
     }
 }
+
+pub fn get_email_credentials() -> Result<(String, String), String> {
+    dotenv().ok();
+    let smtp_username = match env::var("SMTP_USERNAME") {
+        Ok(username) => username,
+        Err(e) => return Err(format!("SMTP_USERNAME não definido no arquivo .env: {}", e)),
+    };
+    let smtp_password = match env::var("SMTP_PASSWORD") {
+        Ok(password) => password,
+        Err(e) => return Err(format!("SMTP_PASSWORD não definido no arquivo .env: {}", e)),
+    };
+    let credenciais = (smtp_username, smtp_password);
+    Ok(credenciais)
+}

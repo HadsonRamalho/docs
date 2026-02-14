@@ -6,8 +6,6 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-// --- TEAMS ---
-
 #[derive(Queryable, Selectable, Identifiable, Debug, Serialize, Deserialize)]
 #[diesel(table_name = teams)]
 pub struct Team {
@@ -35,8 +33,6 @@ pub struct UpdateTeam {
     pub image_url: Option<String>,
 }
 
-// --- TEAM ROLES ---
-
 #[derive(Queryable, Selectable, Identifiable, Debug, Serialize, Deserialize, Clone)]
 #[diesel(table_name = team_roles)]
 pub struct TeamRole {
@@ -51,6 +47,43 @@ pub struct TeamRole {
     pub can_remove_users: bool,
     pub can_manage_permissions: bool,
     pub created_at: NaiveDateTime,
+    pub can_manage_team: bool,
+}
+
+impl TeamRole {
+    pub fn get_view_only() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            team_id: Uuid::new_v4(),
+            name: "Default Role Name - View Only".to_string(),
+            can_read: true,
+            can_write: false,
+            can_manage_privacy: false,
+            can_manage_clones: false,
+            can_invite_users: false,
+            can_remove_users: false,
+            can_manage_permissions: false,
+            created_at: chrono::Utc::now().naive_local(),
+            can_manage_team: false,
+        }
+    }
+
+    pub fn get_all_false() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            team_id: Uuid::new_v4(),
+            name: "Default Role Name - All False".to_string(),
+            can_read: false,
+            can_write: false,
+            can_manage_privacy: false,
+            can_manage_clones: false,
+            can_invite_users: false,
+            can_remove_users: false,
+            can_manage_permissions: false,
+            created_at: chrono::Utc::now().naive_local(),
+            can_manage_team: false,
+        }
+    }
 }
 
 #[derive(Insertable, Deserialize)]
@@ -58,7 +91,6 @@ pub struct TeamRole {
 pub struct NewTeamRole {
     pub team_id: Uuid,
     pub name: String,
-    // Permissões opcionais (defaults definidos no banco, mas aqui podemos passar explícito)
     pub can_read: bool,
     pub can_write: bool,
     pub can_manage_privacy: bool,
@@ -66,11 +98,43 @@ pub struct NewTeamRole {
     pub can_invite_users: bool,
     pub can_remove_users: bool,
     pub can_manage_permissions: bool,
+    pub can_manage_team: bool,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct NewTeamRoleRequest {
+    pub name: String,
+    pub can_read: bool,
+    pub can_write: bool,
+    pub can_manage_privacy: bool,
+    pub can_manage_clones: bool,
+    pub can_invite_users: bool,
+    pub can_remove_users: bool,
+    pub can_manage_permissions: bool,
+    pub can_manage_team: bool,
+}
+
+impl NewTeamRole {
+    pub fn from_request(team_id: Uuid, r: NewTeamRoleRequest) -> Self {
+        Self {
+            team_id,
+            name: r.name,
+            can_read: r.can_read,
+            can_write: r.can_write,
+            can_manage_privacy: r.can_manage_privacy,
+            can_manage_clones: r.can_manage_clones,
+            can_invite_users: r.can_invite_users,
+            can_remove_users: r.can_remove_users,
+            can_manage_permissions: r.can_manage_permissions,
+            can_manage_team: r.can_manage_team,
+        }
+    }
 }
 
 #[derive(AsChangeset, Deserialize)]
 #[diesel(table_name = team_roles)]
 pub struct UpdateTeamRole {
+    pub id: Uuid,
     pub name: Option<String>,
     pub can_read: Option<bool>,
     pub can_write: Option<bool>,
@@ -81,7 +145,17 @@ pub struct UpdateTeamRole {
     pub can_manage_permissions: Option<bool>,
 }
 
-// --- TEAM MEMBERS ---
+pub struct UpdateTeamRoleRequest {
+    pub id: String,
+    pub name: Option<String>,
+    pub can_read: Option<bool>,
+    pub can_write: Option<bool>,
+    pub can_manage_privacy: Option<bool>,
+    pub can_manage_clones: Option<bool>,
+    pub can_invite_users: Option<bool>,
+    pub can_remove_users: Option<bool>,
+    pub can_manage_permissions: Option<bool>,
+}
 
 #[derive(Queryable, Selectable, Identifiable, Debug, Serialize, Deserialize)]
 #[diesel(table_name = team_members)]
@@ -93,6 +167,17 @@ pub struct TeamMember {
     pub joined_at: NaiveDateTime,
 }
 
+#[derive(Queryable, Serialize, Deserialize, Debug)]
+pub struct TeamMemberResponse {
+    pub id: Uuid,
+    pub team_id: Uuid,
+    pub user_id: Uuid,
+    pub role_id: Uuid,
+    pub name: String,
+    pub email: String,
+    pub joined_at: NaiveDateTime,
+}
+
 #[derive(Insertable, Deserialize)]
 #[diesel(table_name = team_members)]
 pub struct NewTeamMember {
@@ -100,12 +185,6 @@ pub struct NewTeamMember {
     pub user_id: Uuid,
     pub role_id: Uuid,
 }
-
-// src/db/teams.rs (ou onde preferir organizar)
-
-// -----------------------------------------------------------------------------
-// TEAMS
-// -----------------------------------------------------------------------------
 
 pub async fn create_team(conn: &mut AsyncPgConnection, data: &NewTeam) -> Result<Team, ApiError> {
     match diesel::insert_into(teams::table)
@@ -121,14 +200,14 @@ pub async fn create_team(conn: &mut AsyncPgConnection, data: &NewTeam) -> Result
 pub async fn find_team_by_id(
     conn: &mut AsyncPgConnection,
     team_id_param: Uuid,
-) -> Result<Team, String> {
+) -> Result<Team, ApiError> {
     match teams::table
         .filter(teams::id.eq(team_id_param))
         .get_result(conn)
         .await
     {
         Ok(team) => Ok(team),
-        Err(e) => Err(e.to_string()),
+        Err(e) => Err(ApiError::Database(e.to_string())),
     }
 }
 
@@ -140,7 +219,7 @@ pub async fn update_team_data(
     match diesel::update(teams::table)
         .filter(teams::id.eq(team_id_param))
         .set(data)
-        .get_result(conn) // Retorna o time atualizado
+        .get_result(conn)
         .await
     {
         Ok(team) => Ok(team),
@@ -162,10 +241,6 @@ pub async fn delete_team(
     }
 }
 
-// -----------------------------------------------------------------------------
-// TEAM ROLES
-// -----------------------------------------------------------------------------
-
 pub async fn create_team_role(
     conn: &mut AsyncPgConnection,
     data: &NewTeamRole,
@@ -183,14 +258,14 @@ pub async fn create_team_role(
 pub async fn find_roles_by_team(
     conn: &mut AsyncPgConnection,
     team_id_param: Uuid,
-) -> Result<Vec<TeamRole>, String> {
+) -> Result<Vec<TeamRole>, ApiError> {
     match team_roles::table
         .filter(team_roles::team_id.eq(team_id_param))
         .load::<TeamRole>(conn)
         .await
     {
         Ok(roles) => Ok(roles),
-        Err(e) => Err(e.to_string()),
+        Err(e) => Err(ApiError::Database(e.to_string())),
     }
 }
 
@@ -210,15 +285,10 @@ pub async fn update_team_role(
     }
 }
 
-// -----------------------------------------------------------------------------
-// TEAM MEMBERS
-// -----------------------------------------------------------------------------
-
 pub async fn add_user_to_team(
     conn: &mut AsyncPgConnection,
     data: &NewTeamMember,
 ) -> Result<TeamMember, ApiError> {
-    // Note: Isso pode falhar se violar a constraint UNIQUE(team_id, user_id)
     match diesel::insert_into(team_members::table)
         .values(data)
         .get_result(conn)
@@ -245,20 +315,70 @@ pub async fn remove_user_from_team(
     }
 }
 
-// Função utilitária para buscar todos os membros com seus papeis (JOIN)
-// Retorna uma tupla (Membro, Role, User) - Assumindo que você tem a struct User
-pub async fn find_team_members_with_roles(
+pub async fn find_team_member_with_role(
     conn: &mut AsyncPgConnection,
     team_id_param: Uuid,
-) -> Result<Vec<(TeamMember, TeamRole)>, String> {
+    user_id_param: Uuid,
+) -> Result<(TeamMember, TeamRole), ApiError> {
     match team_members::table
         .inner_join(team_roles::table)
-        .filter(team_members::team_id.eq(team_id_param))
+        .filter(
+            team_members::team_id
+                .eq(team_id_param)
+                .and(team_members::user_id.eq(user_id_param)),
+        )
         .select((team_members::all_columns, team_roles::all_columns))
-        .load::<(TeamMember, TeamRole)>(conn)
+        .get_result::<(TeamMember, TeamRole)>(conn)
         .await
     {
         Ok(results) => Ok(results),
-        Err(e) => Err(e.to_string()),
+        Err(e) => Err(ApiError::Database(e.to_string())),
+    }
+}
+
+pub async fn find_team_members_with_roles(
+    conn: &mut AsyncPgConnection,
+    team_id_param: Uuid,
+) -> Result<Vec<(TeamMemberResponse, TeamRole)>, ApiError> {
+    use crate::schema::users;
+
+    match team_members::table
+        .inner_join(team_roles::table)
+        .inner_join(users::table.on(team_members::user_id.eq(users::id)))
+        .filter(team_members::team_id.eq(team_id_param))
+        .select((
+            (
+                team_members::id,
+                team_members::team_id,
+                team_members::user_id,
+                team_members::role_id,
+                users::name,
+                users::email,
+                team_members::joined_at,
+            ),
+            team_roles::all_columns,
+        ))
+        .load::<(TeamMemberResponse, TeamRole)>(conn)
+        .await
+    {
+        Ok(results) => Ok(results),
+        Err(e) => Err(ApiError::Database(e.to_string())),
+    }
+}
+
+pub async fn find_user_teams(
+    conn: &mut AsyncPgConnection,
+    user_id_param: Uuid,
+) -> Result<Vec<(Team, TeamRole)>, ApiError> {
+    match team_members::table
+        .inner_join(team_roles::table)
+        .inner_join(teams::table)
+        .filter(team_members::user_id.eq(user_id_param))
+        .select((teams::all_columns, team_roles::all_columns))
+        .load::<(Team, TeamRole)>(conn)
+        .await
+    {
+        Ok(results) => Ok(results),
+        Err(e) => Err(ApiError::Database(e.to_string())),
     }
 }
