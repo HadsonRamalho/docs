@@ -226,7 +226,7 @@
       "title": "Membros da Equipe",
       "description": "Gerencie quem tem acesso aos recursos deste time.",
       "invite_member_button": "Convidar Membro",
-      "add_member_title": "Adicionar Membro",
+      "add_member_title": "Convidar Membro",
       "add_member_description": "Insira o e-mail do usuário que você deseja adicionar a este time e defina o cargo dele.",
       "user_email": "E-mail do Usuário",
       "user_role": "Cargo no Time",

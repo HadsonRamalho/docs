@@ -10,7 +10,7 @@ export default function TeamManagementPage({ params }: PageProps) {
   const teamId = resolvedParams.id;
 
   return (
-    <div className="max-w-5xl min-w-3xl mx-auto p-2 md:p-6 space-y-6">
+    <div className="max-w-5xl md:min-w-3xl mx-auto p-2 md:p-6 space-y-6">
       <TeamSettingsForm teamId={teamId} />
     </div>
   );

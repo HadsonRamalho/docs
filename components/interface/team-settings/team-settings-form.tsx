@@ -92,7 +92,7 @@ export default function TeamSettingsForm({ teamId }: TeamSettingsFormProps) {
   }
 
   return (
-    <div className="max-w-5xl min-w-3xl mx-auto p-2 md:p-6 space-y-6">
+    <div className="max-w-5xl md:min-w-3xl mx-auto p-2 md:p-6 space-y-6">
       <div className="flex flex-col space-y-2 text-center sm:text-left">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">{team.name}</h2>
@@ -105,7 +105,7 @@ export default function TeamSettingsForm({ teamId }: TeamSettingsFormProps) {
 
       <Separator />
 
-      <div className="flex border-b border-border overflow-x-auto">
+      <div className="grid grid-cols-1 md:flex border-b border-border overflow-x-auto">
         <TabButton
           active={activeTab === "general"}
           onClick={() => setActiveTab("general")}

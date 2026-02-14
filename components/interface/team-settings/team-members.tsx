@@ -24,9 +24,15 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { handleApiError } from "@/lib/api/handle-api-error";
 import { inviteTeamMember } from "@/lib/api/teams-service";
-import { cn } from "@/lib/cn";
 import type { TeamMemberWithUserData, TeamRole } from "@/lib/types/team-types";
 
 interface TeamMembersProps {
@@ -117,26 +123,22 @@ export function TeamMembers({
                 </div>
                 <div className="space-y-2">
                   <Label>{a("user_role")}</Label>
-                  <select
+                  <Select
                     required
                     value={inviteRoleId}
-                    onChange={(e) => setInviteRoleId(e.target.value)}
-                    className={cn(
-                      "flex h-10 w-full rounded-md border border-input bg-background ",
-                      "px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent",
-                      " file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none",
-                      " focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-                    )}
+                    onValueChange={setInviteRoleId}
                   >
-                    <option value="" disabled>
-                      {a("select_role")}
-                    </option>
-                    {roles.map((role) => (
-                      <option key={role.id} value={role.id}>
-                        {role.name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={a("select_role")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((role) => (
+                        <SelectItem key={role.id} value={role.id}>
+                          {role.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -170,7 +172,7 @@ export function TeamMembers({
           {members.map((member) => (
             <div
               key={member[0].id}
-              className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+              className="grid grid-cols-1 justify-end p-4 space-y-2 hover:bg-muted/50 transition-colors"
             >
               <div className="flex flex-col gap-1">
                 <span className="text-sm font-medium">{member[0].name}</span>
@@ -182,7 +184,7 @@ export function TeamMembers({
                   {new Date(member[0].joined_at).toLocaleDateString()}
                 </span>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between md:justify-end gap-4">
                 <span className="text-xs font-medium px-2.5 py-1 bg-secondary text-secondary-foreground rounded-full">
                   {member[1].name}
                 </span>

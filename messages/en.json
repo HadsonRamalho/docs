@@ -232,7 +232,7 @@
       "title": "Team Members",
       "description": "Manage who has access to this team's resources.",
       "invite_member_button": "Invite Member",
-      "add_member_title": "Add Member",
+      "add_member_title": "Invite Member",
       "add_member_description": "Enter the email of the user you want to add to this team and set their role.",
       "user_email": "User Email",
       "user_role": "Team Role",
