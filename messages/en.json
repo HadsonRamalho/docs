@@ -29,8 +29,12 @@
   },
   "homepage": {
     "nav": {
-      "explore": "Explore Public Feed",
-      "docs": "Documentation"
+      "docs": "Zeile Notebook",
+      "login": "Login",
+      "profile": "Profile",
+      "settings": "Settings",
+      "logout": "Logout",
+      "explore": "Explore Public Feed"
     },
     "hero": {
       "title": "Zeile Notebook",
