@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { BackButton } from "@/components/interface/back-button";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import {
   fetchTeam,
   fetchTeamMembers,
@@ -46,6 +47,15 @@ export default function TeamSettingsForm({ teamId }: TeamSettingsFormProps) {
   const [userPermissions, setUserPermissions] = useState<TeamRole | undefined>(
     undefined,
   );
+
+  const reloadTeamRoles = async () => {
+    try {
+      const tempRoles = await fetchTeamRoles(teamId);
+      setRoles(tempRoles);
+    } catch (err) {
+      handleApiError({ err, t });
+    }
+  };
 
   useEffect(() => {
     setIsLoading(true);
@@ -147,7 +157,9 @@ export default function TeamSettingsForm({ teamId }: TeamSettingsFormProps) {
           />
         )}
 
-        {activeTab === "roles" && <TeamRoles roles={roles} />}
+        {activeTab === "roles" && (
+          <TeamRoles roles={roles} teamId={teamId} onUpdate={reloadTeamRoles} />
+        )}
       </div>
     </div>
   );
