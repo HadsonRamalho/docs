@@ -1,8 +1,10 @@
 import { HomeLayout } from "fumadocs-ui/layouts/home";
-import { BookSearch, Info } from "lucide-react";
+import { BookSearch, Code, Info, Lock, Sparkles, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { RetroGrid } from "@/components/ui/retro-grid";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { baseOptions } from "@/lib/layout.shared";
 
 export default function HomePage() {
@@ -10,34 +12,90 @@ export default function HomePage() {
 
   return (
     <HomeLayout {...baseOptions()}>
-      <main className="relative overflow-hidden">
-        <section className="mx-auto max-w-7xl px-6 py-24 lg:py-32 text-center">
-          <div className="flex flex-row items-center justify-center md:-ml-20 gap-4">
-            <Image src="/logo.png" alt="Logo" width={77} height={77} />
-            <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl">
-              {t("nav.docs")}
-            </h1>
-          </div>
-          <div className="mt-12 flex flex-col sm:flex-row justify-center gap-4">
-            <Link
-              href="/explore"
-              className="flex items-center justify-center rounded-xl border bg-card px-8 py-4 text-sm font-bold shadow-lg transition-transform hover:-translate-y-1"
-            >
-              <BookSearch className="mr-2 h-4 w-4" />
-              {t("nav.explore")}
-            </Link>
+      <main className="relative overflow-hidden bg-background">
+        <section className="relative flex min-h-[80vh] w-full flex-col items-center justify-center overflow-hidden px-6 py-24 text-center md:py-32">
+          <div className="z-10 flex flex-col items-center justify-center gap-6 max-w-4xl">
+            <div className="flex flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+              <Image
+                src="/logo.png"
+                alt="Zeile Logo"
+                width={80}
+                height={80}
+                className="drop-shadow-lg"
+              />
+            </div>
 
-            <Link
-              href="/docs"
-              className="flex items-center justify-center rounded-xl border px-8 py-4 text-sm font-bold text-foreground shadow-lg transition-transform hover:-translate-y-1"
-            >
-              <Info className="mr-2 h-4 w-4" />
-              {t("about.title")}
-            </Link>
+            <h1 className="pointer-events-none z-10 whitespace-pre-wrap bg-linear-to-b from-[#169e69] via-[#5eeb95] to-[#1ca381] bg-clip-text text-center text-5xl font-extrabold leading-none tracking-tighter text-transparent sm:text-7xl lg:text-8xl">
+              {t("hero.title")}
+            </h1>
+
+            <p className="mt-4 max-w-2xl text-lg text-muted-foreground sm:text-xl md:text-2xl animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-150 fill-mode-both">
+              {t("hero.subtitle")}
+            </p>
+
+            <div className="mt-8 grid grid-cols-1 md:flex flex-row justify-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 fill-mode-both">
+              <Link href="/explore">
+                <ShimmerButton
+                  background="#169e69"
+                  className="shadow-2xl h-14 px-8 text-sm font-bold w-full"
+                >
+                  <span className="flex items-center gap-2 text-white">
+                    <BookSearch className="h-4 w-4" />
+                    {t("nav.explore")}
+                  </span>
+                </ShimmerButton>
+              </Link>
+
+              <Link
+                href="/docs"
+                className="flex h-14 items-center justify-center rounded-full border bg-background px-8 text-sm font-bold shadow-sm transition-all hover:bg-muted w-full"
+              >
+                <Info className="mr-2 h-4 w-4" />
+                {t("about.title")}
+              </Link>
+            </div>
+          </div>
+
+          <RetroGrid className="opacity-40" />
+        </section>
+
+        <section className="border-t bg-muted/20 py-24">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="mb-16 text-center">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                {t("features.title")}
+              </h2>
+              <p className="mt-4 text-muted-foreground">
+                {t("features.subtitle")}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+              <FeatureCard
+                icon={<Code className="h-8 w-8 text-emerald-500" />}
+                title={t("features.md_title")}
+                desc={t("features.md_desc")}
+              />
+              <FeatureCard
+                icon={<Users className="h-8 w-8 text-blue-500" />}
+                title={t("features.team_title")}
+                desc={t("features.team_desc")}
+              />
+              <FeatureCard
+                icon={<Lock className="h-8 w-8 text-rose-500" />}
+                title={t("features.privacy_title")}
+                desc={t("features.privacy_desc")}
+              />
+              <FeatureCard
+                icon={<Sparkles className="h-8 w-8 text-amber-500" />}
+                title={t("features.public_title")}
+                desc={t("features.public_desc")}
+              />
+            </div>
           </div>
         </section>
 
-        <section className="border-y bg-muted/30">
+        <section className="border-y bg-background">
           <div className="mx-auto max-w-7xl px-6 py-20">
             <div className="flex flex-col md:flex-row items-center justify-between gap-12">
               <div className="max-w-md">
@@ -54,9 +112,9 @@ export default function HomePage() {
                   <Link
                     key={s.title}
                     href={s.href}
-                    className="flex items-center p-4 bg-background border rounded-lg hover:border-fd-primary transition-colors text-sm font-medium"
+                    className="group flex items-center p-4 bg-muted/30 border rounded-xl hover:border-primary hover:bg-muted/50 transition-all text-sm font-medium"
                   >
-                    <span className="text-fd-primary mr-3 text-lg font-mono">
+                    <span className="text-primary mr-4 text-lg font-mono font-bold bg-primary/10 px-2 py-1 rounded">
                       {s.prefix}
                     </span>
                     {t(s.title)}
@@ -71,12 +129,12 @@ export default function HomePage() {
           <h2 className="text-4xl font-bold mb-6 tracking-tight">
             {t("contribute.title")}
           </h2>
-          <p className="text-muted-foreground mb-2 max-w-lg mx-auto">
+          <p className="text-muted-foreground mb-8 max-w-lg mx-auto text-lg">
             {t("contribute.description")}
           </p>
           <Link
             href="https://github.com/HadsonRamalho/docs"
-            className="underline decoration-fd-primary underline-offset-4 font-semibold hover:text-fd-primary transition-colors"
+            className="inline-flex h-12 items-center justify-center rounded-md bg-fd-primary px-8 text-sm font-medium text-white shadow transition-colors hover:bg-primary/90"
           >
             {t("contribute.button")}
           </Link>
@@ -86,11 +144,25 @@ export default function HomePage() {
   );
 }
 
+function FeatureCard({
+  icon,
+  title,
+  desc,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <div className="flex flex-col items-start rounded-2xl border bg-background p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-1">
+      <div className="mb-4 rounded-lg bg-muted p-3">{icon}</div>
+      <h3 className="mb-2 text-xl font-semibold">{title}</h3>
+      <p className="text-muted-foreground text-sm leading-relaxed">{desc}</p>
+    </div>
+  );
+}
+
 const shortcuts = [
   { prefix: "01", title: "items.home", href: "/docs" },
-  {
-    prefix: "02",
-    title: "nav.explore",
-    href: "/explore",
-  },
+  { prefix: "02", title: "nav.explore", href: "/explore" },
 ];

@@ -29,30 +29,37 @@
   },
   "homepage": {
     "nav": {
-      "docs": "Zeile Notebook",
-      "login": "Login",
-      "profile": "Profile",
-      "settings": "Settings",
-      "logout": "Logout",
-      "explore": "Explore"
+      "explore": "Explore Public Feed",
+      "docs": "Documentation"
     },
     "hero": {
       "title": "Zeile Notebook",
-      "subtitle": "Login"
+      "subtitle": "Your ultimate collaborative workspace. Write in Markdown, organize teams, manage permissions, and share knowledge with the world."
+    },
+    "features": {
+      "title": "Everything you need to document",
+      "subtitle": "Built for developers, teams, and creative minds.",
+      "md_title": "Markdown Power",
+      "md_desc": "Write blazingly fast with full Markdown support, code blocks, and real-time rendering.",
+      "team_title": "Collaborative Spaces",
+      "team_desc": "Create teams, invite members, and work together on shared notebooks seamlessly.",
+      "privacy_title": "Access Control",
+      "privacy_desc": "From private to public. Set roles and granular permissions for reading, writing, and administration.",
+      "public_title": "Community Feed",
+      "public_desc": "Publish your best notebooks to the public feed and discover what others are building."
     },
     "about": {
-      "title": "About",
-      "shortcuts_title": "Useful Shortcuts",
-      "shortcuts_desc": "Direct links to the most common documentation pages."
-    },
-    "items": {
-      "home": "Home",
-      "juri": "Integration Project Jury 2026"
+      "title": "Read Documentation",
+      "shortcuts_title": "Quick Navigation",
+      "shortcuts_desc": "Jump straight into the most important sections of the platform."
     },
     "contribute": {
-      "title": "Pull Requests are welcome.",
-      "description": "Found something outdated? Our documentation is also code. Contribute to the official repository.",
-      "button": "View repository on GitHub"
+      "title": "Open Source",
+      "description": "Zeile is built by the community. Feel free to explore the code, report bugs, or submit improvements.",
+      "button": "Contribute on GitHub"
+    },
+    "items": {
+      "home": "My Notebooks"
     }
   },
   "login": {

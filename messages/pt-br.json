@@ -38,21 +38,32 @@
     },
     "hero": {
       "title": "Zeile Notebook",
-      "subtitle": "Login"
+      "subtitle": "O seu espaço colaborativo definitivo. Escreva em Markdown, organize times, gerencie permissões e compartilhe conhecimento com o mundo."
+    },
+    "features": {
+      "title": "Tudo o que você precisa para documentar",
+      "subtitle": "Construído para desenvolvedores, times e mentes criativas.",
+      "md_title": "Poder do Markdown",
+      "md_desc": "Escreva rapidamente com suporte completo a Markdown, blocos de código e renderização em tempo real.",
+      "team_title": "Espaços Colaborativos",
+      "team_desc": "Crie times, convide membros e trabalhem juntos em cadernos compartilhados de forma sincronizada.",
+      "privacy_title": "Controle de Acesso",
+      "privacy_desc": "Do privado ao público. Defina cargos e permissões para leitura, escrita e administração.",
+      "public_title": "Feed da Comunidade",
+      "public_desc": "Publique seus melhores cadernos no feed público e descubra o que outras pessoas estão construindo."
     },
     "about": {
       "title": "Saber mais",
       "shortcuts_title": "Atalhos Úteis",
       "shortcuts_desc": "Links diretos para as páginas mais comuns das documentações."
     },
-    "items": {
-      "home": "Página inicial",
-      "juri": "Bancas do Projeto Integrador 2026"
-    },
     "contribute": {
-      "title": "Pull Requests são bem-vindos.",
-      "description": "Encontrou algo desatualizado por aqui? Nossa documentação também é código. Contribua no repositório oficial.",
-      "button": "Ver repositório no GitHub"
+      "title": "Código Aberto",
+      "description": "O Zeile é construído pela comunidade. Sinta-se à vontade para explorar o código, reportar bugs ou enviar melhorias.",
+      "button": "Contribuir no GitHub"
+    },
+    "items": {
+      "home": "Meus Cadernos"
     }
   },
   "login": {
