@@ -61,7 +61,7 @@ export function TeamSidebar({ team }: TeamSidebarProps) {
 
         <div className="flex gap-2 justify-end">
           <Button
-            className="rounded hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity size-5"
+            className="rounded hover:bg-white/10 md:opacity-0 md:group-hover:opacity-100 transition-opacity size-5"
             onClick={(e) => {
               e.stopPropagation();
               router.push(`/teams/${team.id}/settings`);
@@ -74,14 +74,14 @@ export function TeamSidebar({ team }: TeamSidebarProps) {
             onClick={() => {
               refreshTeamPages(team.id);
             }}
-            className="rounded hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity size-5"
+            className="rounded hover:bg-white/10 md:opacity-0 md:group-hover:opacity-100 transition-opacity size-5"
           >
             <RotateCw className="size-4" />
           </Button>
 
           <Button
             onClick={handleCreatePage}
-            className="rounded hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity size-5"
+            className="rounded hover:bg-white/10 md:opacity-0 md:group-hover:opacity-100 transition-opacity size-5"
           >
             <Plus className="size-4" />
           </Button>
