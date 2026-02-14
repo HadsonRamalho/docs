@@ -188,7 +188,9 @@
     "public": "Público",
     "save": "Salvar",
     "saving": "Salvando...",
-    "saved": "Salvo!"
+    "saved": "Salvo!",
+    "share": "Compartilhar",
+    "pdf": "Exportar PDF"
   },
   "sidebar": {
     "my_notebook": "Meu Caderno",

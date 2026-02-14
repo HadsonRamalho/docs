@@ -84,7 +84,7 @@ export default function PythonSandbox({
           </div>
 
           {!isDragging && (
-            <div className="border-t dark:border-[#333] dark:bg-[#0f0f0f]">
+            <div className="border-t dark:border-[#333] dark:bg-[#0f0f0f] print:hidden">
               <div className="flex items-center justify-between px-4 py-2 dark:bg-[#1a1a1a] border-b dark:border-[#333]">
                 <span className="text-[10px] font-bold text-[#555] uppercase tracking-widest">
                   Console
@@ -102,7 +102,7 @@ export default function PythonSandbox({
                   </div>
                 )}
               </div>
-              <div className="p-4 font-mono text-sm min-h-20 max-h-60 overflow-y-auto custom-scrollbar">
+              <div className="p-4 font-mono text-sm min-h-20 max-h-60 overflow-y-auto custom-scrollbar print:hidden">
                 {output ? (
                   <pre
                     className={`whitespace-pre-wrap ${status === "error" ? "text-red-400" : "text-gray-300"}`}

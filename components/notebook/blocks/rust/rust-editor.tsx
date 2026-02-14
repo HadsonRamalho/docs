@@ -79,7 +79,7 @@ export function RustEditor({
         </div>
 
         {!isDragging && (
-          <div className="border-t border-border dark:bg-[#0f0f0f]">
+          <div className="border-t border-border dark:bg-[#0f0f0f] print:hidden">
             <div className="flex items-center justify-between px-4 py-2 dark:bg-[#1a1a1a] border-b border-border">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                 Console
@@ -99,7 +99,7 @@ export function RustEditor({
                 </div>
               )}
             </div>
-            <div className="p-4 font-mono text-sm min-h-20 max-h-60 overflow-y-auto custom-scrollbar">
+            <div className="p-4 font-mono text-sm min-h-20 max-h-60 overflow-y-auto custom-scrollbar print:hidden">
               {output ? (
                 <pre
                   className={`whitespace-pre-wrap ${

@@ -17,7 +17,7 @@ export function baseOptions(): BaseLayoutProps {
     nav: {
       children: (
         <NextIntlClientProvider messages={messages}>
-          <div className="flex w-full items-center justify-between gap-2">
+          <div className="flex w-full items-center justify-between gap-2 print:hidden">
             <Link
               href="/"
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"

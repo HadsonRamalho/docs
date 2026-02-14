@@ -1,21 +1,19 @@
 "use client";
 
-import { Copy, Loader2, Lock, Users } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { toast } from "sonner";
 import { useAuth } from "@/context/auth-context";
 import { getUserNotebookPermissions } from "@/lib/api/notebook-service";
 import type { TeamRole } from "@/lib/types/team-types";
-import { Button } from "../ui/button";
 import { useNotebook } from "./notebook-context";
+import { ControlActions } from "./notebook-controls-actions";
+
+type ControlRules = {
+  showPrivacySelector: boolean;
+  showClone: boolean;
+  showShare: boolean;
+  showExport: boolean;
+};
 
 export function NotebookControls() {
   const { user } = useAuth();
@@ -26,8 +24,6 @@ export function NotebookControls() {
     triggerClone,
     isCloning,
   } = useNotebook();
-  const t = useTranslations("notebook_controls");
-
   const [permissions, setPermissions] = useState<TeamRole | undefined>(
     undefined,
   );
@@ -43,61 +39,60 @@ export function NotebookControls() {
     loadPermissions();
   }, [notebook]);
 
-  if (!user) {
-    return null;
-  }
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = document.title || "Zeile Notebook";
+    const text = "Confira este caderno colaborativo no Zeile!";
 
-  if (!permissions?.can_write && permissions?.can_read) {
-    return (
-      <div className="flex w-full justify-between gap-2">
-        <Button onClick={triggerClone}>
-          <Copy />
-          {t("clone")}
-        </Button>
-      </div>
-    );
-  }
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent,
+      );
+
+    const copyToClipboard = async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copiado para a área de transferência!");
+      } catch (err) {
+        toast.error("Não foi possível copiar o link.");
+      }
+    };
+
+    if (isMobile && navigator.share) {
+      try {
+        await navigator.share({
+          title,
+          text,
+          url,
+        });
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") {
+          await copyToClipboard();
+        }
+      }
+    } else {
+      await copyToClipboard();
+    }
+  };
+
+  const rules: ControlRules = {
+    showPrivacySelector: !!permissions?.can_manage_privacy,
+    showClone: !!user,
+    showShare: true,
+    showExport: true,
+  };
 
   return (
-    <div className="grid grid-cols-1 md:flex w-full justify-between gap-2">
-      <div className="grid grid-cols-1 w-full md:w-100 md:flex gap-2 items-center justify-center md:justify-start">
-        {permissions?.can_manage_privacy && (
-          <Select
-            value={isPublic ? "true" : "false"}
-            onValueChange={(val) => handleToggleVisibility(val === "true")}
-          >
-            <SelectTrigger className="w-full md:w-45">
-              <SelectValue placeholder={t("visibility")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="false">
-                  <Lock className="size-4" />
-                  {t("private")}
-                </SelectItem>
-                <SelectItem value="true">
-                  <Users className="size-4" />
-                  {t("public")}
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        )}
-        <Button
-          onClick={triggerClone}
-          disabled={isCloning}
-          className="w-full md:w-40"
-        >
-          {isCloning ? (
-            <Loader2 className="size-3.5 animate-spin" />
-          ) : (
-            <>
-              <Copy />
-              {t("clone")}
-            </>
-          )}
-        </Button>
-      </div>
+    <div className="grid grid-cols-1 md:flex w-full justify-between gap-2 print:hidden">
+      <ControlActions
+        rules={rules}
+        isPublic={isPublic}
+        isCloning={isCloning}
+        onToggleVisibility={handleToggleVisibility}
+        onClone={triggerClone}
+        onShare={handleShare}
+        onExport={() => window.print()}
+      />
     </div>
   );
 }

@@ -96,7 +96,7 @@ export default function RustInteractivePage({
   }
 
   return (
-    <div className="min-h-screen flex flex-row w-full">
+    <div className="min-h-screen flex flex-row w-full print:block print:min-h-0 print:h-auto print:m-0 print:p-0 print:bg-white print:text-black">
       <Reorder.Group
         axis="y"
         values={blocks}
@@ -149,7 +149,7 @@ export default function RustInteractivePage({
           );
         })}
       </Reorder.Group>
-      <aside className="hidden xl:block w-70">
+      <aside className="hidden xl:block w-70 print:hidden">
         <div className="sticky top-24">
           <InlineTOC blocks={blocks} />
         </div>

@@ -13,7 +13,7 @@ export function RunButton({ isRunning, handleRun, isLoading }: RunButtonProps) {
       disabled={isRunning || isLoading}
       onClick={handleRun}
       className={`
-      flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold transition-all
+      flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-bold transition-all print:hidden
       ${
         isRunning || isLoading
           ? "bg-[#444] text-[#888] cursor-not-allowed"

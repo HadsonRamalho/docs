@@ -190,7 +190,9 @@
     "public": "Public",
     "save": "Save",
     "saving": "Saving...",
-    "saved": "Saved!"
+    "saved": "Saved!",
+    "share": "Share",
+    "pdf": "Export PDF"
   },
   "sidebar": {
     "my_notebook": "My Notebook",

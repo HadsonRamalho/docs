@@ -108,7 +108,7 @@ export function EditorHeader({
         </div>
       </div>
       {block.language === "typescript" && (
-        <div className="grid grid-cols-1 md:flex flex-cols gap-2 w-full justify-end">
+        <div className="grid grid-cols-1 md:flex flex-cols gap-2 w-full justify-end print:hidden">
           {mode === "simple" && (
             <button
               type="button"

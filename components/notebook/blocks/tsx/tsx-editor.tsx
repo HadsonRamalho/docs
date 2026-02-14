@@ -175,7 +175,7 @@ export function TsxEditor({
             )}
           </SandpackLayout>
 
-          <div className="border-t bg-card h-24">
+          <div className="border-t bg-card h-24 print:hidden">
             <SandpackConsole
               resetOnPreviewRestart={true}
               showResetConsoleButton={true}
