@@ -4,6 +4,7 @@ import type {
   NewTeam,
   NewTeamRoleRequest,
   Team,
+  TeamMemberWithRole,
   TeamMemberWithRoleAndUserData,
   TeamRole,
   TeamWithUserRole,
@@ -66,4 +67,10 @@ export async function acceptTeamInvite(token: string) {
 
 export async function inviteTeamMember(teamId: string, data: InviteTeamMember) {
   return await api.post(`/team/${teamId}/invites`, data);
+}
+
+export async function getUserTeamPermissions(teamId: string) {
+  return await api.get<TeamMemberWithRole>(
+    `/team/${teamId}/members/permissions`,
+  );
 }

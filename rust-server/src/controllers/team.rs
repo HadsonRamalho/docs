@@ -369,3 +369,18 @@ pub async fn api_create_team(
 
     Ok(Json(team))
 }
+
+pub async fn api_get_user_team_permissions(
+    State(state): State<Arc<AppState>>,
+    Path(team_id): Path<Uuid>,
+    headers: HeaderMap,
+) -> Result<Json<(TeamMember, TeamRole)>, ApiError> {
+    let user_id = extract_claims_from_header(&headers).await?.1.id;
+    let conn = &mut get_conn(&state.pool)
+        .await
+        .map_err(|e| ApiError::DatabaseConnection(e.1.0.to_string()))?;
+
+    let member = get_team_member(conn, team_id, user_id).await?;
+
+    Ok(Json(member))
+}

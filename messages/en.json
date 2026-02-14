@@ -194,7 +194,75 @@
     "import": "Import Backup",
     "confirm_import": "This will also overwrite all your duplicate pages with the backup. Do you want to continue?",
     "my_teams": "My Teams",
-    "new_team": "New Team"
+    "new_team": "New Team",
+    "new_team_title": "Create New Team",
+    "new_team_description": "Fill in the details to create a new collaborative workspace.",
+    "team_name": "Team Name",
+    "team_description": "Description (Optional)",
+    "cancel_button": "Cancel",
+    "create_button": "Create",
+    "creating_button": "Creating...",
+    "no_teams_found": "No teams found."
+  },
+  "team_settings": {
+    "team_form": {
+      "team_not_found": "Team not found.",
+      "back_to_home": "Back to home",
+      "description": "Manage team settings, members, and permissions.",
+      "general_tab": "General",
+      "member_tab": "Members",
+      "role_tab": "Roles"
+    },
+    "team_data": {
+      "team_updated": "Team settings updated successfully.",
+      "title": "General Settings",
+      "description": "Update the name and basic information of your team.",
+      "team_name": "Team Name",
+      "team_description": "What is the purpose of this team?",
+      "save_button": "Save Changes",
+      "danger_zone": "Danger Zone",
+      "danger_zone_description": "Destructive and irreversible actions for this team.",
+      "danger_zone_delete_title": "Delete Team",
+      "danger_zone_delete_description": "Deleting the team will permanently erase all notebooks and remove all members.",
+      "danger_zone_delete_button": "Delete Team",
+      "invalid_team_name": "Invalid team name"
+    },
+    "team_member": {
+      "invited_member": "Member invited!",
+      "title": "Team Members",
+      "description": "Manage who has access to this team's resources.",
+      "invite_member_button": "Invite Member",
+      "add_member_title": "Add Member",
+      "add_member_description": "Enter the email of the user you want to add to this team and set their role.",
+      "user_email": "User Email",
+      "user_role": "Team Role",
+      "select_role": "Select a role...",
+      "cancel_button": "Cancel",
+      "send_invite": "Send Invite",
+      "joined_on": "Joined on ",
+      "remove_member_button": "Remove Member",
+      "no_members_found": "No members found."
+    },
+    "team_role": {
+      "title": "Roles and Permissions",
+      "description": "Configure access and control levels for members.",
+      "new_role_button": "New Role",
+      "edit_role_button": "Edit",
+      "roles": {
+        "can_write": "Write/Edit",
+        "can_manage_privacy": "Manage Notebook Privacy",
+        "can_invite_users": "Invite New Members",
+        "can_manage_permissions": "Manage Permissions",
+        "can_manage_clones": "Manage Notebook Clones",
+        "can_manage_team": "Manage Entire Team",
+        "can_remove_users": "Remove Users"
+      },
+      "active": "Yes",
+      "inactive": "No"
+    }
+  },
+  "team_sidebar": {
+    "empty_notebooks": "Empty"
   },
   "toc": {
     "title": "On this page"

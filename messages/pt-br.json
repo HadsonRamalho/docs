@@ -188,7 +188,75 @@
     "import": "Importar Backup",
     "confirm_import": "Isso também substituirá todas as suas páginas duplicadas pelo backup. Deseja continuar?",
     "my_teams": "Meus Times",
-    "new_team": "Novo Time"
+    "new_team": "Novo Time",
+    "new_team_title": "Criar Novo Time",
+    "new_team_description": "Preencha os detalhes para criar um novo espaço de trabalho colaborativo.",
+    "team_name": "Nome do Time",
+    "team_description": "Descrição (Opcional)",
+    "cancel_button": "Cancelar",
+    "create_button": "Criar",
+    "creating_button": "Criando...",
+    "no_teams_found": "Nenhum time encontrado."
+  },
+  "team_settings": {
+    "team_form": {
+      "team_not_found": "Time não encontrado.",
+      "back_to_home": "Voltar para o início",
+      "description": "Gerencie configurações, membros e permissões do time.",
+      "general_tab": "Geral",
+      "member_tab": "Membros",
+      "role_tab": "Cargos"
+    },
+    "team_data": {
+      "team_updated": "Configurações do time atualizadas com sucesso.",
+      "title": "Configurações Gerais",
+      "description": "Atualize o nome e as informações básicas do seu time.",
+      "team_name": "Nome do Time",
+      "team_description": "Qual o propósito deste time?",
+      "save_button": "Salvar Alterações",
+      "danger_zone": "Zona de Perigo",
+      "danger_zone_description": "Ações destrutivas e irreversíveis para este time.",
+      "danger_zone_delete_title": "Excluir Time",
+      "danger_zone_delete_description": "A exclusão apagará permanentemente todos os cadernos e removerá todos os membros.",
+      "danger_zone_delete_button": "Excluir Time",
+      "invalid_team_name": "O nome do time não é válido"
+    },
+    "team_member": {
+      "invited_member": "Membro convidado!",
+      "title": "Membros da Equipe",
+      "description": "Gerencie quem tem acesso aos recursos deste time.",
+      "invite_member_button": "Convidar Membro",
+      "add_member_title": "Adicionar Membro",
+      "add_member_description": "Insira o e-mail do usuário que você deseja adicionar a este time e defina o cargo dele.",
+      "user_email": "E-mail do Usuário",
+      "user_role": "Cargo no Time",
+      "select_role": "Selecione um cargo...",
+      "cancel_button": "Cancelar",
+      "send_invite": "Enviar Convite",
+      "joined_on": "Entrou em ",
+      "remove_member_button": "Remover Membro",
+      "no_members_found": "Nenhum membro encontrado."
+    },
+    "team_role": {
+      "title": "Cargos e Permissões",
+      "description": "Configure os níveis de acesso e controle dos membros.",
+      "new_role_button": "Novo Cargo",
+      "edit_role_button": "Editar",
+      "roles": {
+        "can_write": "Escrever/Editar",
+        "can_manage_privacy": "Gerenciar Privacidade de Notebooks",
+        "can_invite_users": "Convidar Novos Membros",
+        "can_manage_permissions": "Gerenciar Permissões",
+        "can_manage_clones": "Gerenciar Clones de Notebook",
+        "can_manage_team": "Gerenciar Todo o Time",
+        "can_remove_users": "Remover Usuários"
+      },
+      "active": "Sim",
+      "inactive": "Não"
+    }
+  },
+  "team_sidebar": {
+    "empty_notebooks": "Vazio"
   },
   "toc": {
     "title": "Nesta página"

@@ -25,7 +25,8 @@ import { useTeamNotebookManager } from "./team/team-notebook-manager";
 import { TeamSidebar } from "./team-sidebar";
 
 export function TeamsSidebar() {
-  const t = useTranslations("sidebar");
+  const a = useTranslations("sidebar");
+  const t = useTranslations("api_errors");
   const { user } = useAuth();
   const { refreshTeamPages } = useTeamNotebookManager();
   const [teams, setTeams] = useState<[Team, TeamRole][]>();
@@ -87,7 +88,6 @@ export function TeamsSidebar() {
       setNewTeamDesc("");
       setIsDialogOpen(false);
     } catch (err) {
-      console.error("Erro ao criar time:", err);
       handleApiError({ err, t });
     } finally {
       setIsCreating(false);
@@ -98,7 +98,7 @@ export function TeamsSidebar() {
     <div className="flex flex-col gap-2 pb-4">
       <div className="flex items-center justify-between px-2 mb-2">
         <span className="text-xs font-bold uppercase text-muted-foreground">
-          {t("my_teams")}
+          {a("my_teams")}
         </span>
 
         <div className="flex justify-end">
@@ -119,7 +119,7 @@ export function TeamsSidebar() {
                 className=" bg-transparent hover:bg-white/10 rounded-md transition-colors text-gray-400 hover:text-white"
                 size="xs"
                 variant="ghost"
-                title={t("new_team")}
+                title={a("new_team")}
               >
                 <Plus className="size-4" />
               </Button>
@@ -138,27 +138,27 @@ export function TeamsSidebar() {
                 <div className="flex flex-col gap-4 py-4">
                   <div className="space-y-2">
                     <label htmlFor="teamName" className="text-sm font-medium">
-                      Nome do Time <span className="text-red-500">*</span>
+                      {a("team_name")} <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="teamName"
                       required
                       value={newTeamName}
                       onChange={(e) => setNewTeamName(e.target.value)}
-                      placeholder="Ex: Aura Marketing"
+                      placeholder="Ex: Class 12"
                       className="w-full bg-background border border-white/10 rounded-md px-3 py-2 text-sm outline-none focus:border-primary transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <label htmlFor="teamDesc" className="text-sm font-medium">
-                      Descrição (Opcional)
+                      {a("team_description")}
                     </label>
                     <textarea
                       id="teamDesc"
                       value={newTeamDesc}
                       onChange={(e) => setNewTeamDesc(e.target.value)}
-                      placeholder="Qual o propósito deste time?"
+                      placeholder={a("team_description")}
                       className="w-full bg-background border border-white/10 rounded-md px-3 py-2 text-sm outline-none focus:border-primary transition-colors min-h-20 resize-none"
                     />
                   </div>
@@ -172,13 +172,13 @@ export function TeamsSidebar() {
                       setNewTeamDesc("");
                     }}
                   >
-                    Cancelar
+                    {a("cancel_button")}
                   </AlertDialogCancel>
                   <Button
                     type="submit"
                     disabled={isCreating || !newTeamName.trim()}
                   >
-                    {isCreating ? "Criando..." : "Criar Time"}
+                    {isCreating ? a("creating_button") : a("create_button")}
                   </Button>
                 </AlertDialogFooter>
               </form>
@@ -190,7 +190,7 @@ export function TeamsSidebar() {
       <div className="flex flex-col gap-1">
         {teams?.length === 0 && (
           <span className="px-2 text-xs text-muted-foreground italic">
-            Nenhum time encontrado.
+            {a("no_teams_found")}
           </span>
         )}
 

@@ -10,6 +10,7 @@ import {
   Users,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "../ui/button";
@@ -20,6 +21,8 @@ interface TeamSidebarProps {
 }
 
 export function TeamSidebar({ team }: TeamSidebarProps) {
+  const a = useTranslations("team_sidebar");
+
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
@@ -44,7 +47,7 @@ export function TeamSidebar({ team }: TeamSidebarProps) {
     <div className="flex flex-col w-full">
       <div className="flex bg-card  items-center justify-between p-2 w-full hover:bg-muted rounded-md group text-sm text-muted-foreground hover:text-foreground transition-colors">
         <div
-          className="flex items-center gap-2 overflow-hidden"
+          className="flex items-center gap-2 overflow-hidden hover:cursor-pointer"
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? (
@@ -61,7 +64,7 @@ export function TeamSidebar({ team }: TeamSidebarProps) {
             className="rounded hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity size-5"
             onClick={(e) => {
               e.stopPropagation();
-              router.push(`teams/${team.id}/settings`);
+              router.push(`/teams/${team.id}/settings`);
             }}
           >
             <Settings className="size-4" />
@@ -89,7 +92,7 @@ export function TeamSidebar({ team }: TeamSidebarProps) {
         <div className="flex flex-col gap-1 pl-6 pr-1 mt-1">
           {pages.length === 0 ? (
             <span className="p-2 text-xs text-muted-foreground italic">
-              Vazio
+              {a("empty_notebooks")}
             </span>
           ) : (
             pages.map((page) => {

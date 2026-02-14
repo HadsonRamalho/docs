@@ -1,3 +1,6 @@
+import type z from "zod";
+import type { teamFormSchema } from "../schemas/team-schemas";
+
 export interface Team {
   id: string;
   name: string;
@@ -82,3 +85,5 @@ export interface InviteTeamMember {
 export type TeamMemberWithRole = [TeamMember, TeamRole];
 export type TeamWithUserRole = [Team, TeamRole];
 export type TeamMemberWithRoleAndUserData = [TeamMemberWithUserData, TeamRole];
+
+export type TeamFormValues = z.infer<typeof teamFormSchema>;
