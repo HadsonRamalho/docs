@@ -1,5 +1,5 @@
 import { HomeLayout } from "fumadocs-ui/layouts/home";
-import { Info, User } from "lucide-react";
+import { BookSearch, Info } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -20,11 +20,11 @@ export default function HomePage() {
           </div>
           <div className="mt-12 flex flex-col sm:flex-row justify-center gap-4">
             <Link
-              href="/login"
-              className="flex items-center justify-center rounded-xl border bg-fd-primary px-8 py-4 text-sm font-bold text-white shadow-lg transition-transform hover:-translate-y-1"
+              href="/explore"
+              className="flex items-center justify-center rounded-xl border bg-card px-8 py-4 text-sm font-bold shadow-lg transition-transform hover:-translate-y-1"
             >
-              <User className="mr-2 h-4 w-4" />
-              {t("nav.login")}
+              <BookSearch className="mr-2 h-4 w-4" />
+              {t("nav.explore")}
             </Link>
 
             <Link
@@ -88,4 +88,9 @@ export default function HomePage() {
 
 const shortcuts = [
   { prefix: "01", title: "items.home", href: "/docs" },
+  {
+    prefix: "02",
+    title: "nav.explore",
+    href: "/explore",
+  },
 ];

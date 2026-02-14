@@ -1,4 +1,3 @@
-use axum::Json;
 use hyper::StatusCode;
 use lettre::{
     Address, Message, SmtpTransport, Transport,

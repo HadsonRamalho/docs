@@ -33,7 +33,8 @@
       "login": "Entrar",
       "profile": "Perfil",
       "settings": "Configurações",
-      "logout": "Sair"
+      "logout": "Sair",
+      "explore": "Explorar"
     },
     "hero": {
       "title": "Zeile Notebook",
@@ -264,6 +265,14 @@
   },
   "team_sidebar": {
     "empty_notebooks": "Vazio"
+  },
+  "public_notebooks": {
+    "title": "Explorar Notebooks",
+    "description": "Descubra anotações e projetos compartilhados pela comunidade.",
+    "badge_team": "Time",
+    "badge_personal": "Pessoal",
+    "empty_state_title": "Nenhum notebook encontrado",
+    "empty_state_description": "Ainda não há notebooks públicos disponíveis na plataforma. Quando a comunidade compartilhar algo, aparecerá aqui."
   },
   "toc": {
     "title": "Nesta página"

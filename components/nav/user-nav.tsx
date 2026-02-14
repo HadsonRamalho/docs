@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Settings, User as UserIcon } from "lucide-react";
+import { LogOut, Settings, User, User as UserIcon } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,9 @@ export function UserNav() {
   if (!user) {
     return (
       <Button asChild variant="secondary" size="sm" className="px-4">
-        <Link href="/login">{t("nav.login")}</Link>
+        <Link href="/login">
+          <User /> {t("nav.login")}
+        </Link>
       </Button>
     );
   }

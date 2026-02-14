@@ -18,7 +18,7 @@ pub struct Team {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Insertable, Deserialize)]
+#[derive(Insertable, Deserialize, Validate)]
 #[diesel(table_name = teams)]
 pub struct NewTeam {
     #[validate(length(min = 2, message = "Team name is required"))]
@@ -27,7 +27,7 @@ pub struct NewTeam {
     pub image_url: Option<String>,
 }
 
-#[derive(AsChangeset, Deserialize)]
+#[derive(AsChangeset, Deserialize, Validate)]
 #[diesel(table_name = teams)]
 pub struct UpdateTeam {
     #[validate(length(min = 2, message = "Team name is required"))]
@@ -104,7 +104,7 @@ pub struct NewTeamRole {
     pub can_manage_team: bool,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Validate)]
 pub struct NewTeamRoleRequest {
     #[validate(length(min = 2, message = "Team role name is required"))]
     pub name: String,
@@ -149,6 +149,7 @@ pub struct UpdateTeamRole {
     pub can_manage_permissions: Option<bool>,
 }
 
+#[derive(Validate)]
 pub struct UpdateTeamRoleRequest {
     pub id: String,
     #[validate(length(min = 2, message = "Team role name is required"))]

@@ -33,7 +33,8 @@
       "login": "Login",
       "profile": "Profile",
       "settings": "Settings",
-      "logout": "Logout"
+      "logout": "Logout",
+      "explore": "Explore"
     },
     "hero": {
       "title": "Zeile Notebook",
@@ -270,6 +271,14 @@
   },
   "team_sidebar": {
     "empty_notebooks": "Empty"
+  },
+  "public_notebooks": {
+    "title": "Explore Notebooks",
+    "description": "Discover notes and projects shared by the community.",
+    "badge_team": "Team",
+    "badge_personal": "Personal",
+    "empty_state_title": "No notebooks found",
+    "empty_state_description": "There are no public notebooks available on the platform yet. When the community shares something, it will appear here."
   },
   "toc": {
     "title": "On this page"

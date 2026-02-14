@@ -1,8 +1,8 @@
 use crate::{models::error::ApiError, schema::blocks::dsl as blocks_dsl};
 use chrono::{DateTime, Utc};
 use diesel::{
-    BelongingToDsl, BoolExpressionMethods, ExpressionMethods, JoinOnDsl, OptionalExtension,
-    PgTextExpressionMethods, QueryDsl, Selectable,
+    BelongingToDsl, BoolExpressionMethods, ExpressionMethods, JoinOnDsl, NullableExpressionMethods,
+    OptionalExtension, PgTextExpressionMethods, QueryDsl, Selectable,
     prelude::{Associations, Identifiable, Insertable, Queryable},
 };
 use diesel_async::{
@@ -191,6 +191,16 @@ pub struct SearchResult {
 pub enum NotebookPermission {
     OwnerOrTeam,
     Viewer,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PublicNotebookResponse {
+    pub id: Uuid,
+    pub title: String,
+    pub user_id: Option<Uuid>,
+    pub team_id: Option<Uuid>,
+    pub owner_name: String,
+    pub updated_at: DateTime<Utc>,
 }
 
 pub async fn create_notebook(
@@ -642,4 +652,62 @@ pub async fn get_team_notebooks(
         Ok(items) => Ok(items),
         Err(e) => Err(e.to_string()),
     }
+}
+
+pub async fn get_public_notebooks(
+    conn: &mut AsyncPgConnection,
+) -> Result<Vec<PublicNotebookResponse>, ApiError> {
+    use crate::schema::teams;
+    use crate::schema::users;
+
+    let raw_results = match notebooks::table
+        .left_join(users::table.on(notebooks::user_id.eq(users::id.nullable())))
+        .left_join(teams::table.on(notebooks::team_id.eq(teams::id.nullable())))
+        .filter(notebooks::is_public.eq(true))
+        .order(notebooks::updated_at.desc())
+        .select((
+            notebooks::id,
+            notebooks::title,
+            notebooks::user_id,
+            notebooks::team_id,
+            users::name.nullable(),
+            teams::name.nullable(),
+            notebooks::updated_at,
+        ))
+        .load::<(
+            Uuid,
+            String,
+            Option<Uuid>,
+            Option<Uuid>,
+            Option<String>,
+            Option<String>,
+            DateTime<Utc>,
+        )>(conn)
+        .await
+    {
+        Ok(res) => res,
+        Err(e) => return Err(ApiError::Database(e.to_string())),
+    };
+
+    let public_notebooks = raw_results
+        .into_iter()
+        .map(
+            |(id, title, user_id, team_id, user_name, team_name, updated_at)| {
+                let owner_name = team_name
+                    .or(user_name)
+                    .unwrap_or_else(|| "Desconhecido".to_string());
+
+                PublicNotebookResponse {
+                    id,
+                    title,
+                    user_id,
+                    team_id,
+                    owner_name,
+                    updated_at,
+                }
+            },
+        )
+        .collect();
+
+    Ok(public_notebooks)
 }

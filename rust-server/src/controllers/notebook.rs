@@ -14,9 +14,9 @@ use crate::{
         self,
         error::ApiError,
         notebook::{
-            NewBlock, NewNotebook, Notebook, NotebookResponse, SearchQuery, SearchResult,
-            SyncNotebookRequest, UpdateNotebookTitle, UpdateNotebookVisibility, delete_notebook,
-            update_notebook_title,
+            NewBlock, NewNotebook, Notebook, NotebookResponse, PublicNotebookResponse, SearchQuery,
+            SearchResult, SyncNotebookRequest, UpdateNotebookTitle, UpdateNotebookVisibility,
+            delete_notebook, get_public_notebooks, update_notebook_title,
         },
         state::AppState,
     },
@@ -356,4 +356,16 @@ pub async fn api_search_notebooks(
     let results = models::notebook::search_user_blocks(&mut conn, id, &search_term).await?;
 
     Ok((StatusCode::OK, Json(results)))
+}
+
+pub async fn api_get_public_notebooks(
+    State(state): State<Arc<AppState>>,
+) -> Result<(StatusCode, Json<Vec<PublicNotebookResponse>>), ApiError> {
+    let mut conn = state
+        .pool
+        .get()
+        .await
+        .map_err(|e| ApiError::DatabaseConnection(e.to_string()))?;
+
+    Ok((StatusCode::OK, Json(get_public_notebooks(&mut conn).await?)))
 }

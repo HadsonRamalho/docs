@@ -1,4 +1,5 @@
 import type { Block, Notebook } from "../types";
+import type { PublicNotebookResponse } from "../types/notebook-types";
 import type { TeamRole } from "../types/team-types";
 import { api } from "./base";
 
@@ -51,4 +52,8 @@ export async function saveNotebookData(
 
 export async function getUserNotebookPermissions(id: string) {
   return await api.get<TeamRole>(`/notebook/${id}/permissions`);
+}
+
+export async function fetchPublicNotebooks() {
+  return await api.get<PublicNotebookResponse[]>("/notebook/all/public");
 }
